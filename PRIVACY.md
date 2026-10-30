@@ -5,7 +5,7 @@ the Navia Android app actually handles data, as implemented in this
 repository. It has not been reviewed by a lawyer, and it does not claim
 certified compliance with the GDPR or any other law.
 
-Last updated: 2026-10-30. Applies to Navia 0.4 and later.
+Last updated: 2026-10-30. Applies to Navia 0.4.0 and later.
 
 The app shows the same policy in Italian under *Impostazioni → Privacy*.
 
