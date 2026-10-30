@@ -41,4 +41,19 @@ void main() {
     expect(point.toLngLat(), [16.8719, 41.1171]);
     expect(point.toDisplayString(), '41.11710, 16.87190');
   });
+
+  test('measures great-circle distances', () {
+    const bariCentrale = GeoPoint(latitude: 41.1177, longitude: 16.8697);
+    const petruzzelli = GeoPoint(latitude: 41.1225, longitude: 16.8721);
+    expect(bariCentrale.distanceTo(bariCentrale), 0);
+    expect(bariCentrale.distanceTo(petruzzelli), closeTo(573, 5));
+    // One degree of latitude is about 111.2 km.
+    expect(
+      const GeoPoint(
+        latitude: 0,
+        longitude: 0,
+      ).distanceTo(const GeoPoint(latitude: 1, longitude: 0)),
+      closeTo(111195, 10),
+    );
+  });
 }

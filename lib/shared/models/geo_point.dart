@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 
 /// A WGS84 geographic coordinate, independent of any map renderer.
@@ -34,6 +36,20 @@ class GeoPoint {
     final [lng, lat, ...] = position;
     if (lng is! num || lat is! num) return null;
     return tryCreate(lat, lng);
+  }
+
+  /// Great-circle distance to [other] in meters (haversine formula).
+  double distanceTo(GeoPoint other) {
+    const earthRadius = 6371008.8;
+    double rad(double degrees) => degrees * math.pi / 180;
+    final dLat = rad(other.latitude - latitude);
+    final dLng = rad(other.longitude - longitude);
+    final a =
+        math.pow(math.sin(dLat / 2), 2) +
+        math.cos(rad(latitude)) *
+            math.cos(rad(other.latitude)) *
+            math.pow(math.sin(dLng / 2), 2);
+    return 2 * earthRadius * math.asin(math.min(1, math.sqrt(a)));
   }
 
   /// Coordinates in GeoJSON order: `[longitude, latitude]`.
