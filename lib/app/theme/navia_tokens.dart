@@ -64,9 +64,13 @@ abstract final class NaviaRadii {
   static const double md = 16;
   static const double lg = 24;
 
+  /// Top corners of the panel docked to the bottom of the map.
+  static const double xl = 28;
+
   static const BorderRadius smAll = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius mdAll = BorderRadius.all(Radius.circular(md));
   static const BorderRadius lgAll = BorderRadius.all(Radius.circular(lg));
+  static const BorderRadius pill = BorderRadius.all(Radius.circular(999));
 }
 
 /// Interaction sizing tokens.
@@ -74,11 +78,15 @@ abstract final class NaviaSizes {
   /// Minimum touch target recommended by Material and Android guidelines.
   static const double minTouchTarget = 48;
 
-  /// Size of the round floating map controls.
+  /// Size of the round floating map controls. Every control column is
+  /// this wide, so all control icons share one vertical axis.
   static const double mapControl = 52;
 
-  /// Size of the primary floating action (current location).
-  static const double mapPrimaryControl = 60;
+  /// Tinted circle behind leading icons in lists and cards.
+  static const double iconBadge = 40;
+
+  /// Maximum width of the bottom panel and top bar on large screens.
+  static const double panelMaxWidth = 600;
 }
 
 /// Elevation tokens: soft, blue-tinted shadows kept low so floating
@@ -98,6 +106,16 @@ abstract final class NaviaElevation {
   /// Panels on dark maps: neutral shadow, no blue tint.
   static const mediumDark = [
     BoxShadow(color: Color(0x66000000), blurRadius: 18, offset: Offset(0, 6)),
+  ];
+
+  /// The panel docked to the bottom edge casts its shadow upwards.
+  static const docked = [
+    BoxShadow(color: Color(0x1F0B3D91), blurRadius: 24, offset: Offset(0, -4)),
+    BoxShadow(color: Color(0x0F000000), blurRadius: 4, offset: Offset(0, -1)),
+  ];
+
+  static const dockedDark = [
+    BoxShadow(color: Color(0x80000000), blurRadius: 24, offset: Offset(0, -4)),
   ];
 }
 

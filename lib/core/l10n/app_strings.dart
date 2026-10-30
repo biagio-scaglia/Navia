@@ -97,6 +97,12 @@ abstract final class AppStrings {
   static const routeUnavailable = 'Percorso non disponibile';
   static const closeRoute = 'Chiudi percorso';
   static const close = 'Chiudi';
+  static const back = 'Indietro';
+  static const appTagline = 'Mappe libere, senza tracciamento.';
+  static const startHere = 'Parti da qui';
+  static const routeHint =
+      'Scegli partenza e destinazione: il percorso si calcola da solo.';
+  static String arrivalAt(String time) => 'Arrivo alle $time';
   static const showWholeRoute = 'Mostra tutto il percorso';
   static const expandSheet = 'Espandi';
   static const collapseSheet = 'Riduci';

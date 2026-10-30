@@ -56,11 +56,17 @@ abstract final class NaviaTheme {
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
     );
-    final textTheme = _textTheme(base.textTheme, scheme);
+    // [ThemeData.textTheme] carries no font sizes until it is localized by
+    // [Theme.of]; component themes read it directly, so add them here.
+    final sizedText = Typography.material2021().englishLike.merge(
+      base.textTheme,
+    );
+    final textTheme = _textTheme(sizedText, scheme);
 
-    const buttonShape = RoundedRectangleBorder(borderRadius: NaviaRadii.mdAll);
+    const buttonShape = StadiumBorder();
     const buttonMinSize = Size(64, NaviaSizes.minTouchTarget);
     const buttonPadding = EdgeInsets.symmetric(horizontal: NaviaSpacing.xl);
+    final hairline = surfaces.hairline;
 
     return base.copyWith(
       textTheme: textTheme,
@@ -94,7 +100,7 @@ abstract final class NaviaTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: NaviaRadii.lgAll,
-          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          side: BorderSide(color: hairline),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -110,6 +116,7 @@ abstract final class NaviaTheme {
           minimumSize: buttonMinSize,
           padding: buttonPadding,
           shape: buttonShape,
+          side: BorderSide(color: scheme.outlineVariant),
           textStyle: textTheme.labelLarge,
         ),
       ),
@@ -124,6 +131,12 @@ abstract final class NaviaTheme {
         style: IconButton.styleFrom(
           minimumSize: const Size.square(NaviaSizes.minTouchTarget),
         ),
+      ),
+      chipTheme: ChipThemeData(
+        shape: const StadiumBorder(),
+        side: BorderSide(color: scheme.outlineVariant),
+        labelStyle: textTheme.labelLarge,
+        padding: const EdgeInsets.symmetric(horizontal: NaviaSpacing.xs),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(
@@ -146,11 +159,15 @@ abstract final class NaviaTheme {
           vertical: NaviaSpacing.md,
         ),
         border: const OutlineInputBorder(
-          borderRadius: NaviaRadii.mdAll,
+          borderRadius: NaviaRadii.pill,
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: NaviaRadii.pill,
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: NaviaRadii.mdAll,
+          borderRadius: NaviaRadii.pill,
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         hintStyle: textTheme.bodyLarge?.copyWith(
@@ -181,16 +198,15 @@ abstract final class NaviaTheme {
         backgroundColor: scheme.surface,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
+        dragHandleColor: scheme.outlineVariant,
+        dragHandleSize: const Size(36, 4),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(NaviaRadii.lg),
+            top: Radius.circular(NaviaRadii.xl),
           ),
         ),
       ),
-      dividerTheme: DividerThemeData(
-        color: scheme.outlineVariant.withValues(alpha: 0.6),
-        space: 1,
-      ),
+      dividerTheme: DividerThemeData(color: hairline, space: 1, thickness: 1),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
     );
   }

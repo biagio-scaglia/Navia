@@ -22,3 +22,7 @@ String formatDuration(Duration duration) {
   if (rest == 0) return '$hours h';
   return '$hours h ${rest.toString().padLeft(2, '0')} min';
 }
+
+/// Formats a local time of day with the 24-hour clock: "9:05", "14:32".
+String formatClockTime(DateTime time) =>
+    '${time.hour}:${time.minute.toString().padLeft(2, '0')}';

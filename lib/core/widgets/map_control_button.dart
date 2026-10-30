@@ -25,7 +25,7 @@ class MapControlButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final size = primary ? NaviaSizes.mapPrimaryControl : NaviaSizes.mapControl;
+    const size = NaviaSizes.mapControl;
     const shape = CircleBorder();
 
     return Tooltip(
@@ -51,7 +51,7 @@ class MapControlButton extends StatelessWidget {
                 child: IconTheme.merge(
                   data: IconThemeData(
                     color: primary ? Colors.white : scheme.onSurface,
-                    size: primary ? 28 : 24,
+                    size: 24,
                   ),
                   child: Center(child: child),
                 ),

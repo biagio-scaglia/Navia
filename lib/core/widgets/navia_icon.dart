@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// The SVG sources live in `assets/icons/`, drawn in black and tinted at
 /// runtime, so a single file serves every color and theme.
 enum NaviaIcons {
+  arrowBack('arrow_back'),
   bike,
   car,
   check,

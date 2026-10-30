@@ -2,59 +2,58 @@ import 'package:flutter/material.dart';
 
 import 'navia_tokens.dart';
 
-/// Theme extension describing Navia's floating surfaces.
+/// Theme extension describing the surfaces drawn over the map.
 ///
-/// It carries the restrained gradients, highlight borders and tinted shadows
-/// that give the floating map controls their soft, slightly glossy look.
+/// Floating controls are solid, with a hairline border and a soft tinted
+/// shadow, so they stay legible on any map style. Only the primary control
+/// uses the brand gradient.
 @immutable
 class NaviaSurfaces extends ThemeExtension<NaviaSurfaces> {
   const NaviaSurfaces({
-    required this.floatingGradient,
+    required this.floating,
     required this.primaryGradient,
-    required this.highlightBorder,
+    required this.hairline,
     required this.floatingShadow,
+    required this.dockedShadow,
   });
 
   static const light = NaviaSurfaces(
-    floatingGradient: LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [NaviaColors.surfaceLight, NaviaColors.surfaceLightTint],
-    ),
+    floating: NaviaColors.surfaceLight,
     primaryGradient: LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [Color(0xFF3A8DFF), NaviaColors.brandDeep],
     ),
-    highlightBorder: Color(0xCCFFFFFF),
+    hairline: Color(0x140F1B2D),
     floatingShadow: NaviaElevation.medium,
+    dockedShadow: NaviaElevation.docked,
   );
 
   static const dark = NaviaSurfaces(
-    floatingGradient: LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [NaviaColors.surfaceDarkRaised, NaviaColors.surfaceDark],
-    ),
+    floating: NaviaColors.surfaceDarkRaised,
     primaryGradient: LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [Color(0xFF4C9BFF), Color(0xFF1667E0)],
     ),
-    highlightBorder: Color(0x1FFFFFFF),
+    hairline: Color(0x1FFFFFFF),
     floatingShadow: NaviaElevation.mediumDark,
+    dockedShadow: NaviaElevation.dockedDark,
   );
 
   /// Background of floating panels and secondary controls.
-  final Gradient floatingGradient;
+  final Color floating;
 
   /// Background of the primary floating control.
   final Gradient primaryGradient;
 
-  /// Thin top-lit border that reads as a soft highlight.
-  final Color highlightBorder;
+  /// Thin border that separates surfaces from the map.
+  final Color hairline;
 
   final List<BoxShadow> floatingShadow;
+
+  /// Shadow of the panel docked to the bottom edge.
+  final List<BoxShadow> dockedShadow;
 
   /// Decoration for a floating surface, rounded by [borderRadius] or
   /// [circle] shaped.
@@ -64,26 +63,41 @@ class NaviaSurfaces extends ThemeExtension<NaviaSurfaces> {
     bool primary = false,
   }) {
     return BoxDecoration(
-      gradient: primary ? primaryGradient : floatingGradient,
+      color: primary ? null : floating,
+      gradient: primary ? primaryGradient : null,
       shape: circle ? BoxShape.circle : BoxShape.rectangle,
       borderRadius: circle ? null : borderRadius,
-      border: Border.all(color: highlightBorder),
+      border: primary ? null : Border.all(color: hairline),
       boxShadow: floatingShadow,
+    );
+  }
+
+  /// Decoration for the panel docked to the bottom of the screen.
+  BoxDecoration dockedDecoration() {
+    return BoxDecoration(
+      color: floating,
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(NaviaRadii.xl),
+      ),
+      border: Border(top: BorderSide(color: hairline)),
+      boxShadow: dockedShadow,
     );
   }
 
   @override
   NaviaSurfaces copyWith({
-    Gradient? floatingGradient,
+    Color? floating,
     Gradient? primaryGradient,
-    Color? highlightBorder,
+    Color? hairline,
     List<BoxShadow>? floatingShadow,
+    List<BoxShadow>? dockedShadow,
   }) {
     return NaviaSurfaces(
-      floatingGradient: floatingGradient ?? this.floatingGradient,
+      floating: floating ?? this.floating,
       primaryGradient: primaryGradient ?? this.primaryGradient,
-      highlightBorder: highlightBorder ?? this.highlightBorder,
+      hairline: hairline ?? this.hairline,
       floatingShadow: floatingShadow ?? this.floatingShadow,
+      dockedShadow: dockedShadow ?? this.dockedShadow,
     );
   }
 
@@ -91,22 +105,19 @@ class NaviaSurfaces extends ThemeExtension<NaviaSurfaces> {
   NaviaSurfaces lerp(NaviaSurfaces? other, double t) {
     if (other == null) return this;
     return NaviaSurfaces(
-      floatingGradient: Gradient.lerp(
-        floatingGradient,
-        other.floatingGradient,
-        t,
-      )!,
+      floating: Color.lerp(floating, other.floating, t)!,
       primaryGradient: Gradient.lerp(
         primaryGradient,
         other.primaryGradient,
         t,
       )!,
-      highlightBorder: Color.lerp(highlightBorder, other.highlightBorder, t)!,
+      hairline: Color.lerp(hairline, other.hairline, t)!,
       floatingShadow: BoxShadow.lerpList(
         floatingShadow,
         other.floatingShadow,
         t,
       )!,
+      dockedShadow: BoxShadow.lerpList(dockedShadow, other.dockedShadow, t)!,
     );
   }
 }

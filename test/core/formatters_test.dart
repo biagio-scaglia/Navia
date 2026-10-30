@@ -32,4 +32,9 @@ void main() {
       expect(formatDuration(const Duration(hours: 3)), '3 h');
     });
   });
+
+  test('formatClockTime uses the 24-hour clock with padded minutes', () {
+    expect(formatClockTime(DateTime(2026, 10, 30, 9, 5)), '9:05');
+    expect(formatClockTime(DateTime(2026, 10, 30, 14, 32)), '14:32');
+  });
 }
