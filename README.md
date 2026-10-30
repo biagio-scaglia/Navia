@@ -15,7 +15,7 @@ ads, no analytics and no Navia backend: the app talks directly to open,
 OpenStreetMap-based services, and only when you use the feature that needs
 them.
 
-> **Status: early development (v0.3).** Navia shows routes but does not yet
+> **Status: early development (v0.4).** Navia shows routes but does not yet
 > provide turn-by-turn guidance. See [Current limitations](#current-limitations).
 
 ## Features
@@ -33,18 +33,34 @@ them.
   you tap the location button, and updates stop when the app is in background.
 - **Search:** finds addresses and places with debounced search-as-you-type,
   ranked around your approximate position.
-- **Places:** tap a point of interest drawn on the map to see its name and
-  category. Long-press anywhere to pick a point; Navia looks up its address
-  and shows the coordinates. Use any place as origin or destination, or save
-  it.
-- **Favorites:** save places under a custom name, on the device only. You can
-  open, rename or delete them (with undo), and duplicates within 15 m are
-  prevented.
-- **Routing:** builds A-to-B routes by car, bike or on foot, with "your
-  location" available as the origin. It shows distance, estimated duration and
-  the actual route geometry on the map, and lets you swap and clear points.
+- **Place discovery:** filter real OpenStreetMap places by category
+  (Ristoranti, Bar e caffè, Supermercati, Farmacie, Ospedali, Musei,
+  Attrazioni, Parchi, Hotel, Trasporti, Parcheggi, Carburante, Bancomat).
+  Places appear on the map with their names; tap one to open its card.
+- **Place cards:** name, category, address, opening hours (with an "Aperto
+  ora" / "Chiuso ora" badge only when it can be computed reliably), cuisine,
+  wheelchair access, phone and website, each shown only when OpenStreetMap
+  has it. Actions: directions, start here, save, share through the Android
+  share sheet, copy coordinates, call (opens the dialer), open the website,
+  view the object on OpenStreetMap.
+- **Map points:** tap a point of interest drawn by the map style to see its
+  name and category, or long-press anywhere to pick a point and look up its
+  address.
+- **Favorites:** save places under a custom name, on the device only, with
+  their OpenStreetMap category, address and identifier when available. Open
+  them, plan a route to them, pick them as origin or destination (also
+  offline, from the search screen), rename or delete them (with undo).
+  Duplicates are prevented by OpenStreetMap identifier or within 15 m.
+- **Routing:** builds A-to-B routes by car, bike or on foot as soon as both
+  ends are known, with "your location" available as the origin. It shows
+  distance, estimated duration, arrival time and the route geometry on the
+  map, and lets you swap and clear points. Without location permission,
+  choose the origin by search, on the map or from favorites.
 - **Errors:** handles offline mode, service failures, timeouts, denied
   permissions and disabled GPS with Italian messages that tell you what to do.
+- **Privacy:** an in-app privacy policy with a plain-language summary
+  (*Impostazioni → Informativa sulla privacy*), also in
+  [PRIVACY.md](PRIVACY.md).
 - **Settings:** light, dark or system theme (remembered on the device),
   location permission status, a list of which services receive which data,
   map attributions, open-source licenses and the app version.
@@ -61,6 +77,8 @@ The user interface is in Italian. Code and documentation are in English.
 | Map tiles and styles | [OpenFreeMap](https://openfreemap.org) styles Liberty, Bright, Positron and Dark (OpenMapTiles schema, OpenStreetMap data) |
 | Geocoding | [Photon](https://photon.komoot.io) (OpenStreetMap data) |
 | Routing | [OSRM](https://project-osrm.org) on the [FOSSGIS servers](https://routing.openstreetmap.de) |
+| Points of interest | [Overpass API](https://overpass-api.de) (OpenStreetMap data) |
+| Sharing | Android share sheet through a small platform channel; no SDK |
 | Location | `geolocator`, using the Android `LocationManager` |
 | Storage | `shared_preferences` for preferences and favorites, on the device only |
 
@@ -72,11 +90,18 @@ Navia has no server of its own. These third-party services receive requests:
 | --- | --- | --- |
 | OpenFreeMap | While the map is shown | Style, tile and font requests for the visible area |
 | Photon (komoot) | While you type a search, or when you long-press the map | The search text, plus your position rounded to about 1 km for ranking; or the long-pressed point, to find its address |
-| OSRM by FOSSGIS | When you calculate a route | Origin and destination coordinates |
+| OSRM by FOSSGIS | When a route is calculated | Origin and destination coordinates |
+| Overpass API | When a place category is selected and the map stops moving | The category and the visible area, enlarged and rounded to about 1 km |
 
 Every request carries a `User-Agent` that identifies Navia and its version, as
-the providers require. Navia does not store your location history and does
-not request background location.
+the providers require. Navia does not store your location history, does not
+request background location, and excludes its data from Android cloud
+backup. The full description is in the [privacy policy](PRIVACY.md).
+
+Android permissions: `INTERNET`, `ACCESS_COARSE_LOCATION` and
+`ACCESS_FINE_LOCATION` (asked only when you use your position), and
+`ACCESS_NETWORK_STATE`, which MapLibre needs to detect connectivity. The
+`ACCESS_WIFI_STATE` permission requested by MapLibre is removed.
 
 ### Provider usage policies
 
@@ -90,6 +115,12 @@ low-volume use**:
 - **Photon** asks for fair use and throttles heavy use. Navia waits for a
   pause in typing (450 ms), needs at least 3 characters, caches results and
   discards outdated responses.
+- **Overpass API** public instances are shared community infrastructure and
+  are often at capacity. Navia queries only while a category is selected,
+  700 ms after the map stops, above zoom 13 and for areas up to about 13 km;
+  it reuses the loaded area for small pans, caches answers for 15 minutes,
+  spaces requests by 2 seconds, skips duplicate requests and returns at most
+  150 places per area.
 
 A widely distributed build should point to self-hosted or commercially
 agreed instances (see [Configuration](#configuration)). Navia deliberately
@@ -132,6 +163,7 @@ ever embedded in the APK:
 | `NAVIA_OSRM_CAR_URL` | `https://routing.openstreetmap.de/routed-car` | Car mode is hidden |
 | `NAVIA_OSRM_BIKE_URL` | `https://routing.openstreetmap.de/routed-bike` | Bike mode is hidden |
 | `NAVIA_OSRM_FOOT_URL` | `https://routing.openstreetmap.de/routed-foot` | Walking mode is hidden |
+| `NAVIA_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | Category filters are hidden |
 
 For example, to use a self-hosted Photon instance:
 
@@ -178,12 +210,14 @@ lib/
     map/         MapLibre renderer behind a NaviaMapController interface
     navigation/  routing domain, OSRM provider, planning state, sheet UI
     search/      geocoding domain, Photon provider, search UI
+    places/      OpenStreetMap places, Overpass provider, discovery, place card
     favorites/   saved places, stored locally
     settings/    preferences and settings screen
   shared/     geographic model and app-wide providers
 assets/       logo and icon set
 tool/brand/   generator for the logo and launcher icons
-docs/         architecture, roadmap and brand guide
+docs/         architecture, roadmap, data licenses and brand guide
+PRIVACY.md    privacy policy (draft for legal review)
 ```
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
@@ -200,7 +234,16 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
   They are suitable for development and small-scale use, not for a large
   public release.
 - The Essenziale and Scuro styles do not draw points of interest, so tapping
-  places only works with Standard and Vivace.
+  the style's own places only works with Standard and Vivace. Category
+  filters work with every style.
+- Place discovery depends on public Overpass instances, which are often
+  overloaded: requests can time out or be refused, and Navia then offers to
+  retry. A wide release needs its own Overpass instance or regional extracts.
+- The open or closed status is computed only for the common `opening_hours`
+  syntax and only in the Central European Time area around Italy; public
+  holidays and other cases show the original hours without a status.
+- Details of places drawn by the map style itself (not by the category
+  filters) are limited to name and category.
 - 3D heights come from OpenStreetMap, where many buildings have no height
   data and stay flat.
 - Navia has been designed and tested for Bari. The map and services work
@@ -217,9 +260,11 @@ available under the Open Database License (ODbL). Vector tiles ©
 [OpenMapTiles](https://www.openmaptiles.org/), served by
 [OpenFreeMap](https://openfreemap.org/). Search by
 [Photon](https://photon.komoot.io). Routing by [OSRM](https://project-osrm.org),
-hosted by [FOSSGIS](https://routing.openstreetmap.de). The app shows these
-credits on the map, in the route summary, in the search screen and in the
-settings.
+hosted by [FOSSGIS](https://routing.openstreetmap.de). Places from the
+[Overpass API](https://overpass-api.de). The app shows these credits on the
+map, in the route summary, in the search screen, in each place card and in
+the settings. See [docs/DATA_LICENSES.md](docs/DATA_LICENSES.md) for the
+obligations that come with the data.
 
 ## Contributing
 
@@ -228,6 +273,7 @@ Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md).
 ## License
 
 Navia's source code, logo and icon set are released under the
-[MIT License](LICENSE). Third-party libraries and data keep their own
-licenses, which you can browse in the app under
+[MIT License](LICENSE). The MIT License does not apply to the map data:
+OpenStreetMap data stays under the ODbL, and third-party libraries keep
+their own licenses, which you can browse in the app under
 *Impostazioni → Licenze open source*.
