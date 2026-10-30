@@ -48,8 +48,8 @@ class NaviaMapView extends StatefulWidget {
   /// location itself.
   final bool showUserLocation;
 
-  /// Insets for the native compass (top/right) and attribution (top/left)
-  /// so they do not collide with Flutter overlays.
+  /// Insets for the native attribution button and, below it, the compass
+  /// (both top/left), so they do not collide with Flutter overlays.
   final EdgeInsets controlsPadding;
 
   final ValueChanged<NaviaMapController> onMapReady;
@@ -185,8 +185,10 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       onMapLongClick: _onLongPress,
       locationSource: const ManualLocationSource(),
       myLocationEnabled: widget.showUserLocation,
-      compassViewPosition: CompassViewPosition.topRight,
-      compassViewMargins: Point(padding.right, padding.top),
+      // The compass appears only when the map is rotated; tapping it turns
+      // north back up.
+      compassViewPosition: CompassViewPosition.topLeft,
+      compassViewMargins: Point(padding.left, padding.top + 48),
       attributionButtonPosition: AttributionButtonPosition.topLeft,
       attributionButtonMargins: Point(padding.left, padding.top),
       attributionButtonColor: widget.style.isDark

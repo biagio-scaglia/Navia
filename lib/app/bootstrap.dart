@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -11,6 +12,8 @@ import 'app.dart';
 /// Initializes services and starts the application.
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Draw behind transparent system bars; screens handle insets themselves.
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   _registerDataLicenses();
 
   final (preferences, packageInfo) = await (

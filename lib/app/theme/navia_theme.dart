@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'navia_surfaces.dart';
 import 'navia_tokens.dart';
@@ -65,6 +66,19 @@ abstract final class NaviaTheme {
       textTheme: textTheme,
       extensions: [surfaces],
       appBarTheme: AppBarTheme(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: scheme.brightness == Brightness.dark
+              ? Brightness.light
+              : Brightness.dark,
+          statusBarBrightness: scheme.brightness,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness:
+              scheme.brightness == Brightness.dark
+              ? Brightness.light
+              : Brightness.dark,
+          systemNavigationBarContrastEnforced: false,
+        ),
         backgroundColor: background,
         foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
