@@ -5,8 +5,6 @@
 abstract final class AppStrings {
   // Map screen.
   static const settings = 'Impostazioni';
-  static const zoomIn = 'Aumenta zoom';
-  static const zoomOut = 'Riduci zoom';
   static const mapLoading = 'Caricamento mappa…';
   static const mapErrorTitle = 'Mappa non disponibile';
   static const mapErrorBody =
@@ -68,4 +66,64 @@ abstract final class AppStrings {
   static const appLegalese =
       'Software libero rilasciato con licenza MIT.\n'
       'Dati della mappa © OpenStreetMap contributors.';
+
+  // Search.
+  static const searchHint = 'Cerca un luogo o un indirizzo';
+  static const searchOriginHint = 'Cerca la partenza';
+  static const searchDestinationHint = 'Cerca la destinazione';
+  static const searchIdle = 'Digita almeno 3 caratteri per cercare.';
+  static const searchLongPressTip =
+      'Puoi anche tenere premuto sulla mappa per scegliere un punto.';
+  static const searchAttribution = 'Ricerca con Photon · Dati © OpenStreetMap';
+  static const clearSearch = 'Cancella';
+  static const searchUnavailable =
+      'La ricerca non è configurata in questa versione dell’app.';
+  static String searchEmpty(String query) =>
+      'Nessun risultato per “$query”. Prova con un indirizzo più completo.';
+
+  // Navigation.
+  static const whereTo = 'Dove vuoi andare?';
+  static const directions = 'Indicazioni';
+  static const origin = 'Partenza';
+  static const destination = 'Destinazione';
+  static const yourLocation = 'La tua posizione';
+  static const mapPoint = 'Punto sulla mappa';
+  static const selectedPoint = 'Punto selezionato';
+  static const chooseOrigin = 'Scegli la partenza';
+  static const chooseDestination = 'Scegli la destinazione';
+  static const swapWaypoints = 'Inverti partenza e destinazione';
+  static const calculateRoute = 'Calcola percorso';
+  static const calculatingRoute = 'Calcolo del percorso…';
+  static const routeUnavailable = 'Percorso non disponibile';
+  static const closeRoute = 'Chiudi percorso';
+  static const close = 'Chiudi';
+  static const showWholeRoute = 'Mostra tutto il percorso';
+  static const expandSheet = 'Espandi';
+  static const collapseSheet = 'Riduci';
+  static const modeDriving = 'Auto';
+  static const modeCycling = 'Bici';
+  static const modeWalking = 'A piedi';
+  static const samePoints = 'Partenza e destinazione coincidono.';
+  static const noRoute =
+      'Nessun percorso trovato tra i due punti con questo mezzo.';
+  static const routingDisabled =
+      'Il calcolo dei percorsi non è configurato in questa versione.';
+  static const routeEstimateNote =
+      'Tempi stimati, senza traffico in tempo reale.';
+  static const routeAttribution = 'Percorso: OSRM (FOSSGIS) · © OpenStreetMap';
+  static const reportMapIssue = 'Segnala un errore nella mappa';
+
+  // Online services (settings).
+  static const onlineServices = 'Servizi online';
+  static const onlineServicesInfo =
+      'Navia non ha un proprio server. Queste richieste partono solo quando '
+      'usi la funzione corrispondente:';
+  static const serviceMap = 'Mappa: OpenFreeMap';
+  static const serviceMapDetail = 'Riceve la zona di mappa visualizzata.';
+  static const serviceSearch = 'Ricerca: Photon (komoot)';
+  static const serviceSearchDetail =
+      'Riceve il testo cercato e una posizione approssimata (circa 1 km).';
+  static const serviceRouting = 'Percorsi: OSRM (FOSSGIS)';
+  static const serviceRoutingDetail =
+      'Riceve le coordinate di partenza e destinazione.';
 }

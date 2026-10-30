@@ -31,6 +31,14 @@ abstract final class NaviaColors {
   static const inkDark = Color(0xFFE6EDF7);
   static const inkDarkMuted = Color(0xFFA3B1C6);
 
+  /// Destination marker, distinct from error red to avoid alarm.
+  static const destination = Color(0xFFE5483B);
+  static const destinationDark = Color(0xFFFF7A6B);
+
+  /// Darker outline under the route line, for contrast on light roads.
+  static const routeCasing = Color(0xFF0B4FB8);
+  static const routeCasingDark = Color(0xFF0B2A5C);
+
   static const error = Color(0xFFD93A3A);
   static const errorDark = Color(0xFFFF8A80);
 }
