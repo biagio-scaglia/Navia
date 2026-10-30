@@ -1,16 +1,29 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Map styles and tiles are downloaded from the configured provider. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Foreground location only, requested when the user taps the location
-         control. Navia never requests background location. -->
+         control or asks for a route from "La tua posizione". Navia never
+         requests background location. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Added by the MapLibre SDK for its own location engine, which Navia
+         does not use: positions come from Navia through a manual location
+         source. ACCESS_NETWORK_STATE stays, MapLibre needs it to detect
+         connectivity changes. -->
+    <uses-permission
+        android:name="android.permission.ACCESS_WIFI_STATE"
+        tools:node="remove" />
 
     <application
         android:label="Navia"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
+        <!-- Favorites and preferences stay on this device: they are not
+             copied to the user's cloud backup. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
