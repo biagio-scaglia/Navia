@@ -6,12 +6,12 @@ import '../../../app/theme/navia_tokens.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/utils/open_link.dart';
 import '../../../core/widgets/navia_logo.dart';
+import '../../../shared/providers/package_info_provider.dart';
 import '../../location/data/geolocator_location_repository.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
 import '../../map/presentation/map_providers.dart';
 import '../../map/presentation/widgets/map_attribution.dart';
-import '../data/app_info_provider.dart';
 import '../domain/theme_preference.dart';
 import 'theme_preference_controller.dart';
 
@@ -241,7 +241,8 @@ class _AboutSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final version = ref.watch(appVersionProvider).value;
+    final info = ref.watch(packageInfoProvider);
+    final version = '${info.version} (${info.buildNumber})';
     return Column(
       children: [
         ListTile(
@@ -282,7 +283,7 @@ class _AboutSection extends ConsumerWidget {
         ListTile(
           leading: const Icon(Icons.info_outline_rounded),
           title: const Text(AppStrings.version),
-          trailing: Text(version ?? '…', style: theme.textTheme.labelLarge),
+          trailing: Text(version, style: theme.textTheme.labelLarge),
         ),
       ],
     );

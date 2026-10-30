@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../shared/providers/package_info_provider.dart';
 import '../shared/providers/shared_preferences_provider.dart';
 import 'app.dart';
 
@@ -11,11 +13,17 @@ Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   _registerDataLicenses();
 
-  final preferences = await SharedPreferences.getInstance();
+  final (preferences, packageInfo) = await (
+    SharedPreferences.getInstance(),
+    PackageInfo.fromPlatform(),
+  ).wait;
 
   runApp(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
+        packageInfoProvider.overrideWithValue(packageInfo),
+      ],
       child: const NaviaApp(),
     ),
   );
