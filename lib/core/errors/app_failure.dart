@@ -15,6 +15,10 @@ enum ServiceFailure {
   /// The response could not be understood.
   malformedResponse,
 
+  /// The request was valid but the service found nothing, e.g. no route
+  /// connects the two points.
+  noResult,
+
   /// The input could not be processed, e.g. invalid coordinates.
   invalidRequest,
 
