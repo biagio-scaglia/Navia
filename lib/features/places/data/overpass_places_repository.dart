@@ -5,11 +5,10 @@ import '../../../core/errors/app_failure.dart';
 import '../../../core/network/json_http_client.dart';
 import '../../../shared/models/geo_bounds.dart';
 import '../../../shared/models/geo_point.dart';
-import '../../../shared/models/place_category.dart';
-import '../domain/place_links.dart';
 import '../domain/places_repository.dart';
 import '../domain/poi.dart';
 import '../domain/poi_category.dart';
+import 'osm_poi_parser.dart';
 
 /// [PlacesRepository] backed by an Overpass API server.
 ///
@@ -122,49 +121,11 @@ class OverpassPlacesRepository implements PlacesRepository {
     );
     if (point == null) return null;
 
-    final rawTags = element['tags'];
-    final tags = <String, String>{
-      if (rawTags is Map)
-        for (final MapEntry(:key, :value) in rawTags.entries)
-          if (key is String && value is String && value.trim().isNotEmpty)
-            key: value.trim(),
-    };
-
-    return Poi(
-      ref: OsmRef(type, id),
-      point: point,
-      name: tags['name:it'] ?? tags['name'],
-      category: PlaceCategory.firstLabel([
-        tags['amenity'],
-        tags['shop'],
-        tags['tourism'],
-        tags['leisure'],
-        tags['railway'],
-        tags['highway'],
-      ]),
-      address: _address(tags),
-      openingHours: tags['opening_hours'],
-      website: PlaceLinks.website(tags['website'] ?? tags['contact:website']),
-      phone: PlaceLinks.phone(tags['phone'] ?? tags['contact:phone']),
-      cuisine: tags['cuisine']
-          ?.split(';')
-          .map((value) => value.trim().replaceAll('_', ' '))
-          .where((value) => value.isNotEmpty)
-          .join(', '),
-      wheelchair: WheelchairAccess.values.asNameMap()[tags['wheelchair']],
+    return OsmPoiParser.fromTags(
+      OsmRef(type, id),
+      point,
+      OsmPoiParser.tags(element['tags']),
     );
-  }
-
-  /// "Via Sparano da Bari, 5 · Bari", from whichever parts are tagged.
-  static String? _address(Map<String, String> tags) {
-    final street = tags['addr:street'];
-    final number = tags['addr:housenumber'];
-    final city = tags['addr:city'];
-    final line = street == null
-        ? null
-        : (number == null ? street : '$street, $number');
-    final parts = [?line, ?city];
-    return parts.isEmpty ? null : parts.join(' · ');
   }
 
   Future<void> _respectRateLimit() async {
@@ -178,8 +139,8 @@ class OverpassPlacesRepository implements PlacesRepository {
   }
 }
 
-/// The configured places source, or null when discovery is disabled.
-final placesRepositoryProvider = Provider<PlacesRepository?>((ref) {
+/// The configured online places source, or null when it is disabled.
+final onlinePlacesRepositoryProvider = Provider<PlacesRepository?>((ref) {
   const endpoint = AppConfig.placesUrl;
   if (endpoint.isEmpty) return null;
   return OverpassPlacesRepository(

@@ -47,6 +47,9 @@ class PlacesCache {
     return null;
   }
 
+  /// Forgets every entry, e.g. when the data source changed.
+  void clear() => _entries.clear();
+
   void put(PoiCategory category, GeoBounds area, List<Poi> places) {
     final key = (category, area);
     _entries

@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navia/core/errors/app_failure.dart';
-import 'package:navia/features/places/data/overpass_places_repository.dart';
 import 'package:navia/features/places/data/places_cache.dart';
 import 'package:navia/features/places/domain/places_repository.dart';
 import 'package:navia/features/places/domain/poi.dart';
 import 'package:navia/features/places/domain/poi_category.dart';
 import 'package:navia/features/places/presentation/place_discovery_controller.dart';
+import 'package:navia/features/places/presentation/places_providers.dart';
 import 'package:navia/shared/models/geo_bounds.dart';
 import 'package:navia/shared/models/geo_point.dart';
 

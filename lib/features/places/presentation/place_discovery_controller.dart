@@ -7,10 +7,11 @@ import '../../../app/config/app_config.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/network/json_http_client.dart';
 import '../../../shared/models/geo_bounds.dart';
-import '../data/overpass_places_repository.dart';
 import '../data/places_cache.dart';
 import '../domain/poi.dart';
 import '../domain/poi_category.dart';
+import 'offline_places_controller.dart';
+import 'places_providers.dart';
 
 enum DiscoveryStatus {
   /// No category selected.
@@ -72,8 +73,19 @@ class PlaceDiscoveryController extends Notifier<PlaceDiscoveryState> {
 
   @override
   PlaceDiscoveryState build() {
-    ref.onDispose(() => _debounce?.cancel());
+    ref
+      ..onDispose(() => _debounce?.cancel())
+      // A region was downloaded or deleted: answers may now differ.
+      ..listen(installedRegionsProvider, (_, _) => _reloadAfterSourceChange());
     return const PlaceDiscoveryState();
+  }
+
+  void _reloadAfterSourceChange() {
+    ref.read(placesCacheProvider).clear();
+    _generation++;
+    _shownArea = null;
+    _pending = null;
+    if (state.category != null) unawaited(_load());
   }
 
   bool get isAvailable => ref.read(placesRepositoryProvider) != null;

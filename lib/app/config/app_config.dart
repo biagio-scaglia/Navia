@@ -82,6 +82,15 @@ abstract final class AppConfig {
   /// the exponential backoff the public servers ask for.
   static const placesRetryDelays = [Duration(seconds: 3), Duration(seconds: 8)];
 
+  /// Where the downloadable place datasets and their `manifest.json`
+  /// catalog are published: release assets of this repository, rebuilt
+  /// monthly from OpenStreetMap extracts by the `Places data` workflow. An
+  /// empty value disables offline place data.
+  static const placesDataUrl = String.fromEnvironment(
+    'NAVIA_PLACES_DATA_URL',
+    defaultValue: '$sourceCodeUrl/releases/download/places-data',
+  );
+
   /// Minimum interval between place requests.
   static const placesMinInterval = Duration(seconds: 2);
 
