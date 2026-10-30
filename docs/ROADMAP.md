@@ -57,6 +57,8 @@ done only when it works, has tests, and is documented.
 - Favorites with OpenStreetMap reference, category and address; route to a
   favorite; favorites as origin or destination in search
 - Data licenses and attribution documented
+- Offline places for Italy: monthly datasets built in CI from Geofabrik
+  extracts, downloaded per macro-region on request, queried on the device
 
 ## Next
 
@@ -80,7 +82,7 @@ done only when it works, has tests, and is documented.
 ### 0.7: Production services
 
 - Documented self-hosting guides for Photon, Overpass and the routing engine
-- Regional POI extracts as an alternative to live Overpass queries
+- Offline place datasets for more countries
 - Evaluate Valhalla for richer profiles and maneuvers
 - Configurable providers per build flavor
 

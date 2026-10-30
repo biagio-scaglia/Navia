@@ -25,11 +25,13 @@ Obligations relevant to Navia:
   OpenStreetMap", linking to the object) and in the settings. See the
   [attribution guidelines](https://osmfoundation.org/wiki/Licence/Attribution_Guidelines).
 - **Share-alike** applies to *derivative databases* that are publicly used.
-  Navia does not build or publish a database: it displays query results and
-  keeps a short-lived in-memory cache (15 minutes). Favorites hold a few
-  fields of single places for the user's own device. If Navia ever
-  publishes a derived dataset (for example a downloadable regional POI
-  extract), that dataset must be offered under the ODbL.
+  The offline place datasets published in the `places-data` release are
+  such a derivative database: they are offered under the ODbL 1.0, with the
+  attribution and license notice in the release description, in the app's
+  license list and on the *Luoghi offline* screen. The generator
+  (`tool/places/`) is public, so anyone can rebuild them from the source
+  extracts. Favorites hold a few fields of single places for the user's own
+  device.
 - **Produced works**, such as screenshots of the map, need attribution but
   are not themselves under the ODbL.
 
@@ -55,10 +57,16 @@ grows:
 1. **Own Overpass instance**, set with
    `--dart-define=NAVIA_OVERPASS_URL=https://example.org/api/interpreter`.
    No code change.
-2. **Regional extracts:** a periodically generated, downloadable POI dataset
-   per region (for example from Geofabrik extracts), queried on the device.
-   This removes the per-view requests and works offline, but the published
-   extract is a derivative database under the ODbL.
+2. **Regional extracts (implemented for Italy):** the `Places data`
+   workflow downloads the Geofabrik extracts of the five Italian
+   macro-regions every month, keeps only the objects of Navia's categories
+   with the displayed tags (`tool/places/build_places.py`) and publishes
+   gzipped JSON lines plus `manifest.json` as release assets, at no cost.
+   Users download a region on request; the app checks its SHA-256 and
+   queries it on the device. Adding a country means adding its extracts to
+   the workflow and `build_manifest.py`. Geofabrik asks for reasonable use
+   of its download server; one download per region per month is well
+   within it.
 3. **Another API** returning OpenStreetMap objects, implemented as a new
    `PlacesRepository`.
 

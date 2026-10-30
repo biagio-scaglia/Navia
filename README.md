@@ -15,7 +15,7 @@ ads, no analytics and no Navia backend: the app talks directly to open,
 OpenStreetMap-based services, and only when you use the feature that needs
 them.
 
-> **Status: early development (v0.4).** Navia shows routes but does not yet
+> **Status: early development (v0.4.1).** Navia shows routes but does not yet
 > provide turn-by-turn guidance. See [Current limitations](#current-limitations).
 
 ## Features
@@ -37,6 +37,11 @@ them.
   (Ristoranti, Bar e caffè, Supermercati, Farmacie, Ospedali, Musei,
   Attrazioni, Parchi, Hotel, Trasporti, Parcheggi, Carburante, Bancomat).
   Places appear on the map with their names; tap one to open its card.
+- **Offline places:** download the places of an Italian macro-region
+  (*Impostazioni → Luoghi offline*), after a confirmation that shows the
+  size, with a progress bar and the option to cancel. Downloaded regions
+  answer instantly and without a connection; you can update or delete them
+  at any time. Sud is 3 MB (126,088 places), all of Italy about 22 MB.
 - **Place cards:** name, category, address, opening hours (with an "Aperto
   ora" / "Chiuso ora" badge only when it can be computed reliably), cuisine,
   wheelchair access, phone and website, each shown only when OpenStreetMap
@@ -163,7 +168,8 @@ ever embedded in the APK:
 | `NAVIA_OSRM_CAR_URL` | `https://routing.openstreetmap.de/routed-car` | Car mode is hidden |
 | `NAVIA_OSRM_BIKE_URL` | `https://routing.openstreetmap.de/routed-bike` | Bike mode is hidden |
 | `NAVIA_OSRM_FOOT_URL` | `https://routing.openstreetmap.de/routed-foot` | Walking mode is hidden |
-| `NAVIA_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | Category filters are hidden |
+| `NAVIA_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | Places come only from downloaded regions |
+| `NAVIA_PLACES_DATA_URL` | `https://github.com/biagio-scaglia/Navia/releases/download/places-data` | Offline places are hidden |
 
 For example, to use a self-hosted Photon instance:
 
@@ -210,12 +216,14 @@ lib/
     map/         MapLibre renderer behind a NaviaMapController interface
     navigation/  routing domain, OSRM provider, planning state, sheet UI
     search/      geocoding domain, Photon provider, search UI
-    places/      OpenStreetMap places, Overpass provider, discovery, place card
+    places/      OpenStreetMap places, Overpass and offline sources, discovery,
+                 place card
     favorites/   saved places, stored locally
     settings/    preferences and settings screen
   shared/     geographic model and app-wide providers
 assets/       logo and icon set
 tool/brand/   generator for the logo and launcher icons
+tool/places/  generator of the offline place datasets (run monthly in CI)
 docs/         architecture, roadmap, data licenses and brand guide
 PRIVACY.md    privacy policy (draft for legal review)
 ```
@@ -236,9 +244,12 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
 - The Essenziale and Scuro styles do not draw points of interest, so tapping
   the style's own places only works with Standard and Vivace. Category
   filters work with every style.
-- Place discovery depends on public Overpass instances, which are often
-  overloaded: requests can time out or be refused, and Navia then offers to
-  retry. A wide release needs its own Overpass instance or regional extracts.
+- Outside downloaded regions, place discovery depends on public Overpass
+  instances, which are often overloaded: answers can take about 40 seconds
+  or be refused, and Navia then offers to retry or to download the area.
+- Offline places cover Italy only, by macro-region, and are refreshed
+  monthly. A region "covers" the view when its bounding box contains the
+  view's center, so near borders a neighboring region may also be needed.
 - The open or closed status is computed only for the common `opening_hours`
   syntax and only in the Central European Time area around Italy; public
   holidays and other cases show the original hours without a status.

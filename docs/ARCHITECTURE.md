@@ -348,8 +348,30 @@ Italian voice and text instructions.
   `CALL_PHONE` permission); websites and OSM objects open in the browser.
   Every action needs a tap.
 
-See [DATA_LICENSES.md](DATA_LICENSES.md) for Overpass usage and how to
-replace the provider.
+### Offline places
+
+- **Datasets:** built monthly in CI from Geofabrik extracts and published as
+  assets of the `places-data` release: `places-<region>.jsonl.gz` (one
+  `{"id", "lat", "lon", "tags"}` object per line) and `manifest.json` with
+  size, SHA-256, count and bounding box. `tool/places/poi_tags.json` lists
+  the selected tags; a test keeps it equal to `PoiCategory`.
+- **Download:** `PlaceDataClient` streams the file with progress, aborts on
+  cancellation or a 30-second stall, and rejects a wrong size or checksum.
+  Nothing is requested before the user opens the screen, and nothing is
+  downloaded without confirmation.
+- **Storage:** `OfflinePlacesStore` splits the data into 0.1 degree cell
+  files under the app support directory (private, removed with the app,
+  excluded from backup), writing in batches to bound memory, in a
+  background isolate. A region is replaced atomically through a staging
+  directory.
+- **Queries:** `LocalFirstPlacesRepository` answers from installed regions
+  whose bounding box contains the view's center, reading only the cells of
+  the view in an isolate and returning the 150 places nearest the center;
+  elsewhere it falls back to Overpass. Discovery clears its cache and
+  reloads when a region is installed or deleted.
+
+See [DATA_LICENSES.md](DATA_LICENSES.md) for Overpass usage, the license of
+the published datasets and how to replace the provider.
 
 ## Favorites
 
