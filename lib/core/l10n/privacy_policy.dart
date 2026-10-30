@@ -38,6 +38,9 @@ abstract final class PrivacyPolicy {
       'Preferiti: nome scelto da te, coordinate, data di salvataggio e, se '
           'disponibili, categoria, indirizzo e identificativo OpenStreetMap '
           'del luogo. Restano consultabili anche offline.',
+      'Luoghi offline: i luoghi OpenStreetMap delle zone che scegli di '
+          'scaricare. Sono dati pubblici della mappa, non dati su di te. Si '
+          'eliminano da Impostazioni → Luoghi offline.',
       'Questi dati non escono dal dispositivo tramite Navia e sono esclusi '
           'dal backup cloud di Android. Si cancellano eliminando i preferiti, '
           'svuotando i dati dell’app o disinstallandola.',
@@ -60,9 +63,12 @@ abstract final class PrivacyPolicy {
           'e arrivo e il mezzo scelto. Se parti da “La tua posizione”, la '
           'partenza è la posizione del dispositivo.',
       'Overpass API (luoghi): quando scegli una categoria, come “Farmacie”, '
-          'riceve la categoria e la zona visualizzata, allargata e '
-          'arrotondata a circa 1 km. Il server predefinito è '
-          'overpass-api.de.',
+          'fuori dalle zone scaricate, riceve la categoria e la zona '
+          'visualizzata, allargata e arrotondata a circa 1 km. Il server '
+          'predefinito è overpass-api.de.',
+      'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi '
+          'il download di una zona, riceve la richiesta dell’elenco o del '
+          'file della zona scelta.',
       'La zona visualizzata, le ricerche e i punti di un percorso possono '
           'rivelare dove sei o dove vai: per questo l’app invia solo il '
           'minimo necessario. Ogni fornitore tratta i dati secondo la propria '
