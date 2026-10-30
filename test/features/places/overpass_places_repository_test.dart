@@ -201,4 +201,56 @@ void main() {
       _failsWith(ServiceFailure.unavailable),
     );
   });
+
+  group('when the server is busy', () {
+    OverpassPlacesRepository retrying(MockClientHandler handler) =>
+        OverpassPlacesRepository(
+          JsonHttpClient(MockClient(handler), userAgent: 'Navia/test'),
+          endpoint: 'https://overpass.example/api/interpreter',
+          retryDelays: const [Duration.zero, Duration.zero],
+        );
+
+    test('retries with backoff and returns the later answer', () async {
+      final statuses = [502, 429];
+      var calls = 0;
+      final repository = retrying((_) async {
+        calls++;
+        if (statuses.isNotEmpty) {
+          return http.Response('busy', statuses.removeAt(0));
+        }
+        return http.Response(jsonEncode({'elements': <Object>[]}), 200);
+      });
+
+      expect(await repository.fetch(PoiCategory.parks, _bounds), isEmpty);
+      expect(calls, 3);
+    });
+
+    test('gives up after the configured attempts', () async {
+      var calls = 0;
+      final repository = retrying((_) async {
+        calls++;
+        return http.Response('busy', 504);
+      });
+
+      await expectLater(
+        repository.fetch(PoiCategory.parks, _bounds),
+        _failsWith(ServiceFailure.unavailable),
+      );
+      expect(calls, 3);
+    });
+
+    test('does not retry requests the server rejected', () async {
+      var calls = 0;
+      final repository = retrying((_) async {
+        calls++;
+        return http.Response(jsonEncode({'remark': 'bad query'}), 400);
+      });
+
+      await expectLater(
+        repository.fetch(PoiCategory.parks, _bounds),
+        _failsWith(ServiceFailure.invalidRequest),
+      );
+      expect(calls, 1);
+    });
+  });
 }

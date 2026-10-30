@@ -22,6 +22,7 @@ class OverpassPlacesRepository implements PlacesRepository {
     this._client, {
     required this.endpoint,
     this.minInterval = Duration.zero,
+    this.retryDelays = const [],
   });
 
   final JsonHttpClient _client;
@@ -30,6 +31,11 @@ class OverpassPlacesRepository implements PlacesRepository {
   /// Minimum spacing between requests, to stay a light user of the server.
   final Duration minInterval;
 
+  /// Waits before each new attempt when the server says it is busy (429,
+  /// 502, 504), growing as the server asks. Timeouts are not retried: the
+  /// request already waited in the server queue.
+  final List<Duration> retryDelays;
+
   final Stopwatch _sinceLastRequest = Stopwatch();
 
   /// Server-side time limit, in seconds; small areas answer much faster.
@@ -37,10 +43,24 @@ class OverpassPlacesRepository implements PlacesRepository {
 
   @override
   Future<List<Poi>> fetch(PoiCategory category, GeoBounds bounds) async {
-    await _respectRateLimit();
     final uri = Uri.parse(
       endpoint,
     ).replace(queryParameters: {'data': query(category, bounds)});
+    for (var attempt = 0; ; attempt++) {
+      await _respectRateLimit();
+      try {
+        return await _fetch(uri);
+      } on ServiceException catch (error) {
+        final busy =
+            error.failure == ServiceFailure.unavailable ||
+            error.failure == ServiceFailure.rateLimited;
+        if (!busy || attempt >= retryDelays.length) rethrow;
+        await Future<void>.delayed(retryDelays[attempt]);
+      }
+    }
+  }
+
+  Future<List<Poi>> _fetch(Uri uri) async {
     final response = await _client.getJson(uri);
     if (response.statusCode >= 400) {
       throw ServiceException(
@@ -169,5 +189,6 @@ final placesRepositoryProvider = Provider<PlacesRepository?>((ref) {
         .withTimeout(AppConfig.placesRequestTimeout),
     endpoint: endpoint,
     minInterval: AppConfig.placesMinInterval,
+    retryDelays: AppConfig.placesRetryDelays,
   );
 });

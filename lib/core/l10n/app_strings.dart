@@ -124,7 +124,9 @@ abstract final class AppStrings {
 
   // Place discovery.
   static const clearFilter = 'tocca per rimuovere il filtro';
-  static const placesLoading = 'Ricerca dei luoghi in quest’area…';
+  static const placesLoading =
+      'Ricerca dei luoghi in quest’area… Il server pubblico può impiegare '
+      'fino a un minuto.';
   static const placesZoomIn = 'Avvicina la mappa per vedere i luoghi.';
   static const placesUnavailable = 'Luoghi non disponibili.';
   static String placesEmpty(String category) =>
