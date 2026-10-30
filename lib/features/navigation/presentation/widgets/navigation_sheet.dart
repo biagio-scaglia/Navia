@@ -8,6 +8,8 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/open_link.dart';
 import '../../../../core/widgets/floating_surface.dart';
 import '../../../../core/widgets/navia_icon.dart';
+import '../../../../core/widgets/navia_sheet.dart';
+import '../../../favorites/presentation/favorites_controller.dart';
 import '../../../search/data/photon_geocoding_repository.dart';
 import '../../../search/presentation/search_screen.dart';
 import '../../data/osrm_routing_repository.dart';
@@ -180,7 +182,7 @@ class _WhereToButton extends StatelessWidget {
   }
 }
 
-class _SelectionCard extends StatelessWidget {
+class _SelectionCard extends ConsumerWidget {
   const _SelectionCard({
     required this.selection,
     required this.routingAvailable,
@@ -195,13 +197,52 @@ class _SelectionCard extends StatelessWidget {
   final VoidCallback onUseAsDestination;
   final VoidCallback onClose;
 
+  Future<void> _save(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final favorites = ref.read(favoritesProvider.notifier);
+    final existing = favorites.findNear(selection.point);
+    if (existing != null) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(AppStrings.favoriteExists(existing.name))),
+        );
+      return;
+    }
+    final name = await showNameDialog(
+      context,
+      title: AppStrings.saveFavorite,
+      label: AppStrings.favoriteName,
+      initialValue: selection.label ?? AppStrings.favoriteDefaultName,
+    );
+    if (name == null) return;
+    final result = await favorites.add(name, selection.point);
+    if (result == FavoriteAddResult.added) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(AppStrings.favoriteSaved(name))));
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final subtitle = [
-      ?selection.description,
-      selection.point.toDisplayString(),
-    ].join('\n');
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    final lookup = ref.watch(
+      navigationControllerProvider.select((s) => s.selectionLookup),
+    );
+    final saved = ref.watch(
+      favoritesProvider.select(
+        (favorites) => favorites.any(
+          (f) =>
+              f.point.distanceTo(selection.point) <=
+              FavoritesController.duplicateRadiusMeters,
+        ),
+      ),
+    );
+    final category = selection.category;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -228,20 +269,50 @@ class _SelectionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (category != null)
+                      Text(
+                        category.toUpperCase(),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
                     Text(
                       selection.label ?? AppStrings.selectedPoint,
                       style: theme.textTheme.titleMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (selection.description case final description?)
+                      Text(description, style: muted),
+                    if (lookup == SelectionLookup.loading)
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(AppStrings.lookingUpAddress, style: muted),
+                      ),
+                    if (lookup == SelectionLookup.failed)
+                      Text(AppStrings.addressUnavailable, style: muted),
                     const SizedBox(height: NaviaSpacing.xs),
                     SelectableText(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      selection.point.toDisplayString(),
+                      semanticsLabel:
+                          '${AppStrings.coordinates}: '
+                          '${selection.point.toDisplayString()}',
+                      style: muted?.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
+                ),
+              ),
+              IconButton(
+                tooltip: saved
+                    ? AppStrings.savedFavorite
+                    : AppStrings.saveFavorite,
+                onPressed: () => _save(context, ref),
+                icon: NaviaIcon(
+                  saved ? NaviaIcons.starFilled : NaviaIcons.star,
+                  color: saved ? theme.colorScheme.primary : null,
                 ),
               ),
               IconButton(

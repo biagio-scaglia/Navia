@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navia/core/errors/app_failure.dart';
+import 'package:navia/features/favorites/presentation/favorites_controller.dart';
 import 'package:navia/features/navigation/data/osrm_routing_repository.dart';
 import 'package:navia/features/navigation/domain/navigation_models.dart';
 import 'package:navia/features/navigation/domain/routing_repository.dart';
@@ -37,6 +39,8 @@ class _Router implements RoutingRepository {
 
 const _point = PointWaypoint(GeoPoint(latitude: 41.1171, longitude: 16.8719));
 
+late ProviderContainer _container;
+
 Future<NavigationController> _pump(
   WidgetTester tester, {
   Set<TravelMode> modes = const {...TravelMode.values},
@@ -54,6 +58,7 @@ Future<NavigationController> _pump(
       geocodingRepositoryProvider.overrideWithValue(null),
     ],
   );
+  _container = container;
   return container.read(navigationControllerProvider.notifier);
 }
 
@@ -130,5 +135,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('A piedi'), findsNothing);
+  });
+
+  testWidgets('saves the selection as a named favorite', (tester) async {
+    final controller = await _pump(tester);
+    controller.select(
+      const PointWaypoint(
+        GeoPoint(latitude: 41.1225, longitude: 16.8721),
+        label: 'Teatro Petruzzelli',
+        category: 'Teatro',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('TEATRO'), findsOneWidget);
+    await tester.tap(find.byTooltip('Salva nei preferiti'));
+    await tester.pumpAndSettle();
+    expect(find.text('Teatro Petruzzelli'), findsWidgets);
+
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    final favorites = _container.read(favoritesProvider);
+    expect(favorites.single.name, 'Teatro Petruzzelli');
+    expect(find.byTooltip('Salvato nei preferiti'), findsOneWidget);
   });
 }
