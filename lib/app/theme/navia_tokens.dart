@@ -81,6 +81,26 @@ abstract final class NaviaSizes {
   static const double mapPrimaryControl = 60;
 }
 
+/// Elevation tokens: soft, blue-tinted shadows kept low so floating
+/// controls separate from the map without looking heavy.
+abstract final class NaviaElevation {
+  /// Small controls and chips.
+  static const low = [
+    BoxShadow(color: Color(0x1F0B3D91), blurRadius: 8, offset: Offset(0, 2)),
+  ];
+
+  /// Floating panels and the search bar.
+  static const medium = [
+    BoxShadow(color: Color(0x240B3D91), blurRadius: 18, offset: Offset(0, 6)),
+    BoxShadow(color: Color(0x14000000), blurRadius: 4, offset: Offset(0, 1)),
+  ];
+
+  /// Panels on dark maps: neutral shadow, no blue tint.
+  static const mediumDark = [
+    BoxShadow(color: Color(0x66000000), blurRadius: 18, offset: Offset(0, 6)),
+  ];
+}
+
 /// Motion tokens.
 abstract final class NaviaDurations {
   static const fast = Duration(milliseconds: 150);

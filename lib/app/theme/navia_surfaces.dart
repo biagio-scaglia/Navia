@@ -27,10 +27,7 @@ class NaviaSurfaces extends ThemeExtension<NaviaSurfaces> {
       colors: [Color(0xFF3A8DFF), NaviaColors.brandDeep],
     ),
     highlightBorder: Color(0xCCFFFFFF),
-    floatingShadow: [
-      BoxShadow(color: Color(0x241677FF), blurRadius: 18, offset: Offset(0, 6)),
-      BoxShadow(color: Color(0x14000000), blurRadius: 4, offset: Offset(0, 1)),
-    ],
+    floatingShadow: NaviaElevation.medium,
   );
 
   static const dark = NaviaSurfaces(
@@ -45,9 +42,7 @@ class NaviaSurfaces extends ThemeExtension<NaviaSurfaces> {
       colors: [Color(0xFF4C9BFF), Color(0xFF1667E0)],
     ),
     highlightBorder: Color(0x1FFFFFFF),
-    floatingShadow: [
-      BoxShadow(color: Color(0x66000000), blurRadius: 18, offset: Offset(0, 6)),
-    ],
+    floatingShadow: NaviaElevation.mediumDark,
   );
 
   /// Background of floating panels and secondary controls.

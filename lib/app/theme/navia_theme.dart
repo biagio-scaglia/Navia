@@ -124,6 +124,38 @@ abstract final class NaviaTheme {
         iconColor: scheme.onSurfaceVariant,
         shape: const RoundedRectangleBorder(borderRadius: NaviaRadii.mdAll),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: NaviaSpacing.lg,
+          vertical: NaviaSpacing.md,
+        ),
+        border: const OutlineInputBorder(
+          borderRadius: NaviaRadii.mdAll,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: NaviaRadii.mdAll,
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+        hintStyle: textTheme.bodyLarge?.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: NaviaRadii.lgAll),
+        titleTextStyle: textTheme.titleLarge,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbIcon: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? const Icon(Icons.check, size: 14)
+              : null,
+        ),
+      ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(borderRadius: NaviaRadii.mdAll),
