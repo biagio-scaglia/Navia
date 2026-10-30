@@ -1,0 +1,46 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../shared/providers/shared_preferences_provider.dart';
+import 'app.dart';
+
+/// Initializes services and starts the application.
+Future<void> bootstrap() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  _registerDataLicenses();
+
+  final preferences = await SharedPreferences.getInstance();
+
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+      child: const NaviaApp(),
+    ),
+  );
+}
+
+/// Adds map data licenses to the open-source licenses page, next to the
+/// licenses of the Dart and native dependencies.
+void _registerDataLicenses() {
+  LicenseRegistry.addLicense(() async* {
+    yield const LicenseEntryWithLineBreaks(
+      ['OpenStreetMap'],
+      'Map data © OpenStreetMap contributors.\n\n'
+      'OpenStreetMap data is available under the Open Database License '
+      '(ODbL) 1.0.\n'
+      'https://www.openstreetmap.org/copyright',
+    );
+    yield const LicenseEntryWithLineBreaks(
+      ['OpenMapTiles'],
+      'Vector tile schema © OpenMapTiles, licensed under CC-BY 4.0.\n'
+      'https://www.openmaptiles.org/',
+    );
+    yield const LicenseEntryWithLineBreaks(
+      ['OpenFreeMap'],
+      'Map tiles and styles served by OpenFreeMap.\n'
+      'https://openfreemap.org/',
+    );
+  });
+}
