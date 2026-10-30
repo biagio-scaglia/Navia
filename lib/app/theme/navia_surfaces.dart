@@ -61,14 +61,17 @@ class NaviaSurfaces extends ThemeExtension<NaviaSurfaces> {
 
   final List<BoxShadow> floatingShadow;
 
-  /// Decoration for a floating surface with the given [borderRadius].
+  /// Decoration for a floating surface, rounded by [borderRadius] or
+  /// [circle] shaped.
   BoxDecoration floatingDecoration({
     BorderRadiusGeometry borderRadius = NaviaRadii.lgAll,
+    bool circle = false,
     bool primary = false,
   }) {
     return BoxDecoration(
       gradient: primary ? primaryGradient : floatingGradient,
-      borderRadius: borderRadius,
+      shape: circle ? BoxShape.circle : BoxShape.rectangle,
+      borderRadius: circle ? null : borderRadius,
       border: Border.all(color: highlightBorder),
       boxShadow: floatingShadow,
     );
