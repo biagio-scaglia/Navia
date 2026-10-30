@@ -34,7 +34,7 @@ class FavoritesController extends Notifier<List<Favorite>> {
     if (findNear(point) != null) return FavoriteAddResult.duplicate;
     final now = DateTime.now();
     final favorite = Favorite(
-      id: '${now.microsecondsSinceEpoch}',
+      id: _uniqueId(now),
       name: cleaned,
       point: point,
       createdAt: now,
@@ -73,6 +73,17 @@ class FavoritesController extends Notifier<List<Favorite>> {
   Future<void> _update(List<Favorite> favorites) async {
     state = List.unmodifiable(favorites);
     await _repository.save(state);
+  }
+
+  /// Time-based id, bumped when the clock resolution (coarse on some
+  /// platforms) would produce the same value twice.
+  String _uniqueId(DateTime now) {
+    var candidate = now.microsecondsSinceEpoch;
+    final taken = {for (final favorite in state) favorite.id};
+    while (taken.contains('$candidate')) {
+      candidate++;
+    }
+    return '$candidate';
   }
 
   static String? _clean(String name) {
