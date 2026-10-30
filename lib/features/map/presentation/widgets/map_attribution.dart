@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/utils/open_link.dart';
+import '../../../../core/widgets/navia_icon.dart';
 import '../../domain/map_style_source.dart';
 
 /// Always-visible map data credit, as required by the OpenStreetMap
@@ -92,10 +93,10 @@ class MapAttributionList extends StatelessWidget {
       children: [
         for (final attribution in source.attributions)
           ListTile(
-            leading: const Icon(Icons.copyright_rounded),
+            leading: const NaviaIcon(NaviaIcons.copyright),
             title: Text(attribution.label),
             subtitle: Text(Uri.parse(attribution.url).host),
-            trailing: const Icon(Icons.open_in_new_rounded, size: 20),
+            trailing: const NaviaIcon(NaviaIcons.externalLink, size: 20),
             onTap: () => openExternalLink(context, attribution.url),
           ),
         Padding(

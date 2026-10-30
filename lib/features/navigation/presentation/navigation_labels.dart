@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/widgets/navia_icon.dart';
 import '../../location/presentation/location_failure_messages.dart';
 import '../domain/navigation_models.dart';
 import 'navigation_controller.dart';
@@ -14,10 +13,10 @@ extension TravelModeLabels on TravelMode {
     TravelMode.walking => AppStrings.modeWalking,
   };
 
-  IconData get icon => switch (this) {
-    TravelMode.driving => Icons.directions_car_rounded,
-    TravelMode.cycling => Icons.directions_bike_rounded,
-    TravelMode.walking => Icons.directions_walk_rounded,
+  NaviaIcons get icon => switch (this) {
+    TravelMode.driving => NaviaIcons.car,
+    TravelMode.cycling => NaviaIcons.bike,
+    TravelMode.walking => NaviaIcons.walk,
   };
 }
 

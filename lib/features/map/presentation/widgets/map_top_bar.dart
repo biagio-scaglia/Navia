@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/floating_surface.dart';
+import '../../../../core/widgets/navia_icon.dart';
 import '../../../../core/widgets/navia_logo.dart';
 
 /// Compact floating search bar with the Navia mark and settings access.
@@ -79,7 +80,7 @@ class MapTopBar extends StatelessWidget {
               child: IconButton(
                 tooltip: AppStrings.settings,
                 onPressed: onOpenSettings,
-                icon: const Icon(Icons.settings_outlined),
+                icon: const NaviaIcon(NaviaIcons.settings),
               ),
             ),
           ],

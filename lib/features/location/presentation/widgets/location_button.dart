@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/map_control_button.dart';
+import '../../../../core/widgets/navia_icon.dart';
 import '../location_controller.dart';
 
 /// Map control that activates location or recenters on the user.
@@ -25,16 +26,13 @@ class LocationButton extends StatelessWidget {
       LocationStatus.locating => (AppStrings.locating, null),
       LocationStatus.tracking => (
         AppStrings.centerOnMyLocation,
-        Icons.my_location_rounded,
+        NaviaIcons.locateFixed,
       ),
       LocationStatus.failed => (
         AppStrings.showMyLocation,
-        Icons.location_disabled_rounded,
+        NaviaIcons.locateOff,
       ),
-      LocationStatus.idle => (
-        AppStrings.showMyLocation,
-        Icons.location_searching_rounded,
-      ),
+      LocationStatus.idle => (AppStrings.showMyLocation, NaviaIcons.locate),
     };
     final active = status == LocationStatus.tracking;
 
@@ -47,7 +45,7 @@ class LocationButton extends StatelessWidget {
               dimension: 22,
               child: CircularProgressIndicator(strokeWidth: 2.5, color: accent),
             )
-          : Icon(icon, color: active ? null : accent),
+          : NaviaIcon(icon, color: active ? null : accent),
     );
   }
 }

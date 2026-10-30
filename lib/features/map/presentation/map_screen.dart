@@ -9,6 +9,7 @@ import '../../../app/router/app_routes.dart';
 import '../../../app/theme/navia_tokens.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/widgets/map_control_button.dart';
+import '../../../core/widgets/navia_icon.dart';
 import '../../../shared/models/geo_point.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
@@ -387,7 +388,7 @@ class _MapControls extends ConsumerWidget {
           MapControlButton(
             tooltip: AppStrings.showWholeRoute,
             onPressed: onShowRoute,
-            child: Icon(Icons.route_rounded, color: accent),
+            child: NaviaIcon(NaviaIcons.route, color: accent),
           ),
           const SizedBox(height: NaviaSpacing.md),
         ],

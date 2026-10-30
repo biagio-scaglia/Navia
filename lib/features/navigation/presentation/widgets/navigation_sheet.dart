@@ -7,6 +7,7 @@ import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/open_link.dart';
 import '../../../../core/widgets/floating_surface.dart';
+import '../../../../core/widgets/navia_icon.dart';
 import '../../../search/data/photon_geocoding_repository.dart';
 import '../../../search/presentation/search_screen.dart';
 import '../../data/osrm_routing_repository.dart';
@@ -158,7 +159,7 @@ class _WhereToButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.directions_rounded, color: theme.colorScheme.primary),
+            NaviaIcon(NaviaIcons.directions, color: theme.colorScheme.primary),
             const SizedBox(width: NaviaSpacing.md),
             Expanded(
               child: Text(
@@ -217,8 +218,8 @@ class _SelectionCard extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: NaviaSpacing.xs),
-                child: Icon(
-                  Icons.place_rounded,
+                child: NaviaIcon(
+                  NaviaIcons.destination,
                   color: theme.colorScheme.primary,
                 ),
               ),
@@ -246,7 +247,7 @@ class _SelectionCard extends StatelessWidget {
               IconButton(
                 tooltip: AppStrings.close,
                 onPressed: onClose,
-                icon: const Icon(Icons.close_rounded),
+                icon: const NaviaIcon(NaviaIcons.close),
               ),
             ],
           ),
@@ -259,7 +260,7 @@ class _SelectionCard extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: onUseAsOrigin,
-                      icon: const Icon(Icons.trip_origin_rounded),
+                      icon: const NaviaIcon(NaviaIcons.origin),
                       label: const Text(AppStrings.origin),
                     ),
                   ),
@@ -267,7 +268,7 @@ class _SelectionCard extends StatelessWidget {
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: onUseAsDestination,
-                      icon: const Icon(Icons.flag_rounded),
+                      icon: const NaviaIcon(NaviaIcons.destination),
                       label: const Text(AppStrings.destination),
                     ),
                   ),
@@ -380,7 +381,7 @@ class _SheetHeader extends ConsumerWidget {
           Row(
             children: [
               const SizedBox(width: NaviaSpacing.lg),
-              Icon(mode.icon, size: 20, color: theme.colorScheme.primary),
+              NaviaIcon(mode.icon, size: 20, color: theme.colorScheme.primary),
               const SizedBox(width: NaviaSpacing.sm),
               Expanded(
                 child: Text(
@@ -395,16 +396,14 @@ class _SheetHeader extends ConsumerWidget {
                     ? AppStrings.collapseSheet
                     : AppStrings.expandSheet,
                 onPressed: () => onExpandedChanged(!expanded),
-                icon: Icon(
-                  expanded
-                      ? Icons.keyboard_arrow_down_rounded
-                      : Icons.keyboard_arrow_up_rounded,
+                icon: NaviaIcon(
+                  expanded ? NaviaIcons.chevronDown : NaviaIcons.chevronUp,
                 ),
               ),
               IconButton(
                 tooltip: AppStrings.closeRoute,
                 onPressed: onClose,
-                icon: const Icon(Icons.close_rounded),
+                icon: const NaviaIcon(NaviaIcons.close),
               ),
               const SizedBox(width: NaviaSpacing.xs),
             ],
@@ -448,7 +447,7 @@ class _WaypointFields extends ConsumerWidget {
                   label: AppStrings.origin,
                   placeholder: AppStrings.chooseOrigin,
                   waypoint: origin,
-                  icon: Icons.trip_origin_rounded,
+                  icon: NaviaIcons.origin,
                   iconColor: dark ? NaviaColors.aquaLight : NaviaColors.aqua,
                   onTap: onPickOrigin,
                 ),
@@ -457,7 +456,7 @@ class _WaypointFields extends ConsumerWidget {
                   label: AppStrings.destination,
                   placeholder: AppStrings.chooseDestination,
                   waypoint: destination,
-                  icon: Icons.place_rounded,
+                  icon: NaviaIcons.destination,
                   iconColor: dark
                       ? NaviaColors.destinationDark
                       : NaviaColors.destination,
@@ -472,7 +471,7 @@ class _WaypointFields extends ConsumerWidget {
           onPressed: origin == null && destination == null
               ? null
               : ref.read(navigationControllerProvider.notifier).swap,
-          icon: const Icon(Icons.swap_vert_rounded),
+          icon: const NaviaIcon(NaviaIcons.swap),
         ),
       ],
     );
@@ -492,7 +491,7 @@ class _WaypointField extends StatelessWidget {
   final String label;
   final String placeholder;
   final Waypoint? waypoint;
-  final IconData icon;
+  final NaviaIcons icon;
   final Color iconColor;
   final VoidCallback onTap;
 
@@ -516,7 +515,7 @@ class _WaypointField extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, color: iconColor, size: 22),
+                NaviaIcon(icon, color: iconColor, size: 22),
                 const SizedBox(width: NaviaSpacing.md),
                 Expanded(
                   child: Column(
@@ -571,7 +570,7 @@ class _ModeSelector extends ConsumerWidget {
               ButtonSegment(
                 value: candidate,
                 label: Text(candidate.label),
-                icon: Icon(candidate.icon),
+                icon: NaviaIcon(candidate.icon),
               ),
         ],
         selected: {mode},
@@ -599,7 +598,7 @@ class _RouteStatusArea extends ConsumerWidget {
     return switch (status) {
       RouteStatus.idle => FilledButton.icon(
         onPressed: canCalculate ? controller.calculate : null,
-        icon: const Icon(Icons.directions_rounded),
+        icon: const NaviaIcon(NaviaIcons.directions),
         label: const Text(AppStrings.calculateRoute),
       ),
       RouteStatus.loading => Semantics(
@@ -639,7 +638,7 @@ class _RouteStatusArea extends ConsumerWidget {
               const SizedBox(height: NaviaSpacing.md),
               OutlinedButton.icon(
                 onPressed: canCalculate ? controller.calculate : null,
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const NaviaIcon(NaviaIcons.refresh),
                 label: const Text(AppStrings.retry),
               ),
             ],
@@ -681,7 +680,11 @@ class _RouteSummary extends StatelessWidget {
               style: theme.textTheme.titleMedium,
             ),
             const Spacer(),
-            Icon(route.mode.icon, size: 20, color: theme.colorScheme.primary),
+            NaviaIcon(
+              route.mode.icon,
+              size: 20,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(width: NaviaSpacing.xs),
             Text(route.mode.label, style: theme.textTheme.labelLarge),
           ],

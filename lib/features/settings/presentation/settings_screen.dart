@@ -5,6 +5,7 @@ import '../../../app/config/app_config.dart';
 import '../../../app/theme/navia_tokens.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/utils/open_link.dart';
+import '../../../core/widgets/navia_icon.dart';
 import '../../../core/widgets/navia_logo.dart';
 import '../../../shared/providers/package_info_provider.dart';
 import '../../location/data/geolocator_location_repository.dart';
@@ -144,17 +145,17 @@ class _ThemeSelector extends ConsumerWidget {
               ButtonSegment(
                 value: ThemePreference.system,
                 label: Text(AppStrings.themeSystem),
-                icon: Icon(Icons.brightness_auto_outlined),
+                icon: NaviaIcon(NaviaIcons.themeSystem),
               ),
               ButtonSegment(
                 value: ThemePreference.light,
                 label: Text(AppStrings.themeLight),
-                icon: Icon(Icons.light_mode_outlined),
+                icon: NaviaIcon(NaviaIcons.themeLight),
               ),
               ButtonSegment(
                 value: ThemePreference.dark,
                 label: Text(AppStrings.themeDark),
-                icon: Icon(Icons.dark_mode_outlined),
+                icon: NaviaIcon(NaviaIcons.themeDark),
               ),
             ],
             selected: {preference},
@@ -201,14 +202,14 @@ class _LocationSection extends ConsumerWidget {
           ),
         ),
         ListTile(
-          leading: const Icon(Icons.location_on_outlined),
+          leading: const NaviaIcon(NaviaIcons.locate),
           title: const Text(AppStrings.locationStatus),
           trailing: Text(status, style: theme.textTheme.labelLarge),
         ),
         ListTile(
-          leading: const Icon(Icons.tune_rounded),
+          leading: const NaviaIcon(NaviaIcons.settings),
           title: const Text(AppStrings.manageInSystemSettings),
-          trailing: const Icon(Icons.open_in_new_rounded, size: 20),
+          trailing: const NaviaIcon(NaviaIcons.externalLink, size: 20),
           onTap: () => ref.read(locationRepositoryProvider).openAppSettings(),
         ),
       ],
@@ -225,7 +226,7 @@ class _MapSection extends ConsumerWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.layers_outlined),
+          leading: const NaviaIcon(NaviaIcons.layers),
           title: const Text(AppStrings.mapProvider),
           trailing: Text(
             source.name,
@@ -245,8 +246,8 @@ class _ServicesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    Widget service(IconData icon, String title, String detail) => ListTile(
-      leading: Icon(icon),
+    Widget service(NaviaIcons icon, String title, String detail) => ListTile(
+      leading: NaviaIcon(icon),
       title: Text(title),
       subtitle: Text(detail),
     );
@@ -269,17 +270,17 @@ class _ServicesSection extends StatelessWidget {
           ),
         ),
         service(
-          Icons.map_outlined,
+          NaviaIcons.layers,
           AppStrings.serviceMap,
           AppStrings.serviceMapDetail,
         ),
         service(
-          Icons.search_rounded,
+          NaviaIcons.search,
           AppStrings.serviceSearch,
           AppStrings.serviceSearchDetail,
         ),
         service(
-          Icons.directions_outlined,
+          NaviaIcons.directions,
           AppStrings.serviceRouting,
           AppStrings.serviceRoutingDetail,
         ),
@@ -299,7 +300,7 @@ class _AboutSection extends ConsumerWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.shield_outlined),
+          leading: const NaviaIcon(NaviaIcons.shield),
           title: const Text(AppStrings.privacy),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: NaviaSpacing.xs),
@@ -312,16 +313,16 @@ class _AboutSection extends ConsumerWidget {
           ),
         ),
         ListTile(
-          leading: const Icon(Icons.code_rounded),
+          leading: const NaviaIcon(NaviaIcons.code),
           title: const Text(AppStrings.sourceCode),
           subtitle: Text(Uri.parse(AppConfig.sourceCodeUrl).path.substring(1)),
-          trailing: const Icon(Icons.open_in_new_rounded, size: 20),
+          trailing: const NaviaIcon(NaviaIcons.externalLink, size: 20),
           onTap: () => openExternalLink(context, AppConfig.sourceCodeUrl),
         ),
         ListTile(
-          leading: const Icon(Icons.description_outlined),
+          leading: const NaviaIcon(NaviaIcons.document),
           title: const Text(AppStrings.openSourceLicenses),
-          trailing: const Icon(Icons.chevron_right_rounded),
+          trailing: const NaviaIcon(NaviaIcons.chevronRight),
           onTap: () => showLicensePage(
             context: context,
             applicationName: AppConfig.appName,
@@ -334,7 +335,7 @@ class _AboutSection extends ConsumerWidget {
           ),
         ),
         ListTile(
-          leading: const Icon(Icons.info_outline_rounded),
+          leading: const NaviaIcon(NaviaIcons.info),
           title: const Text(AppStrings.version),
           trailing: Text(version, style: theme.textTheme.labelLarge),
         ),

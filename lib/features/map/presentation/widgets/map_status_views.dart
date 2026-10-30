@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/floating_surface.dart';
+import '../../../../core/widgets/navia_icon.dart';
 import '../../../../core/widgets/navia_logo.dart';
 
 /// Shown until the first map style has loaded.
@@ -67,8 +68,8 @@ class MapErrorView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.cloud_off_rounded,
+                  NaviaIcon(
+                    NaviaIcons.cloudOff,
                     size: 48,
                     color: theme.colorScheme.primary,
                   ),
@@ -89,7 +90,7 @@ class MapErrorView extends StatelessWidget {
                   const SizedBox(height: NaviaSpacing.xl),
                   FilledButton.icon(
                     onPressed: onRetry,
-                    icon: const Icon(Icons.refresh_rounded),
+                    icon: const NaviaIcon(NaviaIcons.refresh),
                     label: const Text(AppStrings.retry),
                   ),
                 ],

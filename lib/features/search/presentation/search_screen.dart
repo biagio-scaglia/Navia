@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/navia_tokens.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/widgets/navia_icon.dart';
 import '../domain/place.dart';
 import 'search_controller.dart';
 
@@ -96,7 +97,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 : IconButton(
                     tooltip: AppStrings.clearSearch,
                     onPressed: _clear,
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const NaviaIcon(NaviaIcons.close),
                   ),
           ),
         ],
@@ -155,8 +156,8 @@ class _SearchResults extends ConsumerWidget {
       children: [
         if (offerCurrentLocation)
           ListTile(
-            leading: Icon(
-              Icons.my_location_rounded,
+            leading: NaviaIcon(
+              NaviaIcons.locateFixed,
               color: theme.colorScheme.primary,
             ),
             title: const Text(AppStrings.yourLocation),
@@ -164,7 +165,7 @@ class _SearchResults extends ConsumerWidget {
           ),
         for (final place in state.results)
           ListTile(
-            leading: const Icon(Icons.place_outlined),
+            leading: const NaviaIcon(NaviaIcons.destination),
             title: Text(
               place.name,
               maxLines: 1,
@@ -198,7 +199,7 @@ class _SearchResults extends ConsumerWidget {
                     onPressed: ref
                         .read(searchControllerProvider.notifier)
                         .retry,
-                    icon: const Icon(Icons.refresh_rounded),
+                    icon: const NaviaIcon(NaviaIcons.refresh),
                     label: const Text(AppStrings.retry),
                   ),
                 ],
