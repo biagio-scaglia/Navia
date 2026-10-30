@@ -10,8 +10,11 @@ abstract final class AppConfig {
   /// Bari, Italy: the first area Navia is built and tested for.
   static const initialCamera = MapCamera(
     target: GeoPoint(latitude: 41.1171, longitude: 16.8719),
-    zoom: 13.5,
+    zoom: 14,
   );
+
+  /// Camera pitch used by the 3D view, in degrees.
+  static const pitch3d = 60.0;
 
   /// Zoom used when centering the map on the user.
   static const userLocationZoom = 16.0;
@@ -61,12 +64,19 @@ abstract final class AppConfig {
 
   static const mapStyleSource = openFreeMap;
 
-  /// OpenFreeMap: free, no API key, no registration, OpenStreetMap data.
-  /// See https://openfreemap.org for its terms of use.
+  /// OpenFreeMap: free (also for commercial use), no request limits, no
+  /// API key, no registration; attribution required. Vector tiles follow the
+  /// OpenMapTiles schema, built from OpenStreetMap data, worldwide.
+  /// See https://openfreemap.org and its Terms of Service.
   static const openFreeMap = MapStyleSource(
     name: 'OpenFreeMap',
-    lightStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
-    darkStyleUrl: 'https://tiles.openfreemap.org/styles/dark',
+    styleUrls: {
+      // Liberty: streets, buildings (with real heights), POIs, parks, water.
+      MapStyleId.standard: 'https://tiles.openfreemap.org/styles/liberty',
+      MapStyleId.vivid: 'https://tiles.openfreemap.org/styles/bright',
+      MapStyleId.minimal: 'https://tiles.openfreemap.org/styles/positron',
+      MapStyleId.dark: 'https://tiles.openfreemap.org/styles/dark',
+    },
     attributions: [
       MapAttribution(
         label: '© OpenStreetMap contributors',

@@ -22,6 +22,7 @@ import '../../navigation/presentation/widgets/navigation_sheet.dart';
 import '../../search/data/photon_geocoding_repository.dart';
 import '../../search/presentation/search_screen.dart';
 import '../domain/navia_map_controller.dart';
+import 'map_preferences_controller.dart';
 import 'map_providers.dart';
 import 'widgets/map_attribution.dart';
 import 'widgets/map_status_views.dart';
@@ -254,8 +255,11 @@ class _MapLayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brightness = Theme.of(context).brightness;
+    final style = ref.watch(
+      mapPreferencesProvider.select((p) => p.appearance.resolve(brightness)),
+    );
     final styleUrl = ref.watch(
-      mapStyleSourceProvider.select((s) => s.styleUrlFor(brightness)),
+      mapStyleSourceProvider.select((s) => s.urlFor(style)),
     );
     final attempt = ref.watch(
       mapLoadControllerProvider.select((s) => s.attempt),
