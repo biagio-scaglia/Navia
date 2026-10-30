@@ -126,4 +126,57 @@ abstract final class AppStrings {
   static const serviceRouting = 'Percorsi: OSRM (FOSSGIS)';
   static const serviceRoutingDetail =
       'Riceve le coordinate di partenza e destinazione.';
+
+  // Common actions.
+  static const cancel = 'Annulla';
+  static const save = 'Salva';
+  static const undo = 'Annulla';
+  static const rename = 'Rinomina';
+  static const delete = 'Elimina';
+
+  // Map appearance and 3D.
+  static const mapAppearance = 'Aspetto della mappa';
+  static const appearanceAutomatic = 'Automatico';
+  static const appearanceAutomaticDetail = 'Segue il tema dell’app';
+  static const appearanceStandard = 'Standard';
+  static const appearanceStandardDetail =
+      'Strade, edifici e punti di interesse';
+  static const appearanceVivid = 'Vivace';
+  static const appearanceVividDetail = 'Colori più marcati';
+  static const appearanceMinimal = 'Essenziale';
+  static const appearanceMinimalDetail = 'Pochi dettagli, percorsi in evidenza';
+  static const appearanceDark = 'Scuro';
+  static const appearanceDarkDetail = 'Per la notte';
+  static const buildings3d = 'Edifici 3D';
+  static const buildings3dDetail =
+      'Inclina la mappa e mostra gli edifici con la loro altezza reale, '
+      'dove il dato è disponibile in OpenStreetMap.';
+  static const buildings3dUnavailable =
+      'Il fornitore della mappa non offre l’altezza degli edifici.';
+  static const enable3d = 'Attiva vista 3D';
+  static const disable3d = 'Disattiva vista 3D';
+
+  // Selection.
+  static const lookingUpAddress = 'Ricerca dell’indirizzo…';
+  static const addressUnavailable = 'Indirizzo non disponibile';
+  static const coordinates = 'Coordinate';
+
+  // Favorites.
+  static const favorites = 'Preferiti';
+  static const saveFavorite = 'Salva nei preferiti';
+  static const savedFavorite = 'Salvato nei preferiti';
+  static const favoriteName = 'Nome';
+  static const favoriteDefaultName = 'Luogo salvato';
+  static const renameFavorite = 'Rinomina preferito';
+  static String favoriteSaved(String name) => '“$name” salvato nei preferiti.';
+  static String favoriteExists(String name) =>
+      'Questo luogo è già nei preferiti come “$name”.';
+  static String favoriteDeleted(String name) => '“$name” eliminato.';
+  static const favoritesEmptyTitle = 'Nessun preferito';
+  static const favoritesEmptyBody =
+      'Seleziona un luogo sulla mappa o nella ricerca e tocca la stella per '
+      'salvarlo. I preferiti restano solo su questo dispositivo.';
+
+  // Search results.
+  static const searchSubmit = 'Cerca';
 }
