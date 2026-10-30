@@ -27,19 +27,32 @@ done only when it works, has tests, and is documented.
 - Collapsible navigation sheet; the map is never rebuilt by overlay changes
 - Reusable service error handling with Italian messages
 
+### 0.3: Map experience and places
+
+- Map appearance selector: Automatico, Standard, Vivace, Essenziale and Scuro
+  (OpenFreeMap), with the camera kept across style switches
+- Optional 3D buildings from real OpenStreetMap heights, with a tilted camera
+- Tapping a point of interest shows its name and an Italian category
+- Long-press reverse geocoding through Photon
+- Favorites stored on the device: save, rename, delete with undo, and
+  duplicate protection
+- Search results with category, address and coordinates, plus immediate
+  search from the keyboard
+- Edge-to-edge system bars that contrast with the map, back gesture
+  handling, and a branded splash screen
+
 ## Next
 
-### 0.3: Guidance preview
+### 0.4: Guidance preview
 
 - Step list for the calculated route (OSRM `steps` or Valhalla maneuvers),
   with Italian instruction text
-- Reverse geocoding for long-press points (show an address instead of only
-  coordinates), with the same fair-use safeguards as search
 - Recent destinations, stored only on the device
 - Profile-mode performance measurements on a mid-range device, documented in
   the repository
+- Device testing matrix for small phones, tablets and landscape
 
-### 0.4: Turn-by-turn navigation
+### 0.5: Turn-by-turn navigation
 
 - Guidance session with a foreground service and a clear explanation before
   continuous location use
@@ -47,7 +60,7 @@ done only when it works, has tests, and is documented.
 - Optional voice instructions through Android text-to-speech, which works
   offline
 
-### 0.5: Production services
+### 0.6: Production services
 
 - Documented self-hosting guides for Photon and the routing engine
 - Evaluate Valhalla for richer profiles and maneuvers
@@ -57,7 +70,7 @@ done only when it works, has tests, and is documented.
 
 - Offline map regions (PMTiles or MBTiles)
 - Offline routing through an on-device engine behind `RoutingRepository`
-- Favorites with local export and import
+- Favorites export and import
 - Public transport information, where open data allows it
 - Accessibility review with TalkBack users
 - More languages through ARB-based localization

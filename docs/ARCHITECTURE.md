@@ -58,7 +58,9 @@ Riverpod 3 provides both dependency injection and state:
 | `themePreferenceProvider` | Notifier | Theme choice, persisted locally |
 | `locationControllerProvider` | Notifier | Permission flow, current fix, foreground updates |
 | `searchControllerProvider` | auto-dispose Notifier | Debounced queries, cache, stale-response guard |
-| `navigationControllerProvider` | Notifier | Selection, origin, destination, mode, route state |
+| `navigationControllerProvider` | Notifier | Selection (with address lookup), origin, destination, mode, route state |
+| `mapPreferencesProvider` | Notifier | Map appearance and 3D view, persisted |
+| `favoritesProvider` | Notifier | Saved places, persisted |
 | `mapLoadControllerProvider` | Notifier | Style loading, timeout, retry |
 | `mapMarkersProvider` and `routeGeometryProvider` | derived | What the map must draw |
 | `*RepositoryProvider` | Provider | Concrete service adapters, overridable in tests |
@@ -91,8 +93,60 @@ showMarkers(List<MapMarker>)
   reads the device location: positions come only from the location feature.
 
 `NaviaMapView` is the only widget that imports MapLibre. Tile providers are
-just configuration: a `MapStyleSource` has light and dark style URLs plus the
-attributions it requires.
+just configuration: a `MapStyleSource` lists a style URL for each
+`MapStyleId` (standard, vivid, minimal, dark), the attributions it requires,
+and, optionally, the vector source layer that holds building heights.
+
+### Map styles
+
+| Appearance | OpenFreeMap style | Notes |
+| --- | --- | --- |
+| Automatico | Liberty or Dark | Follows the app theme |
+| Standard | Liberty | Points of interest, plus a built-in `building-3d` extrusion layer |
+| Vivace | Bright | Points of interest |
+| Essenziale | Positron | No points of interest |
+| Scuro | Dark | No points of interest |
+
+The appearance is a `MapPreferences` setting, persisted together with the 3D
+view. It is resolved explicitly into a style URL: the Flutter `ThemeMode` only
+matters for Automatico.
+
+When the style changes, `NaviaMapView` asks the adapter to capture the camera
+(`queryCameraPosition`) before MapLibre receives the new style. After the
+load, it re-installs Navia's sources and layers and restores the target,
+zoom, bearing and pitch if the style moved them. The platform view is never
+recreated for this.
+
+Overlay colors (route, markers, buildings) follow the darkness of the map
+style, not the app theme. The same applies to the system bar icons on the
+map screen.
+
+### 3D buildings
+
+OpenFreeMap tiles follow the OpenMapTiles schema, whose `building` layer
+carries `render_height` and `render_min_height` from OpenStreetMap. In 3D
+mode the camera tilts to 60° and:
+
+- With Liberty, the style's own `building-3d` layer is used.
+- With the other styles, Navia adds a `fill-extrusion` layer from the same
+  data, starting at zoom 14 and placed below the route layers, so routes stay
+  visible.
+
+Nothing is extruded without height data, and providers without a buildings
+source simply do not offer 3D.
+
+### Places on the map
+
+A tap queries the rendered features of the style's `poi*` layers within a
+small radius (`queryRenderedFeaturesInRect`). `MapFeatureParser` keeps the
+first named point and maps its OpenMapTiles `class` or `subclass` to an
+Italian label (`PlaceCategory`). Unknown classes get no label. Arbitrary
+coordinates carry no business metadata, and Navia does not invent any.
+
+A long-press selects the exact point and calls
+`GeocodingRepository.reverse`. The address only labels the point: the picked
+coordinates stay as they are. A failed lookup leaves the coordinates usable,
+and a late answer for a replaced selection is discarded.
 
 ### Rebuild strategy
 
@@ -103,6 +157,10 @@ attributions it requires.
   after a load failure.
 - The search bar, controls, status overlays and `NavigationSheet` each watch
   their own slice of state with `select`.
+- `_BackHandler` and `_MapSystemBars` wrap the scaffold but pass the same
+  child instance, so their rebuilds stop at themselves.
+- The navigation sheet is capped at 55% of the available height and scrolls
+  internally, so the map stays visible on small and landscape screens.
 - Side effects that the map needs, such as the puck, markers, route and
   camera framing, run in `ref.listen` callbacks, not during build.
 
@@ -230,8 +288,21 @@ Italian voice and text instructions.
    change to the UI.
 3. **Offline maps.** Add a `MapStyleSource` that points to local MBTiles or
    PMTiles, plus a region download manager.
-4. **Favorites and history.** Store them locally only, behind a repository
-   that has an export option. No cloud sync without explicit opt-in.
+4. **History.** Recent destinations, stored locally like favorites. No cloud
+   sync without explicit opt-in.
+
+## Favorites
+
+`FavoritesRepository` stores a versioned JSON list (`favorites.v1`) in
+`SharedPreferences`. A handful of places does not justify SQLite, and the
+versioned key allows a later migration. Corrupted entries are skipped
+instead of crashing. `FavoritesController`:
+
+- trims names and caps them at 60 characters;
+- rejects points within 15 m of an existing favorite (haversine distance on
+  `GeoPoint`);
+- assigns IDs that stay unique even with coarse clocks;
+- supports undoing a delete.
 
 ## Testing
 

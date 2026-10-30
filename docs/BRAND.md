@@ -67,10 +67,14 @@ Drawing rules for new icons:
 Once you add the SVG, add an entry to `NaviaIcons`. A test makes sure that
 every asset and enum entry match.
 
-Available icons: bike, car, chevron (down, right, up), close, cloud off, code,
-copyright, destination, directions, document, external link, info, layers,
-locate (idle, fixed, off), origin, refresh, route, search, settings, shield,
-swap, theme (dark, light, system), walk.
+Available icons: bike, car, check, chevron (down, right, up), close, cloud
+off, code, copyright, cube (3D), destination, directions, document, edit,
+external link, info, layers, locate (idle, fixed, off), origin, refresh,
+route, search, settings, shield, star (outline, filled), swap, theme (dark,
+light, system), trash, walk.
+
+The only Material glyph left is the check mark inside switch thumbs, which
+the framework requires to be an `Icon`.
 
 The logo and icon set are original Navia artwork, released under the
 project's MIT License.
