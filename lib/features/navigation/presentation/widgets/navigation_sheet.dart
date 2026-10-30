@@ -138,7 +138,9 @@ class _NavigationSheetState extends ConsumerState<NavigationSheet> {
         duration: NaviaDurations.medium,
         curve: Curves.easeOutCubic,
         alignment: Alignment.bottomCenter,
-        child: content,
+        // Scrolls when the parent caps the height (small or landscape
+        // screens), so the sheet never overflows or hides the whole map.
+        child: SingleChildScrollView(child: content),
       ),
     );
   }

@@ -14,12 +14,14 @@ class MapTopBar extends StatelessWidget {
   const MapTopBar({
     super.key,
     required this.onOpenSettings,
+    required this.onOpenFavorites,
     required this.onSearch,
   });
 
   static const height = 56.0;
 
   final VoidCallback onOpenSettings;
+  final VoidCallback onOpenFavorites;
 
   /// Opens search; null when search is unavailable.
   final VoidCallback? onSearch;
@@ -74,6 +76,11 @@ class MapTopBar extends StatelessWidget {
                         ),
                       ),
                     ),
+            ),
+            IconButton(
+              tooltip: AppStrings.favorites,
+              onPressed: onOpenFavorites,
+              icon: const NaviaIcon(NaviaIcons.star),
             ),
             Padding(
               padding: const EdgeInsets.only(right: NaviaSpacing.xs),
