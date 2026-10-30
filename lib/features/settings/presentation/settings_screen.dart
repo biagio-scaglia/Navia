@@ -15,6 +15,7 @@ import '../../location/presentation/location_controller.dart';
 import '../../map/presentation/map_providers.dart';
 import '../../map/presentation/widgets/map_attribution.dart';
 import '../domain/theme_preference.dart';
+import 'privacy_screen.dart';
 import 'theme_preference_controller.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -348,7 +349,7 @@ class _AboutSection extends ConsumerWidget {
       children: [
         ListTile(
           leading: const NaviaIcon(NaviaIcons.shield),
-          title: const Text(AppStrings.privacy),
+          title: const Text(AppStrings.privacyPolicy),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: NaviaSpacing.xs),
             child: Text(
@@ -358,6 +359,8 @@ class _AboutSection extends ConsumerWidget {
               ),
             ),
           ),
+          trailing: const NaviaIcon(NaviaIcons.chevronRight),
+          onTap: () => PrivacyScreen.open(context),
         ),
         ListTile(
           leading: const NaviaIcon(NaviaIcons.code),

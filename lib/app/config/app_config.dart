@@ -6,6 +6,7 @@ import '../../shared/models/geo_point.dart';
 abstract final class AppConfig {
   static const appName = 'Navia';
   static const sourceCodeUrl = 'https://github.com/biagio-scaglia/Navia';
+  static const privacyPolicyUrl = '$sourceCodeUrl/blob/main/PRIVACY.md';
 
   /// Bari, Italy: the first area Navia is built and tested for.
   static const initialCamera = MapCamera(

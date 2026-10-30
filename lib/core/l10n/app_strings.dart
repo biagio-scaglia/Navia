@@ -54,7 +54,10 @@ abstract final class AppStrings {
       'I dati della mappa provengono da OpenStreetMap e sono disponibili con '
       'licenza Open Database License (ODbL).';
   static const about = 'Informazioni';
-  static const privacy = 'Privacy';
+  static const privacyPolicy = 'Informativa sulla privacy';
+  static const privacySummary = 'In breve';
+  static const privacyPolicyOnline = 'Leggi su GitHub';
+  static const lastUpdated = 'Ultimo aggiornamento';
   static const privacyInfo =
       'Nessun account, nessuna pubblicità, nessuna analisi. Le preferenze '
       'restano sul dispositivo. Per mostrare la mappa, l’app scarica i dati '
