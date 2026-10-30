@@ -9,6 +9,9 @@ import 'package:navia/features/navigation/data/osrm_routing_repository.dart';
 import 'package:navia/features/navigation/domain/navigation_models.dart';
 import 'package:navia/features/navigation/domain/routing_repository.dart';
 import 'package:navia/features/navigation/presentation/navigation_controller.dart';
+import 'package:navia/features/search/data/photon_geocoding_repository.dart';
+import 'package:navia/features/search/domain/geocoding_repository.dart';
+import 'package:navia/features/search/domain/place.dart';
 import 'package:navia/shared/models/geo_point.dart';
 
 import '../location/fake_location_repository.dart';
@@ -56,6 +59,18 @@ class _ControlledRouter implements RoutingRepository {
   }
 }
 
+/// Geocoder whose reverse lookups are completed manually by the test.
+class _ControlledGeocoder implements GeocodingRepository {
+  final Map<GeoPoint, Completer<Place?>> pending = {};
+
+  @override
+  Future<List<Place>> search(String query, {GeoPoint? near}) async => [];
+
+  @override
+  Future<Place?> reverse(GeoPoint point) =>
+      (pending[point] = Completer<Place?>()).future;
+}
+
 typedef _Setup = ({
   ProviderContainer container,
   _ControlledRouter router,
@@ -65,6 +80,7 @@ typedef _Setup = ({
 _Setup _setup({
   Set<TravelMode> modes = const {...TravelMode.values},
   FakeLocationRepository? location,
+  GeocodingRepository? geocoder,
 }) {
   final router = _ControlledRouter(modes);
   final locationRepository =
@@ -76,6 +92,7 @@ _Setup _setup({
     overrides: [
       routingRepositoryProvider.overrideWithValue(router),
       locationRepositoryProvider.overrideWithValue(locationRepository),
+      geocodingRepositoryProvider.overrideWithValue(geocoder),
     ],
   );
   addTearDown(container.dispose);
@@ -287,5 +304,80 @@ void main() {
     final state = container.read(navigationControllerProvider);
     expect(state.isPlanning, isFalse);
     expect(state.route, isNull);
+  });
+
+  group('point selection', () {
+    const tapped = GeoPoint(latitude: 41.12021, longitude: 16.86985);
+
+    test('labels a picked point with its address', () async {
+      final geocoder = _ControlledGeocoder();
+      final (:container, router: _, location: _) = _setup(geocoder: geocoder);
+      final controller = container.read(navigationControllerProvider.notifier);
+
+      final lookup = controller.selectPoint(tapped);
+      var state = container.read(navigationControllerProvider);
+      expect(state.selection, const PointWaypoint(tapped));
+      expect(state.selectionLookup, SelectionLookup.loading);
+
+      geocoder.pending[tapped]!.complete(
+        const Place(
+          name: 'Via Sparano da Bari, 5',
+          description: 'Bari · Italia',
+          category: 'Indirizzo',
+          point: GeoPoint(latitude: 41.1202, longitude: 16.8698),
+        ),
+      );
+      await lookup;
+
+      state = container.read(navigationControllerProvider);
+      expect(state.selectionLookup, SelectionLookup.idle);
+      expect(state.selection?.label, 'Via Sparano da Bari, 5');
+      expect(state.selection?.category, 'Indirizzo');
+      // The picked point is kept, not the geocoder's nearest address.
+      expect(state.selection?.point, tapped);
+    });
+
+    test('keeps coordinates when the lookup fails', () async {
+      final geocoder = _ControlledGeocoder();
+      final (:container, router: _, location: _) = _setup(geocoder: geocoder);
+      final lookup = container
+          .read(navigationControllerProvider.notifier)
+          .selectPoint(tapped);
+
+      geocoder.pending[tapped]!.completeError(
+        const ServiceException(ServiceFailure.noConnection),
+      );
+      await lookup;
+
+      final state = container.read(navigationControllerProvider);
+      expect(state.selection, const PointWaypoint(tapped));
+      expect(state.selectionLookup, SelectionLookup.failed);
+    });
+
+    test('ignores a lookup for a selection that was replaced', () async {
+      final geocoder = _ControlledGeocoder();
+      final (:container, router: _, location: _) = _setup(geocoder: geocoder);
+      final controller = container.read(navigationControllerProvider.notifier);
+
+      final lookup = controller.selectPoint(tapped);
+      controller.clearSelection();
+      geocoder.pending[tapped]!.complete(
+        const Place(name: 'Too late', point: tapped),
+      );
+      await lookup;
+
+      expect(container.read(navigationControllerProvider).selection, isNull);
+    });
+
+    test('works without a configured geocoder', () async {
+      final (:container, router: _, location: _) = _setup();
+      await container
+          .read(navigationControllerProvider.notifier)
+          .selectPoint(tapped);
+
+      final state = container.read(navigationControllerProvider);
+      expect(state.selection, const PointWaypoint(tapped));
+      expect(state.selectionLookup, SelectionLookup.idle);
+    });
   });
 }

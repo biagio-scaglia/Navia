@@ -8,10 +8,14 @@ import '../../../core/network/json_http_client.dart';
 import '../../../shared/models/geo_point.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
+import '../../search/data/photon_geocoding_repository.dart';
 import '../data/osrm_routing_repository.dart';
 import '../domain/navigation_models.dart';
 
 enum RouteStatus { idle, loading, ready, failed }
+
+/// Progress of the address lookup for a point picked on the map.
+enum SelectionLookup { idle, loading, failed }
 
 /// Why a route could not be shown.
 sealed class RouteError {
@@ -57,6 +61,7 @@ final class RouteSamePointsError extends RouteError {
 class NavigationState {
   const NavigationState({
     this.selection,
+    this.selectionLookup = SelectionLookup.idle,
     this.origin,
     this.destination,
     this.mode = TravelMode.driving,
@@ -67,6 +72,8 @@ class NavigationState {
 
   /// A point picked on the map or in search, not yet used in a route.
   final PointWaypoint? selection;
+
+  final SelectionLookup selectionLookup;
 
   final Waypoint? origin;
   final Waypoint? destination;
@@ -88,6 +95,7 @@ class NavigationState {
 
   NavigationState copyWith({
     PointWaypoint? Function()? selection,
+    SelectionLookup? selectionLookup,
     Waypoint? Function()? origin,
     Waypoint? Function()? destination,
     TravelMode? mode,
@@ -97,6 +105,7 @@ class NavigationState {
   }) {
     return NavigationState(
       selection: selection == null ? this.selection : selection(),
+      selectionLookup: selectionLookup ?? this.selectionLookup,
       origin: origin == null ? this.origin : origin(),
       destination: destination == null ? this.destination : destination(),
       mode: mode ?? this.mode,
@@ -114,6 +123,7 @@ class NavigationState {
 /// is still editing. Changing the travel mode recalculates a shown route.
 class NavigationController extends Notifier<NavigationState> {
   int _generation = 0;
+  int _selectionGeneration = 0;
 
   @override
   NavigationState build() {
@@ -128,10 +138,48 @@ class NavigationController extends Notifier<NavigationState> {
   Set<TravelMode> get supportedModes =>
       ref.read(routingRepositoryProvider).supportedModes;
 
-  void select(PointWaypoint waypoint) =>
-      state = state.copyWith(selection: () => waypoint);
+  void select(PointWaypoint waypoint) => _setSelection(waypoint);
 
-  void clearSelection() => state = state.copyWith(selection: () => null);
+  void clearSelection() => _setSelection(null);
+
+  /// Selects a point picked on the map and looks up its address.
+  ///
+  /// The point itself is kept as picked; the address only labels it. A
+  /// failed lookup leaves the coordinates usable.
+  Future<void> selectPoint(GeoPoint point) async {
+    final generation = _setSelection(PointWaypoint(point));
+    final geocoder = ref.read(geocodingRepositoryProvider);
+    if (geocoder == null) return;
+    state = state.copyWith(selectionLookup: SelectionLookup.loading);
+    try {
+      final place = await geocoder.reverse(point);
+      if (!ref.mounted || generation != _selectionGeneration) return;
+      state = state.copyWith(
+        selection: () => place == null
+            ? PointWaypoint(point)
+            : PointWaypoint(
+                point,
+                label: place.name,
+                description: place.description,
+                category: place.category,
+              ),
+        selectionLookup: SelectionLookup.idle,
+      );
+    } on ServiceException catch (error) {
+      logServiceError('reverse geocoding', error);
+      if (!ref.mounted || generation != _selectionGeneration) return;
+      state = state.copyWith(selectionLookup: SelectionLookup.failed);
+    }
+  }
+
+  /// Replaces the selection and invalidates pending lookups.
+  int _setSelection(PointWaypoint? waypoint) {
+    state = state.copyWith(
+      selection: () => waypoint,
+      selectionLookup: SelectionLookup.idle,
+    );
+    return ++_selectionGeneration;
+  }
 
   void useSelectionAsOrigin() {
     final selection = state.selection;

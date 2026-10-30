@@ -22,7 +22,12 @@ final class CurrentLocationWaypoint extends Waypoint {
 
 /// A fixed point, picked on the map or from search results.
 final class PointWaypoint extends Waypoint {
-  const PointWaypoint(this.point, {this.label, this.description});
+  const PointWaypoint(
+    this.point, {
+    this.label,
+    this.description,
+    this.category,
+  });
 
   final GeoPoint point;
 
@@ -31,15 +36,19 @@ final class PointWaypoint extends Waypoint {
 
   final String? description;
 
+  /// Italian category label, when known from the data source.
+  final String? category;
+
   @override
   bool operator ==(Object other) =>
       other is PointWaypoint &&
       other.point == point &&
       other.label == label &&
-      other.description == description;
+      other.description == description &&
+      other.category == category;
 
   @override
-  int get hashCode => Object.hash(point, label, description);
+  int get hashCode => Object.hash(point, label, description, category);
 }
 
 /// A route returned by a routing service.

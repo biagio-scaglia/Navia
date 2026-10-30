@@ -140,7 +140,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   void _onLongPress(GeoPoint point) {
     unawaited(HapticFeedback.selectionClick());
-    _navigation.select(PointWaypoint(point));
+    unawaited(_navigation.selectPoint(point));
   }
 
   /// Frames [geometry] in the part of the map not covered by overlays.
