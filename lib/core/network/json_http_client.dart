@@ -25,6 +25,10 @@ class JsonHttpClient {
   final String userAgent;
   final Duration timeout;
 
+  /// The same client with a different time limit per request.
+  JsonHttpClient withTimeout(Duration timeout) =>
+      JsonHttpClient(_client, userAgent: userAgent, timeout: timeout);
+
   /// Performs a GET request and decodes the JSON object it returns.
   ///
   /// Server errors, rate limiting and non-JSON bodies throw. Other client

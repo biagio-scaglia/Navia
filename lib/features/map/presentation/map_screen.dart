@@ -21,6 +21,9 @@ import '../../navigation/domain/navigation_models.dart';
 import '../../navigation/presentation/navigation_controller.dart';
 import '../../navigation/presentation/navigation_overlays.dart';
 import '../../navigation/presentation/widgets/navigation_sheet.dart';
+import '../../places/presentation/place_discovery_controller.dart';
+import '../../places/presentation/place_overlays.dart';
+import '../../places/presentation/widgets/place_category_bar.dart';
 import '../../search/data/photon_geocoding_repository.dart';
 import '../../search/presentation/search_screen.dart';
 import '../domain/navia_map_controller.dart';
@@ -81,6 +84,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     // A new style starts empty: restore the indicator and overlays.
     _showUserLocation(ref.read(locationControllerProvider).position);
     _syncOverlays();
+    unawaited(_reportViewport());
   }
 
   void _syncOverlays() {
@@ -88,6 +92,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (map == null) return;
     unawaited(map.showRoute(ref.read(routeGeometryProvider)));
     unawaited(map.showMarkers(ref.read(mapMarkersProvider)));
+    unawaited(map.showPlaces(ref.read(mapPlacesProvider)));
+    unawaited(
+      map.setStylePoisVisible(
+        ref.read(placeDiscoveryProvider).category == null,
+      ),
+    );
+  }
+
+  /// Tells place discovery which area is shown, once the camera is idle.
+  Future<void> _reportViewport() async {
+    final viewport = await _map?.viewport();
+    if (!mounted || viewport == null) return;
+    ref
+        .read(placeDiscoveryProvider.notifier)
+        .viewportChanged(viewport.bounds, viewport.zoom);
   }
 
   void _retryMap() {
@@ -131,6 +150,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   /// A tap selects the named place under the finger, if the style draws
   /// one there; a tap on an empty spot dismisses the current selection.
   Future<void> _onTap(Offset screenPoint, GeoPoint point) async {
+    final placeKey = await _map?.placeKeyAt(screenPoint);
+    if (!mounted) return;
+    final place = placeKey == null
+        ? null
+        : ref.read(placeDiscoveryProvider.notifier).placeByKey(placeKey);
+    if (place != null) {
+      _navigation.selectPlace(place);
+      return;
+    }
     final poi = await _map?.poiAt(screenPoint);
     if (!mounted) return;
     if (poi == null) {
@@ -211,6 +239,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listen(mapMarkersProvider, (_, markers) {
       unawaited(_map?.showMarkers(markers));
     });
+    ref.listen(mapPlacesProvider, (_, places) {
+      unawaited(_map?.showPlaces(places));
+    });
+    ref.listen(placeDiscoveryProvider.select((s) => s.category), (_, category) {
+      // The style's own labels would duplicate the discovered places.
+      unawaited(_map?.setStylePoisVisible(category == null));
+    });
     ref.listen(routeGeometryProvider, (_, geometry) {
       unawaited(_map?.showRoute(geometry));
       // Wait for the sheet to lay out its summary before measuring it.
@@ -244,6 +279,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   onStyleLoaded: _onStyleLoaded,
                   onTap: _onTap,
                   onLongPress: _onLongPress,
+                  onCameraIdle: () => unawaited(_reportViewport()),
                 ),
               ),
               Positioned.fill(child: _MapStatusLayer(onRetry: _retryMap)),
@@ -264,8 +300,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 }
 
-/// Lets the back gesture first dismiss the selection and the route plan,
-/// and only then leave the app.
+/// Lets the back gesture first dismiss the selection, the route plan and the
+/// place filter, and only then leave the app.
 class _BackHandler extends ConsumerWidget {
   const _BackHandler({required this.child});
 
@@ -273,20 +309,26 @@ class _BackHandler extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final busy = ref.watch(
+    final planning = ref.watch(
       navigationControllerProvider.select(
         (s) => s.selection != null || s.isPlanning,
       ),
     );
+    final discovering = ref.watch(
+      placeDiscoveryProvider.select((s) => s.category != null),
+    );
     return PopScope(
-      canPop: !busy,
+      canPop: !planning && !discovering,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         final navigation = ref.read(navigationControllerProvider.notifier);
-        if (ref.read(navigationControllerProvider).selection != null) {
+        final state = ref.read(navigationControllerProvider);
+        if (state.selection != null) {
           navigation.clearSelection();
-        } else {
+        } else if (state.isPlanning) {
           navigation.clear();
+        } else {
+          ref.read(placeDiscoveryProvider.notifier).select(null);
         }
       },
       child: child,
@@ -333,6 +375,7 @@ class _MapLayer extends ConsumerWidget {
     required this.onStyleLoaded,
     required this.onTap,
     required this.onLongPress,
+    required this.onCameraIdle,
   });
 
   final EdgeInsets controlsPadding;
@@ -340,6 +383,7 @@ class _MapLayer extends ConsumerWidget {
   final VoidCallback onStyleLoaded;
   final void Function(Offset screenPoint, GeoPoint point) onTap;
   final ValueChanged<GeoPoint> onLongPress;
+  final VoidCallback onCameraIdle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -370,6 +414,7 @@ class _MapLayer extends ConsumerWidget {
       onStyleLoaded: onStyleLoaded,
       onTap: onTap,
       onLongPress: onLongPress,
+      onCameraIdle: onCameraIdle,
     );
   }
 }
@@ -429,38 +474,47 @@ class _MapOverlays extends ConsumerWidget {
               edge + safe.right,
               0,
             ),
-            child: Column(
-              children: [
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: NaviaSizes.panelMaxWidth,
-                    ),
-                    child: MapTopBar(
-                      onOpenSettings: () =>
-                          Navigator.of(context).pushNamed(AppRoutes.settings),
-                      onOpenFavorites: onOpenFavorites,
-                      onSearch: searchAvailable && mapReady
-                          ? onOpenSearch
-                          : null,
-                    ),
-                  ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: NaviaSizes.panelMaxWidth,
                 ),
-                if (mapReady)
-                  Padding(
-                    padding: const EdgeInsets.only(top: NaviaSpacing.md),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MapAttributionChip(source: source),
-                        const Spacer(),
-                        const _MapViewControls(),
-                      ],
-                    ),
-                  ),
-              ],
+                child: MapTopBar(
+                  onOpenSettings: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.settings),
+                  onOpenFavorites: onOpenFavorites,
+                  onSearch: searchAvailable && mapReady ? onOpenSearch : null,
+                ),
+              ),
             ),
           ),
+          if (mapReady) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: NaviaSpacing.md),
+              child: PlaceCategoryBar(
+                padding: EdgeInsets.only(
+                  left: edge + safe.left,
+                  right: edge + safe.right,
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                edge + safe.left,
+                NaviaSpacing.md,
+                edge + safe.right,
+                0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MapAttributionChip(source: source),
+                  const Spacer(),
+                  const _MapViewControls(),
+                ],
+              ),
+            ),
+          ],
           if (mapReady) ...[
             Expanded(
               child: Align(

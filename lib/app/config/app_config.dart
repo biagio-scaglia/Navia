@@ -73,6 +73,10 @@ abstract final class AppConfig {
     defaultValue: 'https://overpass-api.de/api/interpreter',
   );
 
+  /// Client-side limit of a place request; the query itself asks the
+  /// server to stop after 15 seconds.
+  static const placesRequestTimeout = Duration(seconds: 25);
+
   /// Minimum interval between place requests.
   static const placesMinInterval = Duration(seconds: 2);
 

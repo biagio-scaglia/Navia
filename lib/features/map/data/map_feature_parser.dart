@@ -34,6 +34,18 @@ abstract final class MapFeatureParser {
     );
   }
 
+  /// The `key` property of the first feature drawn by Navia's place layers.
+  static String? firstPlaceKey(List<Object?> features) {
+    for (final feature in features) {
+      if (feature is! Map) continue;
+      final properties = feature['properties'];
+      if (properties is! Map) continue;
+      final key = _text(properties['key']);
+      if (key != null) return key;
+    }
+    return null;
+  }
+
   static String? _text(Object? value) =>
       value is String && value.trim().isNotEmpty ? value.trim() : null;
 }

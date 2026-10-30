@@ -101,6 +101,16 @@ abstract final class AppStrings {
   static const closeRoute = 'Chiudi percorso';
   static const close = 'Chiudi';
   static const back = 'Indietro';
+
+  // Place discovery.
+  static const clearFilter = 'tocca per rimuovere il filtro';
+  static const placesLoading = 'Ricerca dei luoghi in quest’area…';
+  static const placesZoomIn = 'Avvicina la mappa per vedere i luoghi.';
+  static const placesUnavailable = 'Luoghi non disponibili.';
+  static String placesEmpty(String category) =>
+      'Nessun risultato in quest’area per “$category”.';
+  static String placesFound(int count) =>
+      count == 1 ? '1 luogo in quest’area' : '$count luoghi in quest’area';
   static const appTagline = 'Mappe libere, senza tracciamento.';
   static const startHere = 'Parti da qui';
   static const routeHint =

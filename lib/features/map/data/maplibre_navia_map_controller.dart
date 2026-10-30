@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../../../app/config/app_config.dart';
+import '../../../shared/models/geo_bounds.dart';
 import '../../../shared/models/geo_point.dart';
 import '../domain/map_overlays.dart';
 import '../domain/navia_map_controller.dart';
@@ -25,6 +26,12 @@ class MapLibreNaviaMapController implements NaviaMapController {
   static const _routeSource = 'navia-route';
   static const _markerSource = 'navia-markers';
   static const _routeCasingLayer = 'navia-route-casing';
+  static const _placesSource = 'navia-places';
+  static const _placesLayer = 'navia-places';
+  static const _placeLabelsLayer = 'navia-place-labels';
+
+  /// Font of the place labels; every OpenFreeMap style serves it.
+  static const _labelFont = 'Noto Sans Regular';
   static const _buildingsLayer = 'navia-buildings-3d';
 
   /// Building extrusion layer that some styles (e.g. OpenFreeMap Liberty)
@@ -41,6 +48,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
 
   List<GeoPoint> _route = const [];
   List<MapMarker> _markers = const [];
+  List<MapPlace> _places = const [];
+  bool _stylePoisVisible = true;
   bool _overlaysReady = false;
 
   MapOverlayStyle? _style;
@@ -93,6 +102,66 @@ class MapLibreNaviaMapController implements NaviaMapController {
     _buildings3d = buildings3d;
     _buildingsSource = buildingsSource;
     _buildingsLayerAdded = false;
+    // Places first, so that the route and markers are drawn above them.
+    await _controller.addGeoJsonSource(
+      _placesSource,
+      MapOverlayGeoJson.places(_places),
+    );
+    await _controller.addCircleLayer(
+      _placesSource,
+      _placesLayer,
+      CircleLayerProperties(
+        circleRadius: [
+          'case',
+          ['get', 'selected'],
+          9,
+          [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            13,
+            4,
+            17,
+            7,
+          ],
+        ],
+        circleColor: _hex(style.place),
+        circleStrokeWidth: [
+          'case',
+          ['get', 'selected'],
+          3,
+          1.5,
+        ],
+        circleStrokeColor: _hex(style.markerStroke),
+      ),
+      enableInteraction: false,
+    );
+    await _controller.addSymbolLayer(
+      _placesSource,
+      _placeLabelsLayer,
+      SymbolLayerProperties(
+        textField: ['get', 'name'],
+        textFont: [_labelFont],
+        textSize: 12,
+        textAnchor: 'top',
+        textOffset: [0, 0.9],
+        textMaxWidth: 8,
+        textColor: _hex(style.placeLabel),
+        textHaloColor: _hex(style.placeLabelHalo),
+        textHaloWidth: 1.5,
+        // The selected place keeps its label when labels collide.
+        symbolSortKey: [
+          'case',
+          ['get', 'selected'],
+          0,
+          1,
+        ],
+      ),
+      // Overlapping labels are hidden by MapLibre, which keeps dense areas
+      // readable; below this zoom only the dots are drawn.
+      minzoom: 14.5,
+      enableInteraction: false,
+    );
     await _controller.addGeoJsonSource(
       _routeSource,
       MapOverlayGeoJson.route(_route),
@@ -160,6 +229,7 @@ class MapLibreNaviaMapController implements NaviaMapController {
     ];
     _overlaysReady = true;
     await _applyBuildingsLayer();
+    if (!_stylePoisVisible) await _applyStylePoisVisibility();
   }
 
   /// Route width that grows with zoom, so the line stays readable when the
@@ -208,8 +278,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
           '!',
           ['has', 'hide_3d'],
         ],
-        // Keeps the route and markers drawn above the buildings.
-        belowLayerId: _routeCasingLayer,
+        // Keeps places, the route and markers drawn above the buildings.
+        belowLayerId: _placesLayer,
         enableInteraction: false,
       );
       _buildingsLayerAdded = true;
@@ -232,6 +302,59 @@ class MapLibreNaviaMapController implements NaviaMapController {
       null,
     );
     return MapFeatureParser.firstPoi(features);
+  }
+
+  @override
+  Future<String?> placeKeyAt(Offset screenPoint) async {
+    if (!_overlaysReady || _places.isEmpty) return null;
+    final features = await _controller.queryRenderedFeaturesInRect(
+      Rect.fromCenter(
+        center: screenPoint,
+        width: _tapTolerance * 2,
+        height: _tapTolerance * 2,
+      ),
+      [_placesLayer, _placeLabelsLayer],
+      null,
+    );
+    return MapFeatureParser.firstPlaceKey(features);
+  }
+
+  @override
+  Future<void> showPlaces(List<MapPlace> places) async {
+    if (listEquals(places, _places)) return;
+    _places = places;
+    if (!_overlaysReady) return;
+    await _controller.setGeoJsonSource(
+      _placesSource,
+      MapOverlayGeoJson.places(places),
+    );
+  }
+
+  @override
+  Future<void> setStylePoisVisible(bool visible) async {
+    if (visible == _stylePoisVisible) return;
+    _stylePoisVisible = visible;
+    if (_overlaysReady) await _applyStylePoisVisibility();
+  }
+
+  Future<void> _applyStylePoisVisibility() async {
+    for (final layer in _poiLayers) {
+      await _controller.setLayerVisibility(layer, _stylePoisVisible);
+    }
+  }
+
+  @override
+  Future<({GeoBounds bounds, double zoom})?> viewport() async {
+    final region = await _controller.getVisibleRegion();
+    final camera = await _controller.queryCameraPosition();
+    if (camera == null) return null;
+    final bounds = GeoBounds.tryCreate(
+      south: region.southwest.latitude,
+      west: region.southwest.longitude,
+      north: region.northeast.latitude,
+      east: region.northeast.longitude,
+    );
+    return bounds == null ? null : (bounds: bounds, zoom: camera.zoom);
   }
 
   @override

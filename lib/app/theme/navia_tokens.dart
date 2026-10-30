@@ -44,6 +44,11 @@ abstract final class NaviaColors {
   static const building = Color(0xFFDCD6CC);
   static const buildingDark = Color(0xFF2A3754);
 
+  /// Discovered places: violet, distinct from route, origin and
+  /// destination colors.
+  static const place = Color(0xFF7A4DE0);
+  static const placeDark = Color(0xFFB59CFF);
+
   static const error = Color(0xFFD93A3A);
   static const errorDark = Color(0xFFFF8A80);
 }

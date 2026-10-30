@@ -163,7 +163,10 @@ final placesRepositoryProvider = Provider<PlacesRepository?>((ref) {
   const endpoint = AppConfig.placesUrl;
   if (endpoint.isEmpty) return null;
   return OverpassPlacesRepository(
-    ref.watch(jsonHttpClientProvider),
+    // Longer than the server-side limit, so that its answer can arrive.
+    ref
+        .watch(jsonHttpClientProvider)
+        .withTimeout(AppConfig.placesRequestTimeout),
     endpoint: endpoint,
     minInterval: AppConfig.placesMinInterval,
   );

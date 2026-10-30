@@ -8,6 +8,7 @@ import '../../../core/network/json_http_client.dart';
 import '../../../shared/models/geo_point.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
+import '../../places/domain/poi.dart';
 import '../../search/data/photon_geocoding_repository.dart';
 import '../data/osrm_routing_repository.dart';
 import '../domain/navigation_models.dart';
@@ -61,6 +62,7 @@ final class RouteSamePointsError extends RouteError {
 class NavigationState {
   const NavigationState({
     this.selection,
+    this.selectedPlace,
     this.selectionLookup = SelectionLookup.idle,
     this.origin,
     this.destination,
@@ -72,6 +74,9 @@ class NavigationState {
 
   /// A point picked on the map or in search, not yet used in a route.
   final PointWaypoint? selection;
+
+  /// OpenStreetMap details of [selection], when it is a discovered place.
+  final Poi? selectedPlace;
 
   final SelectionLookup selectionLookup;
 
@@ -95,6 +100,7 @@ class NavigationState {
 
   NavigationState copyWith({
     PointWaypoint? Function()? selection,
+    Poi? Function()? selectedPlace,
     SelectionLookup? selectionLookup,
     Waypoint? Function()? origin,
     Waypoint? Function()? destination,
@@ -105,6 +111,9 @@ class NavigationState {
   }) {
     return NavigationState(
       selection: selection == null ? this.selection : selection(),
+      selectedPlace: selectedPlace == null
+          ? this.selectedPlace
+          : selectedPlace(),
       selectionLookup: selectionLookup ?? this.selectionLookup,
       origin: origin == null ? this.origin : origin(),
       destination: destination == null ? this.destination : destination(),
@@ -141,6 +150,18 @@ class NavigationController extends Notifier<NavigationState> {
 
   void select(PointWaypoint waypoint) => _setSelection(waypoint);
 
+  /// Selects a discovered place, keeping its details for the place card.
+  /// An unnamed place is labeled by its category, shown only once.
+  void selectPlace(Poi place) => _setSelection(
+    PointWaypoint(
+      place.point,
+      label: place.name ?? place.category,
+      description: place.address,
+      category: place.name == null ? null : place.category,
+    ),
+    place: place,
+  );
+
   void clearSelection() => _setSelection(null);
 
   /// Selects a point picked on the map and looks up its address.
@@ -174,9 +195,10 @@ class NavigationController extends Notifier<NavigationState> {
   }
 
   /// Replaces the selection and invalidates pending lookups.
-  int _setSelection(PointWaypoint? waypoint) {
+  int _setSelection(PointWaypoint? waypoint, {Poi? place}) {
     state = state.copyWith(
       selection: () => waypoint,
+      selectedPlace: () => place,
       selectionLookup: SelectionLookup.idle,
     );
     return ++_selectionGeneration;
@@ -289,6 +311,7 @@ class NavigationController extends Notifier<NavigationState> {
     _generation++;
     state = state.copyWith(
       selection: () => null,
+      selectedPlace: () => null,
       origin: () => origin,
       destination: () => destination,
       routeStatus: RouteStatus.idle,

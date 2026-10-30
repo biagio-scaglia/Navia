@@ -32,6 +32,7 @@ class NaviaMapView extends StatefulWidget {
     required this.onStyleLoaded,
     required this.onTap,
     required this.onLongPress,
+    required this.onCameraIdle,
   });
 
   final MapStyleSource source;
@@ -56,6 +57,9 @@ class NaviaMapView extends StatefulWidget {
   final void Function(Offset screenPoint, GeoPoint point) onTap;
 
   final ValueChanged<GeoPoint> onLongPress;
+
+  /// The camera stopped moving, after a gesture or an animation.
+  final VoidCallback onCameraIdle;
 
   @override
   State<NaviaMapView> createState() => _NaviaMapViewState();
@@ -153,6 +157,9 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       selection: dark ? NaviaColors.inkDark : NaviaColors.inkLight,
       markerStroke: dark ? NaviaColors.surfaceDark : Colors.white,
       buildings: dark ? NaviaColors.buildingDark : NaviaColors.building,
+      place: dark ? NaviaColors.placeDark : NaviaColors.place,
+      placeLabel: dark ? NaviaColors.inkDark : NaviaColors.inkLight,
+      placeLabelHalo: dark ? NaviaColors.backgroundDark : Colors.white,
     );
   }
 
@@ -177,6 +184,7 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       onStyleLoadedCallback: _onStyleLoaded,
       onMapClick: _onTap,
       onMapLongClick: _onLongPress,
+      onCameraIdle: widget.onCameraIdle,
       // The location component must exist before the first position is
       // pushed through [NaviaMapController.showUserLocation]; it draws
       // nothing until then. MapLibre never reads the device location itself.

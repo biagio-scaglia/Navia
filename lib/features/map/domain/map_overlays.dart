@@ -32,6 +32,9 @@ class MapOverlayStyle {
     required this.selection,
     required this.markerStroke,
     required this.buildings,
+    required this.place,
+    required this.placeLabel,
+    required this.placeLabelHalo,
   });
 
   final Color route;
@@ -43,6 +46,40 @@ class MapOverlayStyle {
 
   /// Color of extruded buildings in the 3D view.
   final Color buildings;
+
+  /// Discovered places and their name labels.
+  final Color place;
+  final Color placeLabel;
+  final Color placeLabelHalo;
+}
+
+/// A discovered place drawn by Navia, identified by a stable [key].
+@immutable
+class MapPlace {
+  const MapPlace({
+    required this.key,
+    required this.point,
+    this.name,
+    this.selected = false,
+  });
+
+  final String key;
+  final GeoPoint point;
+
+  /// Label drawn next to the place; unnamed places get no label.
+  final String? name;
+  final bool selected;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MapPlace &&
+      other.key == key &&
+      other.point == point &&
+      other.name == name &&
+      other.selected == selected;
+
+  @override
+  int get hashCode => Object.hash(key, point, name, selected);
 }
 
 /// A named point of interest rendered by the map style.

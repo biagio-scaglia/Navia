@@ -1,5 +1,6 @@
 import 'package:flutter/painting.dart';
 
+import '../../../shared/models/geo_bounds.dart';
 import '../../../shared/models/geo_point.dart';
 import 'map_overlays.dart';
 
@@ -34,4 +35,17 @@ abstract interface class NaviaMapController {
   /// The named point of interest drawn around [screenPoint], if any.
   /// [screenPoint] uses the units reported by the map tap callback.
   Future<MapPoi?> poiAt(Offset screenPoint);
+
+  /// Replaces the discovered places drawn by Navia.
+  Future<void> showPlaces(List<MapPlace> places);
+
+  /// The [MapPlace.key] of the discovered place under [screenPoint].
+  Future<String?> placeKeyAt(Offset screenPoint);
+
+  /// Shows or hides the style's own point of interest labels, so that they
+  /// do not duplicate the discovered places.
+  Future<void> setStylePoisVisible(bool visible);
+
+  /// The visible area and zoom level, or null before the map is laid out.
+  Future<({GeoBounds bounds, double zoom})?> viewport();
 }
