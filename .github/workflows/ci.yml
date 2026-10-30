@@ -40,7 +40,14 @@ jobs:
         run: flutter test
 
       - name: Build Android APK
-        run: flutter build apk --release
+        run: |
+          set -o pipefail
+          if ! flutter build apk --release 2>&1 | tee build.log; then
+            # Surfaces the cause in the run summary and annotations.
+            echo "::error title=APK build failed::$(grep -iE 'error|failed|what went wrong|exception' build.log | tail -25 | tr '
+' ' ' | cut -c1-3000)"
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
