@@ -25,9 +25,10 @@ class PhotonGeocodingRepository implements GeocodingRepository {
         'limit': '$_limit',
         // "default" returns local names, i.e. Italian names in Italy.
         'lang': 'default',
+        // Bias only: rounded to ~1 km so a precise position is never sent.
         if (near != null) ...{
-          'lat': near.latitude.toStringAsFixed(4),
-          'lon': near.longitude.toStringAsFixed(4),
+          'lat': near.latitude.toStringAsFixed(2),
+          'lon': near.longitude.toStringAsFixed(2),
         },
       },
     );

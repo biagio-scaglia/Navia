@@ -115,8 +115,8 @@ void main() {
       'q': 'via sparano',
       'limit': '8',
       'lang': 'default',
-      'lat': '41.1171',
-      'lon': '16.8719',
+      'lat': '41.12',
+      'lon': '16.87',
     });
   });
 }
