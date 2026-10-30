@@ -5,31 +5,82 @@ import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/floating_surface.dart';
 import '../../../../core/widgets/navia_logo.dart';
 
-/// Floating header with the Navia brand and the settings entry point.
+/// Compact floating search bar with the Navia mark and settings access.
+///
+/// When search is not configured, the bar shows the wordmark instead of a
+/// search field that would not work.
 class MapTopBar extends StatelessWidget {
-  const MapTopBar({super.key, required this.onOpenSettings});
+  const MapTopBar({
+    super.key,
+    required this.onOpenSettings,
+    required this.onSearch,
+  });
 
-  static const height = 60.0;
+  static const height = 56.0;
 
   final VoidCallback onOpenSettings;
 
+  /// Opens search; null when search is unavailable.
+  final VoidCallback? onSearch;
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSearch = this.onSearch;
+
     return FloatingSurface(
-      padding: const EdgeInsets.only(
-        left: NaviaSpacing.md,
-        right: NaviaSpacing.xs,
-      ),
+      borderRadius: const BorderRadius.all(Radius.circular(height / 2)),
       child: SizedBox(
         height: height,
         child: Row(
           children: [
-            Semantics(header: true, child: const NaviaWordmark()),
-            const Spacer(),
-            IconButton(
-              tooltip: AppStrings.settings,
-              onPressed: onOpenSettings,
-              icon: const Icon(Icons.settings_outlined),
+            Expanded(
+              child: onSearch == null
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: NaviaSpacing.md),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Semantics(
+                          header: true,
+                          child: const NaviaWordmark(markSize: 30),
+                        ),
+                      ),
+                    )
+                  : Semantics(
+                      button: true,
+                      label: AppStrings.searchHint,
+                      excludeSemantics: true,
+                      child: InkWell(
+                        onTap: onSearch,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: NaviaSpacing.md),
+                          child: Row(
+                            children: [
+                              const NaviaLogoMark(size: 30),
+                              const SizedBox(width: NaviaSpacing.md),
+                              Expanded(
+                                child: Text(
+                                  AppStrings.searchHint,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: NaviaSpacing.xs),
+              child: IconButton(
+                tooltip: AppStrings.settings,
+                onPressed: onOpenSettings,
+                icon: const Icon(Icons.settings_outlined),
+              ),
             ),
           ],
         ),
