@@ -44,9 +44,23 @@ done only when it works, has tests, and is documented.
   axis, Navia back button and icon badges, and automatic route calculation
   with arrival time
 
+### 0.4: Places and privacy
+
+- Draft privacy policy (PRIVACY.md) and in-app privacy screen with a plain
+  summary
+- Android audit: unused Wi-Fi permission removed, cloud backup disabled
+- Real OpenStreetMap places through Overpass, with 13 category filters,
+  viewport-based loading, caching and request deduplication
+- Place cards with address, opening hours, cuisine, accessibility, phone and
+  website, when tagged; share, copy coordinates, call, open website and
+  view on OpenStreetMap
+- Favorites with OpenStreetMap reference, category and address; route to a
+  favorite; favorites as origin or destination in search
+- Data licenses and attribution documented
+
 ## Next
 
-### 0.4: Guidance preview
+### 0.5: Guidance preview
 
 - Step list for the calculated route (OSRM `steps` or Valhalla maneuvers),
   with Italian instruction text
@@ -55,7 +69,7 @@ done only when it works, has tests, and is documented.
   the repository
 - Device testing matrix for small phones, tablets and landscape
 
-### 0.5: Turn-by-turn navigation
+### 0.6: Turn-by-turn navigation
 
 - Guidance session with a foreground service and a clear explanation before
   continuous location use
@@ -63,9 +77,10 @@ done only when it works, has tests, and is documented.
 - Optional voice instructions through Android text-to-speech, which works
   offline
 
-### 0.6: Production services
+### 0.7: Production services
 
-- Documented self-hosting guides for Photon and the routing engine
+- Documented self-hosting guides for Photon, Overpass and the routing engine
+- Regional POI extracts as an alternative to live Overpass queries
 - Evaluate Valhalla for richer profiles and maneuvers
 - Configurable providers per build flavor
 

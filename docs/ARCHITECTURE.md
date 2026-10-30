@@ -30,7 +30,8 @@ lib/
   core/
     errors/               ServiceFailure, ServiceException, Italian messages
     network/              JsonHttpClient (User-Agent, timeouts, error mapping)
-    l10n/app_strings.dart all Italian copy
+    platform/             SystemShare (share sheet channel)
+    l10n/                 all Italian copy and the in-app privacy policy
     utils/                formatters, external links
     widgets/              FloatingSurface, MapControlButton, NaviaIcon,
                           NaviaBackButton, NaviaIconBadge, logo
@@ -39,7 +40,8 @@ lib/
     data/                 implementations for concrete providers
     presentation/         notifiers, screens and widgets
   shared/
-    models/geo_point.dart renderer-independent WGS84 coordinate
+    models/               GeoPoint and GeoBounds (renderer-independent
+                          WGS84), OSM category labels
     providers/            SharedPreferences and PackageInfo, overridden at
                           bootstrap
 ```
@@ -303,16 +305,64 @@ Italian voice and text instructions.
 4. **History.** Recent destinations, stored locally like favorites. No cloud
    sync without explicit opt-in.
 
+## Places
+
+`features/places` lists real OpenStreetMap points of interest.
+
+- **Domain:** `Poi` (an `OsmRef` such as `node/123`, a point and optional
+  name, category, address, raw `opening_hours`, validated website and phone,
+  cuisine and wheelchair access), `PoiCategory` (13 discovery categories,
+  each mapped to OSM tags), `PlacesRepository`, `PlaceLinks` (URL and phone
+  validation, share text, map links) and `OpeningHours`.
+- **Data:** `OverpassPlacesRepository` sends one query per category and area:
+  `nwr[key~"^(values)$"]` statements inside a global `[bbox]`, `out tags
+  center 150`, a 15-second server timeout (25 seconds on the client) and 2
+  seconds between requests. Ways and relations use their center. Invalid
+  elements are skipped; a server error remark without results is a failure.
+  `PlacesCache` keeps up to 24 areas in memory for 15 minutes (LRU).
+- **Discovery:** `PlaceDiscoveryController` acts only while a category is
+  selected. The map reports its visible bounds and zoom when the camera is
+  idle; after 700 ms the controller:
+  1. asks to zoom in below zoom 13 or above a 0.12 degree span;
+  2. does nothing if the shown area already covers the view;
+  3. serves a cached area that covers the view;
+  4. otherwise requests the view plus 25 %, snapped outwards to a 0.01 degree
+     grid, unless the same request is already in flight.
+  A generation counter discards answers for an older view or category.
+- **Rendering:** places are a GeoJSON source with a circle layer and a
+  symbol layer (`Noto Sans Regular`, which every OpenFreeMap style serves)
+  added below the route. MapLibre hides colliding labels; names appear from
+  zoom 14.5 and the selected place sorts first. While a filter is active the
+  style's own `poi*` layers are hidden to avoid duplicate labels; the
+  setting is re-applied after style changes. Taps query Navia's place layers
+  before the style's POIs.
+- **Selection:** `NavigationController.selectPlace` stores the `Poi` with the
+  selection, so the place card can show its details and the map can
+  highlight it. Opening hours get an open or closed badge only when
+  `OpeningHours.tryParse` accepts the whole value and the place lies in the
+  Central European Time area, whose rules Navia computes without a time zone
+  database. Otherwise the raw value is shown.
+- **Actions:** sharing goes through a `MethodChannel` (`navia/share`) in
+  `MainActivity` that opens the system share sheet; copying uses the
+  clipboard; phone numbers open the dialer through a `tel:` link (no
+  `CALL_PHONE` permission); websites and OSM objects open in the browser.
+  Every action needs a tap.
+
+See [DATA_LICENSES.md](DATA_LICENSES.md) for Overpass usage and how to
+replace the provider.
+
 ## Favorites
 
 `FavoritesRepository` stores a versioned JSON list (`favorites.v1`) in
 `SharedPreferences`. A handful of places does not justify SQLite, and the
-versioned key allows a later migration. Corrupted entries are skipped
-instead of crashing. `FavoritesController`:
+versioned key allows a later migration. Optional fields (`osm`, `category`,
+`address`) were added without changing the key: older entries simply lack
+them. Corrupted entries are skipped instead of crashing.
+`FavoritesController`:
 
 - trims names and caps them at 60 characters;
-- rejects points within 15 m of an existing favorite (haversine distance on
-  `GeoPoint`);
+- rejects a place already saved with the same OpenStreetMap reference, or
+  within 15 m of an existing favorite (haversine distance on `GeoPoint`);
 - assigns IDs that stay unique even with coarse clocks;
 - supports undoing a delete.
 
@@ -322,8 +372,13 @@ instead of crashing. `FavoritesController`:
   formatters, coordinate validation, GeoJSON encoding, and every notifier
   (theme, location, search debounce and stale responses, navigation
   transitions).
-- **Widget tests:** the settings screen and the navigation sheet, with fake
-  repositories.
+- **Widget tests:** the settings and privacy screens, the navigation sheet,
+  the place card with sharing and copying, the layers sheet and the
+  favorites screen, with fake repositories and mocked platform channels.
+- **Places:** Overpass query building and parsing, missing metadata,
+  categories, bounds, link validation, opening hours and time zone rules,
+  cache expiry and eviction, viewport thresholds, deduplication and stale
+  answers.
 - **Not covered by automated tests:** the MapLibre platform view, which needs
   a device. Verify it manually on Android.
 
