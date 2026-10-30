@@ -1,0 +1,87 @@
+{
+  "restaurants": {
+    "amenity": [
+      "restaurant",
+      "fast_food"
+    ]
+  },
+  "cafes": {
+    "amenity": [
+      "cafe",
+      "bar",
+      "pub",
+      "ice_cream"
+    ]
+  },
+  "supermarkets": {
+    "shop": [
+      "supermarket",
+      "convenience"
+    ]
+  },
+  "pharmacies": {
+    "amenity": [
+      "pharmacy"
+    ]
+  },
+  "hospitals": {
+    "amenity": [
+      "hospital",
+      "clinic"
+    ]
+  },
+  "museums": {
+    "tourism": [
+      "museum",
+      "gallery"
+    ]
+  },
+  "attractions": {
+    "tourism": [
+      "attraction",
+      "viewpoint"
+    ]
+  },
+  "parks": {
+    "leisure": [
+      "park",
+      "garden"
+    ]
+  },
+  "hotels": {
+    "tourism": [
+      "hotel",
+      "guest_house",
+      "hostel",
+      "motel"
+    ]
+  },
+  "transport": {
+    "highway": [
+      "bus_stop"
+    ],
+    "railway": [
+      "station",
+      "halt",
+      "tram_stop"
+    ],
+    "amenity": [
+      "bus_station"
+    ]
+  },
+  "parking": {
+    "amenity": [
+      "parking"
+    ]
+  },
+  "fuel": {
+    "amenity": [
+      "fuel"
+    ]
+  },
+  "atms": {
+    "amenity": [
+      "atm"
+    ]
+  }
+}

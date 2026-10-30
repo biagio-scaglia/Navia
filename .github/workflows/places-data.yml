@@ -1,0 +1,87 @@
+name: Places data
+
+# Builds the offline place datasets from OpenStreetMap extracts and
+# publishes them as assets of the "places-data" release, which the app
+# downloads on request. Runs monthly, when the generator changes, or on
+# demand.
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'
+  push:
+    branches: [main]
+    paths:
+      - 'tool/places/**'
+      - '.github/workflows/places-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: places-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [nord-ovest, nord-est, centro, sud, isole]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pyosmium
+        run: pip install 'osmium>=4,<5'
+
+      - name: Download the Geofabrik extract
+        run: |
+          curl --fail --location --retry 3 --silent --show-error \
+            --user-agent 'Navia places-data (+https://github.com/biagio-scaglia/Navia)' \
+            --output region.osm.pbf \
+            "https://download.geofabrik.de/europe/italy/${{ matrix.region }}-latest.osm.pbf"
+
+      - name: Extract places
+        run: |
+          mkdir -p out
+          python tool/places/build_places.py region.osm.pbf \
+            "out/places-${{ matrix.region }}.jsonl.gz" \
+            > "out/places-${{ matrix.region }}.json"
+          cat "out/places-${{ matrix.region }}.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: places-${{ matrix.region }}
+          path: out/
+          retention-days: 3
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Build the catalog
+        run: python tool/places/build_manifest.py out
+
+      - name: Publish the release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view places-data > /dev/null 2>&1; then
+            gh release create places-data \
+              --title 'Navia places data' \
+              --latest=false \
+              --notes-file tool/places/RELEASE_NOTES.md
+          fi
+          gh release upload places-data out/manifest.json out/*.jsonl.gz --clobber
