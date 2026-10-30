@@ -17,8 +17,31 @@ class GeoPoint {
   /// Degrees east of the prime meridian, in the range [-180, 180].
   final double longitude;
 
+  /// Returns a point only if both values are finite and within range.
+  static GeoPoint? tryCreate(num? latitude, num? longitude) {
+    if (latitude == null || longitude == null) return null;
+    final lat = latitude.toDouble();
+    final lng = longitude.toDouble();
+    if (!lat.isFinite || !lng.isFinite || lat.abs() > 90 || lng.abs() > 180) {
+      return null;
+    }
+    return GeoPoint(latitude: lat, longitude: lng);
+  }
+
+  /// Parses a GeoJSON position (`[longitude, latitude, ...]`).
+  static GeoPoint? tryParseLngLat(Object? position) {
+    if (position is! List || position.length < 2) return null;
+    final [lng, lat, ...] = position;
+    if (lng is! num || lat is! num) return null;
+    return tryCreate(lat, lng);
+  }
+
   /// Coordinates in GeoJSON order: `[longitude, latitude]`.
   List<double> toLngLat() => [longitude, latitude];
+
+  /// Human-readable "latitude, longitude" with ~1 m precision.
+  String toDisplayString() =>
+      '${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}';
 
   @override
   bool operator ==(Object other) =>
