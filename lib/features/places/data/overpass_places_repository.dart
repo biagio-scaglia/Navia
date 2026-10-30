@@ -83,10 +83,7 @@ class OverpassPlacesRepository implements PlacesRepository {
     if (elements is! List) {
       throw const ServiceException(ServiceFailure.malformedResponse);
     }
-    return [
-      for (final element in elements)
-        ?_poi(element),
-    ];
+    return [for (final element in elements) ?_poi(element)];
   }
 
   static Poi? _poi(Object? element) {
