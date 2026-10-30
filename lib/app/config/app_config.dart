@@ -22,6 +22,43 @@ abstract final class AppConfig {
   /// After this delay without a loaded style, the map shows an error state.
   static const mapLoadTimeout = Duration(seconds: 20);
 
+  /// Photon geocoder used for search. An empty value disables search.
+  ///
+  /// The public komoot instance allows fair, low-volume use only; production
+  /// deployments should point this to a self-hosted Photon instance with
+  /// `--dart-define=NAVIA_PHOTON_URL=https://example.org`.
+  static const geocodingUrl = String.fromEnvironment(
+    'NAVIA_PHOTON_URL',
+    defaultValue: 'https://photon.komoot.io',
+  );
+
+  /// Wait after the last keystroke before searching, to limit requests.
+  static const searchDebounce = Duration(milliseconds: 450);
+  static const searchMinLength = 3;
+
+  /// OSRM endpoints for each travel mode. An empty value disables the mode.
+  ///
+  /// The defaults are the FOSSGIS servers (routing.openstreetmap.de), whose
+  /// policy allows at most one request per second, requires an identifying
+  /// User-Agent and OpenStreetMap attribution, and forbids heavy usage.
+  static const routingCarUrl = String.fromEnvironment(
+    'NAVIA_OSRM_CAR_URL',
+    defaultValue: 'https://routing.openstreetmap.de/routed-car',
+  );
+  static const routingBikeUrl = String.fromEnvironment(
+    'NAVIA_OSRM_BIKE_URL',
+    defaultValue: 'https://routing.openstreetmap.de/routed-bike',
+  );
+  static const routingFootUrl = String.fromEnvironment(
+    'NAVIA_OSRM_FOOT_URL',
+    defaultValue: 'https://routing.openstreetmap.de/routed-foot',
+  );
+
+  /// Minimum interval between routing requests (FOSSGIS policy).
+  static const routingMinInterval = Duration(seconds: 1);
+
+  static const fixTheMapUrl = 'https://www.openstreetmap.org/fixthemap';
+
   static const mapStyleSource = openFreeMap;
 
   /// OpenFreeMap: free, no API key, no registration, OpenStreetMap data.
