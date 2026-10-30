@@ -61,6 +61,27 @@ abstract final class AppConfig {
   /// Minimum interval between routing requests (FOSSGIS policy).
   static const routingMinInterval = Duration(seconds: 1);
 
+  /// Overpass API endpoint for place discovery. An empty value disables it.
+  ///
+  /// The public overpass-api.de server is shared community infrastructure
+  /// (guideline: under 10,000 queries and 1 GB per day per user). Navia
+  /// queries it only after the user picks a category, for the visible area,
+  /// and caches results. A wider deployment should use its own instance:
+  /// `--dart-define=NAVIA_OVERPASS_URL=https://example.org/api/interpreter`.
+  static const placesUrl = String.fromEnvironment(
+    'NAVIA_OVERPASS_URL',
+    defaultValue: 'https://overpass-api.de/api/interpreter',
+  );
+
+  /// Minimum interval between place requests.
+  static const placesMinInterval = Duration(seconds: 2);
+
+  /// Below this zoom the visible area is too large to list places.
+  static const placesMinZoom = 13.0;
+
+  /// Wait after the camera stops before querying places.
+  static const placesDebounce = Duration(milliseconds: 700);
+
   static const fixTheMapUrl = 'https://www.openstreetmap.org/fixthemap';
 
   static const mapStyleSource = openFreeMap;

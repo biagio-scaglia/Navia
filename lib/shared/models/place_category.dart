@@ -65,6 +65,7 @@ abstract final class PlaceCategory {
     'college': 'Istituto superiore',
     'university': 'Università',
     // Culture and leisure.
+    'gallery': 'Galleria d’arte',
     'museum': 'Museo',
     'theatre': 'Teatro',
     'cinema': 'Cinema',
@@ -87,10 +88,14 @@ abstract final class PlaceCategory {
     // Lodging.
     'hotel': 'Hotel',
     'lodging': 'Alloggio',
+    'motel': 'Motel',
     'hostel': 'Ostello',
     'guest_house': 'Pensione',
     // Transport.
     'bus': 'Fermata autobus',
+    'bus_station': 'Autostazione',
+    'tram_stop': 'Fermata del tram',
+    'halt': 'Fermata ferroviaria',
     'bus_stop': 'Fermata autobus',
     'railway': 'Stazione ferroviaria',
     'station': 'Stazione',
