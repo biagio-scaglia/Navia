@@ -43,9 +43,10 @@ jobs:
         run: |
           set -o pipefail
           if ! flutter build apk --release 2>&1 | tee build.log; then
-            # Surfaces the cause in the run summary and annotations.
-            echo "::error title=APK build failed::$(grep -iE 'error|failed|what went wrong|exception' build.log | tail -25 | tr '
-' ' ' | cut -c1-3000)"
+            # Surfaces the cause as annotations, which are public.
+            grep -iE 'error|failed|what went wrong|exception' build.log \
+              | tail -20 \
+              | while IFS= read -r line; do echo "::error::${line:0:900}"; done
             exit 1
           fi
 
