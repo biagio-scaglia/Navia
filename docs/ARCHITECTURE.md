@@ -32,7 +32,8 @@ lib/
     network/              JsonHttpClient (User-Agent, timeouts, error mapping)
     l10n/app_strings.dart all Italian copy
     utils/                formatters, external links
-    widgets/              FloatingSurface, MapControlButton, NaviaIcon, logo
+    widgets/              FloatingSurface, MapControlButton, NaviaIcon,
+                          NaviaBackButton, NaviaIconBadge, logo
   features/<feature>/
     domain/               models and repository interfaces (pure Dart)
     data/                 implementations for concrete providers
@@ -152,15 +153,23 @@ and a late answer for a replaced selection is discarded.
 
 `MapScreen.build` watches no provider. Instead:
 
-- `_MapLayer` watches only the style URL, the retry attempt and whether a
-  position exists. The platform view is recreated only on an explicit retry
-  after a load failure.
+- `_MapLayer` watches only the style URL, the 3D setting and the retry
+  attempt. The platform view is recreated only on an explicit retry after a
+  load failure.
+- The MapLibre location component is always enabled with a manual location
+  source. It draws nothing until Navia pushes the first position, and it
+  never reads the device location itself. Toggling it at runtime raced with
+  the first position update and with camera animations, so it stays on.
 - The search bar, controls, status overlays and `NavigationSheet` each watch
   their own slice of state with `select`.
 - `_BackHandler` and `_MapSystemBars` wrap the scaffold but pass the same
   child instance, so their rebuilds stop at themselves.
-- The navigation sheet is capped at 55% of the available height and scrolls
-  internally, so the map stays visible on small and landscape screens.
+- The navigation panel is docked to the bottom edge, capped at 60% of the
+  available height, and scrolls internally, so the map stays visible on
+  small and landscape screens. Route framing leaves room for it and for the
+  control column on the right.
+- MapLibre's own attribution button sits under the panel; the always-visible
+  attribution chip at the top shows the same notices and links.
 - Side effects that the map needs, such as the puck, markers, route and
   camera framing, run in `ref.listen` callbacks, not during build.
 
@@ -251,12 +260,15 @@ none.
 `NavigationController` manages the planning flow:
 
 ```
-selection --(Partenza/Destinazione)--> origin / destination
-origin + destination --(Calcola percorso)--> loading --> ready | failed
-changing a waypoint --> route discarded (idle)
-changing mode with a route shown --> recalculated
+selection --(Indicazioni / Parti da qui)--> origin / destination
+both ends known --> loading --> ready | failed   (no separate step)
+swap or mode change --> recalculated
 clear --> nothing planned
 ```
+
+`setOrigin` and `setDestination` only edit the plan; the user-facing
+actions calculate the route as soon as both ends are known. "Calcola
+percorso" is shown only to retry a plan that was edited without a route.
 
 When the origin is "La tua posizione", it is resolved through
 `LocationController` only when the route is calculated.

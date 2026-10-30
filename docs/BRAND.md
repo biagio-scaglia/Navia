@@ -67,7 +67,7 @@ Drawing rules for new icons:
 Once you add the SVG, add an entry to `NaviaIcons`. A test makes sure that
 every asset and enum entry match.
 
-Available icons: bike, car, check, chevron (down, right, up), close, cloud
+Available icons: arrow back, bike, car, check, chevron (down, right, up), close, cloud
 off, code, copyright, cube (3D), destination, directions, document, edit,
 external link, info, layers, locate (idle, fixed, off), origin, refresh,
 route, search, settings, shield, star (outline, filled), swap, theme (dark,

@@ -24,7 +24,7 @@ done only when it works, has tests, and is documented.
   and clear
 - OSRM routing by car, bike and on foot, with distance and duration
 - Route line and markers drawn by MapLibre layers, with camera framing
-- Collapsible navigation sheet; the map is never rebuilt by overlay changes
+- Collapsible navigation panel; the map is never rebuilt by overlay changes
 - Reusable service error handling with Italian messages
 
 ### 0.3: Map experience and places
@@ -40,6 +40,9 @@ done only when it works, has tests, and is documented.
   search from the keyboard
 - Edge-to-edge system bars that contrast with the map, back gesture
   handling, and a branded splash screen
+- Visual refresh: bottom panel docked to the screen edge, controls on one
+  axis, Navia back button and icon badges, and automatic route calculation
+  with arrival time
 
 ## Next
 
