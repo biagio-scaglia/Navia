@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/models/geo_point.dart';
+import '../../places/domain/poi.dart';
 import '../data/favorites_repository.dart';
 import '../domain/favorite.dart';
 
@@ -18,8 +19,12 @@ class FavoritesController extends Notifier<List<Favorite>> {
   @override
   List<Favorite> build() => ref.watch(favoritesRepositoryProvider).load();
 
-  /// The favorite at (or very near) [point], if any.
-  Favorite? findNear(GeoPoint point) {
+  /// The saved favorite for the same OpenStreetMap object as [osmRef], or
+  /// at (or very near) [point], if any.
+  Favorite? findExisting(GeoPoint point, {OsmRef? osmRef}) {
+    for (final favorite in state) {
+      if (osmRef != null && favorite.osmRef == osmRef) return favorite;
+    }
     for (final favorite in state) {
       if (favorite.point.distanceTo(point) <= duplicateRadiusMeters) {
         return favorite;
@@ -28,16 +33,27 @@ class FavoritesController extends Notifier<List<Favorite>> {
     return null;
   }
 
-  Future<FavoriteAddResult> add(String name, GeoPoint point) async {
+  Future<FavoriteAddResult> add(
+    String name,
+    GeoPoint point, {
+    OsmRef? osmRef,
+    String? category,
+    String? address,
+  }) async {
     final cleaned = _clean(name);
     if (cleaned == null) return FavoriteAddResult.invalidName;
-    if (findNear(point) != null) return FavoriteAddResult.duplicate;
+    if (findExisting(point, osmRef: osmRef) != null) {
+      return FavoriteAddResult.duplicate;
+    }
     final now = DateTime.now();
     final favorite = Favorite(
       id: _uniqueId(now),
       name: cleaned,
       point: point,
       createdAt: now,
+      osmRef: osmRef,
+      category: category,
+      address: address,
     );
     await _update([favorite, ...state]);
     return FavoriteAddResult.added;

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navia/features/favorites/data/favorites_repository.dart';
 import 'package:navia/features/favorites/presentation/favorites_controller.dart';
+import 'package:navia/features/places/domain/poi.dart';
 import 'package:navia/shared/models/geo_point.dart';
 import 'package:navia/shared/providers/shared_preferences_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -65,7 +66,7 @@ void main() {
       await controller.add('Casa di nuovo', nearby),
       FavoriteAddResult.duplicate,
     );
-    expect(controller.findNear(nearby)?.name, 'Casa');
+    expect(controller.findExisting(nearby)?.name, 'Casa');
     expect(container.read(favoritesProvider), hasLength(1));
   });
 
@@ -128,5 +129,61 @@ void main() {
       FavoritesRepository.storageKey: '{not json',
     });
     expect(container.read(favoritesProvider), isEmpty);
+  });
+
+  test('keeps the source metadata of a saved place across sessions', () async {
+    final container = await _container();
+    await container
+        .read(favoritesProvider.notifier)
+        .add(
+          'Farmacia',
+          _home,
+          osmRef: const OsmRef(OsmElementType.node, 101),
+          category: 'Farmacia',
+          address: 'Via Sparano da Bari, 5',
+        );
+
+    final preferences = container.read(sharedPreferencesProvider);
+    final next = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+    );
+    addTearDown(next.dispose);
+    final favorite = next.read(favoritesProvider).single;
+    expect(favorite.osmRef, const OsmRef(OsmElementType.node, 101));
+    expect(favorite.category, 'Farmacia');
+    expect(favorite.address, 'Via Sparano da Bari, 5');
+  });
+
+  test('reads favorites saved before metadata existed', () async {
+    final container = await _container({
+      FavoritesRepository.storageKey: jsonEncode([
+        {
+          'id': '1',
+          'name': 'Casa',
+          'lat': 41.1171,
+          'lng': 16.8719,
+          'createdAt': '2026-10-01T10:00:00.000Z',
+        },
+      ]),
+    });
+    final favorite = container.read(favoritesProvider).single;
+    expect(favorite.name, 'Casa');
+    expect(favorite.osmRef, isNull);
+    expect(favorite.category, isNull);
+  });
+
+  test('treats the same OpenStreetMap object as a duplicate', () async {
+    final container = await _container();
+    final controller = container.read(favoritesProvider.notifier);
+    const ref = OsmRef(OsmElementType.way, 9);
+    await controller.add('Parco', _home, osmRef: ref);
+
+    // Same object, saved again from a different point of its area.
+    expect(
+      await controller.add('Parco 2', _work, osmRef: ref),
+      FavoriteAddResult.duplicate,
+    );
+    expect(controller.findExisting(_work, osmRef: ref)?.name, 'Parco');
+    expect(controller.findExisting(_work), isNull);
   });
 }

@@ -76,5 +76,38 @@ void main() {
       expect(find.text('Casa'), findsOneWidget);
       expect(container.read(favoritesProvider), hasLength(1));
     });
+
+    testWidgets('returns a favorite for directions', (tester) async {
+      FavoritePick? picked;
+      final container = await pumpNaviaWidget(
+        tester,
+        Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () async =>
+                  picked = await FavoritesScreen.open(context),
+              child: const Text('apri'),
+            ),
+          ),
+        ),
+      );
+      await container
+          .read(favoritesProvider.notifier)
+          .add(
+            'Farmacia',
+            const GeoPoint(latitude: 41.12, longitude: 16.87),
+            category: 'Farmacia',
+            address: 'Via Sparano da Bari, 5',
+          );
+      await tester.tap(find.text('apri'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Farmacia · Via Sparano da Bari, 5'), findsOneWidget);
+      await tester.tap(find.byTooltip('Indicazioni'));
+      await tester.pumpAndSettle();
+
+      expect(picked?.favorite.name, 'Farmacia');
+      expect(picked?.directions, isTrue);
+    });
   });
 }

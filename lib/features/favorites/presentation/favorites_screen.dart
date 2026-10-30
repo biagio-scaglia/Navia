@@ -9,13 +9,24 @@ import '../../../core/widgets/navia_sheet.dart';
 import '../domain/favorite.dart';
 import 'favorites_controller.dart';
 
-/// Saved places. Pops with the [Favorite] to show on the map.
+/// What the user chose in the favorites screen.
+class FavoritePick {
+  const FavoritePick(this.favorite, {this.directions = false});
+
+  final Favorite favorite;
+
+  /// True for a route to the favorite, false to show it on the map.
+  final bool directions;
+}
+
+/// Saved places, available offline. Pops with a [FavoritePick].
 class FavoritesScreen extends ConsumerWidget {
   const FavoritesScreen({super.key});
 
-  static Future<Favorite?> open(BuildContext context) => Navigator.of(
-    context,
-  ).push<Favorite>(MaterialPageRoute(builder: (_) => const FavoritesScreen()));
+  static Future<FavoritePick?> open(BuildContext context) =>
+      Navigator.of(context).push<FavoritePick>(
+        MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+      );
 
   Future<void> _rename(
     BuildContext context,
@@ -104,11 +115,29 @@ class FavoritesScreen extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: Text(favorite.point.toDisplayString()),
-                    onTap: () => Navigator.of(context).pop(favorite),
+                    subtitle: Text(
+                      [
+                        ?favorite.category,
+                        favorite.address ?? favorite.point.toDisplayString(),
+                      ].join(' · '),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () =>
+                        Navigator.of(context).pop(FavoritePick(favorite)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        IconButton(
+                          tooltip: AppStrings.directions,
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pop(FavoritePick(favorite, directions: true)),
+                          icon: NaviaIcon(
+                            NaviaIcons.directions,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
                         IconButton(
                           tooltip: AppStrings.rename,
                           onPressed: () => _rename(context, ref, favorite),

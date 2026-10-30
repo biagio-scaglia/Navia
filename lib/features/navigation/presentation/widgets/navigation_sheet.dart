@@ -296,7 +296,11 @@ class _SelectionCard extends ConsumerWidget {
   Future<void> _save(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
     final favorites = ref.read(favoritesProvider.notifier);
-    final existing = favorites.findNear(selection.point);
+    final place = ref.read(navigationControllerProvider).selectedPlace;
+    final existing = favorites.findExisting(
+      selection.point,
+      osmRef: place?.ref,
+    );
     if (existing != null) {
       messenger
         ..hideCurrentSnackBar()
@@ -312,7 +316,13 @@ class _SelectionCard extends ConsumerWidget {
       initialValue: selection.label ?? AppStrings.favoriteDefaultName,
     );
     if (name == null) return;
-    final result = await favorites.add(name, selection.point);
+    final result = await favorites.add(
+      name,
+      selection.point,
+      osmRef: place?.ref,
+      category: place?.category ?? selection.category,
+      address: selection.description,
+    );
     if (result == FavoriteAddResult.added) {
       messenger
         ..hideCurrentSnackBar()
@@ -336,8 +346,9 @@ class _SelectionCard extends ConsumerWidget {
       favoritesProvider.select(
         (favorites) => favorites.any(
           (f) =>
+              (place != null && f.osmRef == place.ref) ||
               f.point.distanceTo(selection.point) <=
-              FavoritesController.duplicateRadiusMeters,
+                  FavoritesController.duplicateRadiusMeters,
         ),
       ),
     );

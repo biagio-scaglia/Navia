@@ -171,9 +171,22 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   Future<void> _openFavorites() async {
-    final favorite = await FavoritesScreen.open(context);
-    if (!mounted || favorite == null) return;
-    _navigation.select(PointWaypoint(favorite.point, label: favorite.name));
+    final pick = await FavoritesScreen.open(context);
+    if (!mounted || pick == null) return;
+    final favorite = pick.favorite;
+    _navigation.select(
+      PointWaypoint(
+        favorite.point,
+        label: favorite.name,
+        description: favorite.address,
+        category: favorite.category,
+      ),
+    );
+    if (pick.directions) {
+      // The route framing moves the camera once the route arrives.
+      await _navigation.useSelectionAsDestination();
+      return;
+    }
     await _map?.moveTo(favorite.point, zoom: AppConfig.userLocationZoom);
   }
 

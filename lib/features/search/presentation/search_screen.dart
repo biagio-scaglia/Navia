@@ -6,6 +6,7 @@ import '../../../core/errors/failure_messages.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/widgets/navia_buttons.dart';
 import '../../../core/widgets/navia_icon.dart';
+import '../../favorites/presentation/favorites_controller.dart';
 import '../domain/place.dart';
 import 'search_controller.dart';
 
@@ -174,6 +175,35 @@ class _SearchResults extends ConsumerWidget {
             title: const Text(AppStrings.yourLocation),
             onTap: () => Navigator.of(context).pop(const CurrentLocationPick()),
           ),
+        // Saved places work offline, e.g. as origin or destination.
+        if (state.status == SearchStatus.idle)
+          for (final favorite in ref.watch(favoritesProvider))
+            ListTile(
+              leading: const NaviaIconBadge(NaviaIcons.starFilled),
+              title: Text(
+                favorite.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                [
+                  ?favorite.category,
+                  favorite.address ?? favorite.point.toDisplayString(),
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () => Navigator.of(context).pop(
+                PlacePick(
+                  Place(
+                    name: favorite.name,
+                    point: favorite.point,
+                    description: favorite.address,
+                    category: favorite.category,
+                  ),
+                ),
+              ),
+            ),
         for (final place in state.results)
           _PlaceTile(
             place: place,

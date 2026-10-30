@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/models/geo_point.dart';
+import '../../places/domain/poi.dart';
 
 /// A place saved by the user on this device.
 @immutable
@@ -10,6 +11,9 @@ class Favorite {
     required this.name,
     required this.point,
     required this.createdAt,
+    this.osmRef,
+    this.category,
+    this.address,
   });
 
   final String id;
@@ -20,11 +24,23 @@ class Favorite {
   final GeoPoint point;
   final DateTime createdAt;
 
+  /// The OpenStreetMap object the place was saved from, if any. It
+  /// identifies the same business even if its position is edited.
+  final OsmRef? osmRef;
+
+  /// Italian category and address copied from the source data, so that
+  /// they stay available offline.
+  final String? category;
+  final String? address;
+
   Favorite copyWith({String? name}) => Favorite(
     id: id,
     name: name ?? this.name,
     point: point,
     createdAt: createdAt,
+    osmRef: osmRef,
+    category: category,
+    address: address,
   );
 
   Map<String, Object> toJson() => {
@@ -33,6 +49,9 @@ class Favorite {
     'lat': point.latitude,
     'lng': point.longitude,
     'createdAt': createdAt.toUtc().toIso8601String(),
+    'osm': ?osmRef?.key,
+    'category': ?category,
+    'address': ?address,
   };
 
   /// Parses a stored favorite, returning null for corrupted entries.
@@ -54,7 +73,18 @@ class Favorite {
         createdAt == null) {
       return null;
     }
-    return Favorite(id: id, name: name, point: point, createdAt: createdAt);
+    String? text(Object? value) =>
+        value is String && value.trim().isNotEmpty ? value.trim() : null;
+    return Favorite(
+      id: id,
+      name: name,
+      point: point,
+      createdAt: createdAt,
+      // Entries saved before these fields existed simply lack them.
+      osmRef: OsmRef.tryParse(json['osm']),
+      category: text(json['category']),
+      address: text(json['address']),
+    );
   }
 
   @override
@@ -63,8 +93,12 @@ class Favorite {
       other.id == id &&
       other.name == name &&
       other.point == point &&
-      other.createdAt == createdAt;
+      other.createdAt == createdAt &&
+      other.osmRef == osmRef &&
+      other.category == category &&
+      other.address == address;
 
   @override
-  int get hashCode => Object.hash(id, name, point, createdAt);
+  int get hashCode =>
+      Object.hash(id, name, point, createdAt, osmRef, category, address);
 }
