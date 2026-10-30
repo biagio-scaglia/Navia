@@ -14,6 +14,7 @@ import '../../../../core/widgets/navia_icon.dart';
 import '../../../../core/widgets/navia_sheet.dart';
 import '../../../favorites/domain/favorite.dart';
 import '../../../favorites/presentation/favorites_controller.dart';
+import '../../../places/presentation/widgets/place_details.dart';
 import '../../../search/data/photon_geocoding_repository.dart';
 import '../../../search/presentation/search_screen.dart';
 import '../../data/osrm_routing_repository.dart';
@@ -328,6 +329,9 @@ class _SelectionCard extends ConsumerWidget {
     final lookup = ref.watch(
       navigationControllerProvider.select((s) => s.selectionLookup),
     );
+    final place = ref.watch(
+      navigationControllerProvider.select((s) => s.selectedPlace),
+    );
     final saved = ref.watch(
       favoritesProvider.select(
         (favorites) => favorites.any(
@@ -415,6 +419,16 @@ class _SelectionCard extends ConsumerWidget {
                 onPressed: onClose,
               ),
             ],
+          ),
+          if (place != null) ...[
+            const SizedBox(height: NaviaSpacing.sm),
+            PlaceDetailsList(place: place),
+          ],
+          const SizedBox(height: NaviaSpacing.md),
+          PlaceQuickActions(
+            point: selection.point,
+            name: selection.label,
+            address: selection.description,
           ),
           if (routingAvailable) ...[
             const SizedBox(height: NaviaSpacing.lg),

@@ -102,6 +102,26 @@ abstract final class AppStrings {
   static const close = 'Chiudi';
   static const back = 'Indietro';
 
+  // Place details.
+  static const openingHours = 'Orari';
+  static const openNow = 'Aperto ora';
+  static const closedNow = 'Chiuso ora';
+  static const cuisine = 'Cucina';
+  static const accessibility = 'Accessibilità';
+  static const wheelchairYes = 'Accessibile in sedia a rotelle';
+  static const wheelchairLimited = 'Accessibilità limitata';
+  static const wheelchairNo = 'Non accessibile in sedia a rotelle';
+  static const phone = 'Telefono';
+  static const call = 'Chiama';
+  static const website = 'Sito web';
+  static const openWebsite = 'Apri il sito web';
+  static const placeDataSource = 'Dati © OpenStreetMap';
+  static const viewOnOpenStreetMap = 'Vedi su OpenStreetMap';
+  static const share = 'Condividi';
+  static const shareFailed = 'Impossibile condividere il luogo.';
+  static const copyCoordinates = 'Copia coordinate';
+  static const coordinatesCopied = 'Coordinate copiate.';
+
   // Place discovery.
   static const clearFilter = 'tocca per rimuovere il filtro';
   static const placesLoading = 'Ricerca dei luoghi in quest’area…';
