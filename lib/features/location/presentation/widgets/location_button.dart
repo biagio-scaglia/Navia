@@ -4,7 +4,10 @@ import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/map_control_button.dart';
 import '../location_controller.dart';
 
-/// Primary map control that activates location or recenters on the user.
+/// Map control that activates location or recenters on the user.
+///
+/// It uses the brand gradient only while location is active, so the user can
+/// tell at a glance whether Navia is reading the position.
 class LocationButton extends StatelessWidget {
   const LocationButton({
     super.key,
@@ -17,6 +20,7 @@ class LocationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.primary;
     final (tooltip, icon) = switch (status) {
       LocationStatus.locating => (AppStrings.locating, null),
       LocationStatus.tracking => (
@@ -32,20 +36,18 @@ class LocationButton extends StatelessWidget {
         Icons.location_searching_rounded,
       ),
     };
+    final active = status == LocationStatus.tracking;
 
     return MapControlButton(
       tooltip: tooltip,
-      primary: true,
+      primary: active,
       onPressed: status == LocationStatus.locating ? null : onPressed,
       child: icon == null
-          ? const SizedBox.square(
-              dimension: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: Colors.white,
-              ),
+          ? SizedBox.square(
+              dimension: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.5, color: accent),
             )
-          : Icon(icon),
+          : Icon(icon, color: active ? null : accent),
     );
   }
 }
