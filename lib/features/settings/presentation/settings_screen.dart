@@ -332,6 +332,11 @@ class _ServicesSection extends StatelessWidget {
           AppStrings.serviceRouting,
           AppStrings.serviceRoutingDetail,
         ),
+        service(
+          NaviaIcons.restaurant,
+          AppStrings.servicePlaces,
+          AppStrings.servicePlacesDetail,
+        ),
       ],
     );
   }

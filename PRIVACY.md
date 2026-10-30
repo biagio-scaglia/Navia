@@ -57,8 +57,9 @@ storage in Android settings, deletes it.
 Your device location is **not stored**. It is kept in memory while the app
 is open and discarded when the app closes.
 
-Search results and route results are kept in memory only, to avoid repeated
-requests, and are discarded when the app closes.
+Search results, place results and routes are kept in memory only, to
+avoid repeated requests, and are discarded when the app closes. Place
+results expire after 15 minutes.
 
 ## 4. Data sent to third-party services
 
@@ -74,6 +75,7 @@ it contains no user or device identifier.
 | **OpenFreeMap** (`tiles.openfreemap.org`) | Whenever the map is shown | The map tiles for the area and zoom level you are viewing | Draw the map |
 | **Photon by komoot** (`photon.komoot.io`) | When you search | The text you type; an approximate position rounded to about 1 km (your position if you located yourself, otherwise the default area of Bari) to rank nearby results first | Find places and addresses |
 | **Photon by komoot** | When you long-press a point on the map | The exact coordinates of that point | Show its address |
+| **Overpass API** (`overpass-api.de`) | When you select a place category, such as "Farmacie", and move the map while it is selected | The category and the area you are viewing, enlarged and rounded outwards to a grid of about 1 km | List real places of that category |
 | **OSRM on FOSSGIS servers** (`routing.openstreetmap.de`) | When a route is calculated | Origin and destination coordinates, and the travel mode. If the origin is "La tua posizione", this is your current device location | Calculate the route |
 
 Because the map area you view, your searches and route endpoints can reveal
@@ -88,6 +90,8 @@ control:
 - komoot (Photon): <https://www.komoot.com/privacy>
 - FOSSGIS e.V. (routing.openstreetmap.de):
   <https://www.fossgis.de/datenschutzerklaerung/>
+- Overpass API main instance: <https://overpass-api.de>
+  (`[TO BE VERIFIED: operator and privacy notice of the instance]`)
 
 `[TO BE VERIFIED during legal review: the retention periods and legal bases
 of each provider, and whether data is transferred outside the EU.]`

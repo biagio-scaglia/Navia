@@ -164,6 +164,10 @@ abstract final class AppStrings {
       'Riceve il testo cercato, una posizione approssimata (circa 1 km) e '
       'i punti che tieni premuti sulla mappa, per trovarne l’indirizzo.';
   static const serviceRouting = 'Percorsi: OSRM (FOSSGIS)';
+  static const servicePlaces = 'Luoghi: Overpass API';
+  static const servicePlacesDetail =
+      'Quando scegli una categoria, riceve la categoria e la zona '
+      'visualizzata, arrotondata a circa 1 km.';
   static const serviceRoutingDetail =
       'Riceve le coordinate di partenza e destinazione.';
 

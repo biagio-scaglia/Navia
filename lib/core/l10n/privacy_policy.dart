@@ -42,8 +42,8 @@ abstract final class PrivacyPolicy {
           'dal backup cloud di Android. Si cancellano eliminando i preferiti, '
           'svuotando i dati dell’app o disinstallandola.',
       'La posizione non viene salvata: resta in memoria finché l’app è '
-          'aperta. Anche i risultati di ricerca e i percorsi restano solo in '
-          'memoria.',
+          'aperta. Anche i risultati di ricerca, i luoghi trovati e i '
+          'percorsi restano solo in memoria.',
     ]),
     PrivacySection('Dati inviati a servizi esterni', [
       'Ogni richiesta parte direttamente dal tuo dispositivo verso il '
@@ -59,6 +59,10 @@ abstract final class PrivacyPolicy {
       'OSRM sui server FOSSGIS (percorsi): riceve le coordinate di partenza '
           'e arrivo e il mezzo scelto. Se parti da “La tua posizione”, la '
           'partenza è la posizione del dispositivo.',
+      'Overpass API (luoghi): quando scegli una categoria, come “Farmacie”, '
+          'riceve la categoria e la zona visualizzata, allargata e '
+          'arrotondata a circa 1 km. Il server predefinito è '
+          'overpass-api.de.',
       'La zona visualizzata, le ricerche e i punti di un percorso possono '
           'rivelare dove sei o dove vai: per questo l’app invia solo il '
           'minimo necessario. Ogni fornitore tratta i dati secondo la propria '
