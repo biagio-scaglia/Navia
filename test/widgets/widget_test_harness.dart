@@ -44,8 +44,8 @@ Future<ProviderContainer> pumpNaviaWidget(
           PackageInfo(
             appName: 'Navia',
             packageName: 'io.github.biagioscaglia.navia',
-            version: '0.4.0',
-            buildNumber: '4',
+            version: '0.4.1',
+            buildNumber: '5',
           ),
         ),
         locationRepositoryProvider.overrideWithValue(location),
