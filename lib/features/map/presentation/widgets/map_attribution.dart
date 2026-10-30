@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/theme/navia_surfaces.dart';
 import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/utils/open_link.dart';
@@ -21,10 +22,12 @@ class MapAttributionChip extends StatelessWidget {
       label: AppStrings.mapAttribution,
       excludeSemantics: true,
       child: Material(
-        color: theme.colorScheme.surface.withValues(alpha: 0.85),
-        borderRadius: NaviaRadii.smAll,
+        color: context.naviaSurfaces.floating.withValues(alpha: 0.9),
+        shape: StadiumBorder(
+          side: BorderSide(color: context.naviaSurfaces.hairline),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: NaviaRadii.smAll,
           onTap: () => showMapAttributionSheet(context, source),
           child: ConstrainedBox(
             // A compact credit keeps the map unobstructed; the same notices
@@ -32,7 +35,7 @@ class MapAttributionChip extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 32),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: NaviaSpacing.sm,
+                horizontal: NaviaSpacing.md,
                 vertical: NaviaSpacing.sm,
               ),
               child: Text(

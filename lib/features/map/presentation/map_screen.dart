@@ -122,6 +122,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         place.point,
         label: place.name,
         description: place.description,
+        category: place.category,
       ),
     );
     await _map?.moveTo(place.point, zoom: AppConfig.userLocationZoom);
@@ -159,14 +160,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (map == null || geometry.isEmpty) return;
     final safe = MediaQuery.paddingOf(context);
     final sheetHeight = _sheetKey.currentContext?.size?.height ?? 0;
+    // Keeps the route clear of the control column on the right.
+    const controls = _edge + NaviaSizes.mapControl + _edge;
     unawaited(
       map.fitBounds(
         geometry,
         padding: EdgeInsets.fromLTRB(
-          48,
+          safe.left + 40,
           safe.top + MapTopBar.height + 48,
-          48,
-          safe.bottom + sheetHeight + 48,
+          safe.right + controls,
+          sheetHeight + 40,
         ),
       ),
     );
@@ -244,17 +247,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ),
               Positioned.fill(child: _MapStatusLayer(onRetry: _retryMap)),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(_edge),
-                  child: _MapOverlays(
-                    sheetKey: _sheetKey,
-                    onOpenSearch: _openSearch,
-                    onLocationPressed: _onLocationPressed,
-                    onOpenFavorites: _openFavorites,
-                    onShowRoute: () =>
-                        _fitRoute(ref.read(routeGeometryProvider)),
-                  ),
+              Positioned.fill(
+                child: _MapOverlays(
+                  sheetKey: _sheetKey,
+                  onOpenSearch: _openSearch,
+                  onLocationPressed: _onLocationPressed,
+                  onOpenFavorites: _openFavorites,
+                  onShowRoute: () => _fitRoute(ref.read(routeGeometryProvider)),
                 ),
               ),
             ],
@@ -355,9 +354,6 @@ class _MapLayer extends ConsumerWidget {
     final attempt = ref.watch(
       mapLoadControllerProvider.select((s) => s.attempt),
     );
-    final hasPosition = ref.watch(
-      locationControllerProvider.select((s) => s.position != null),
-    );
 
     return NaviaMapView(
       // A new key recreates the platform view, only on explicit retry.
@@ -366,7 +362,6 @@ class _MapLayer extends ConsumerWidget {
       style: style,
       buildings3d: buildings3d,
       initialCamera: AppConfig.initialCamera,
-      showUserLocation: hasPosition,
       controlsPadding: controlsPadding,
       onMapReady: onMapReady,
       onStyleLoadStarted: ref
@@ -421,50 +416,75 @@ class _MapOverlays extends ConsumerWidget {
     );
     final source = ref.watch(mapStyleSourceProvider);
 
+    final safe = MediaQuery.paddingOf(context);
+    const edge = NaviaSpacing.lg;
+
     return LayoutBuilder(
       builder: (context, constraints) => Column(
         children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: MapTopBar(
-                onOpenSettings: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.settings),
-                onOpenFavorites: onOpenFavorites,
-                onSearch: searchAvailable && mapReady ? onOpenSearch : null,
-              ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              edge + safe.left,
+              edge + safe.top,
+              edge + safe.right,
+              0,
+            ),
+            child: Column(
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: NaviaSizes.panelMaxWidth,
+                    ),
+                    child: MapTopBar(
+                      onOpenSettings: () =>
+                          Navigator.of(context).pushNamed(AppRoutes.settings),
+                      onOpenFavorites: onOpenFavorites,
+                      onSearch: searchAvailable && mapReady
+                          ? onOpenSearch
+                          : null,
+                    ),
+                  ),
+                ),
+                if (mapReady)
+                  Padding(
+                    padding: const EdgeInsets.only(top: NaviaSpacing.md),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MapAttributionChip(source: source),
+                        const Spacer(),
+                        const _MapViewControls(),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ),
           if (mapReady) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: NaviaSpacing.md),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Leaves room for the native attribution button.
-                  const SizedBox(width: 32),
-                  MapAttributionChip(source: source),
-                  const Spacer(),
-                  const _MapViewControls(),
-                ],
-              ),
-            ),
             Expanded(
               child: Align(
                 alignment: Alignment.bottomRight,
-                child: _MapControls(
-                  onLocationPressed: onLocationPressed,
-                  onShowRoute: onShowRoute,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    edge,
+                    edge,
+                    edge + safe.right,
+                    NaviaSpacing.md,
+                  ),
+                  child: _MapControls(
+                    onLocationPressed: onLocationPressed,
+                    onShowRoute: onShowRoute,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: NaviaSpacing.md),
             Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: 560,
+                  maxWidth: NaviaSizes.panelMaxWidth,
                   // The map always keeps most of the screen.
-                  maxHeight: constraints.maxHeight * 0.55,
+                  maxHeight: constraints.maxHeight * 0.6,
                 ),
                 child: NavigationSheet(key: sheetKey),
               ),

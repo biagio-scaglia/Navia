@@ -26,7 +26,6 @@ class NaviaMapView extends StatefulWidget {
     required this.style,
     required this.buildings3d,
     required this.initialCamera,
-    required this.showUserLocation,
     required this.controlsPadding,
     required this.onMapReady,
     required this.onStyleLoadStarted,
@@ -42,11 +41,6 @@ class NaviaMapView extends StatefulWidget {
   final bool buildings3d;
 
   final MapCamera initialCamera;
-
-  /// Shows the user location indicator, fed through
-  /// [NaviaMapController.showUserLocation]. MapLibre never reads the device
-  /// location itself.
-  final bool showUserLocation;
 
   /// Insets for the native attribution button and, below it, the compass
   /// (both top/left), so they do not collide with Flutter overlays.
@@ -183,17 +177,19 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       onStyleLoadedCallback: _onStyleLoaded,
       onMapClick: _onTap,
       onMapLongClick: _onLongPress,
+      // The location component must exist before the first position is
+      // pushed through [NaviaMapController.showUserLocation]; it draws
+      // nothing until then. MapLibre never reads the device location itself.
       locationSource: const ManualLocationSource(),
-      myLocationEnabled: widget.showUserLocation,
+      myLocationEnabled: true,
       // The compass appears only when the map is rotated; tapping it turns
       // north back up.
       compassViewPosition: CompassViewPosition.topLeft,
       compassViewMargins: Point(padding.left, padding.top + 48),
-      attributionButtonPosition: AttributionButtonPosition.topLeft,
-      attributionButtonMargins: Point(padding.left, padding.top),
-      attributionButtonColor: widget.style.isDark
-          ? NaviaColors.inkDarkMuted
-          : NaviaColors.inkLightMuted,
+      // The native button sits under the bottom panel: the same notices are
+      // shown by the always-visible attribution chip, which links to them.
+      attributionButtonPosition: AttributionButtonPosition.bottomLeft,
+      attributionButtonMargins: const Point(0, 0),
       foregroundLoadColor: Theme.of(context).scaffoldBackgroundColor,
     );
   }

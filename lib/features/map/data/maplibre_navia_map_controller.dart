@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../../../app/config/app_config.dart';
@@ -284,13 +285,20 @@ class MapLibreNaviaMapController implements NaviaMapController {
     GeoPoint point, {
     double? accuracyMeters,
     double? headingDegrees,
-  }) => _controller.updateManualLocation(
-    ManualLocationUpdate(
-      target: toLatLng(point),
-      horizontalAccuracy: accuracyMeters,
-      bearing: headingDegrees,
-    ),
-  );
+  }) async {
+    try {
+      await _controller.updateManualLocation(
+        ManualLocationUpdate(
+          target: toLatLng(point),
+          horizontalAccuracy: accuracyMeters,
+          bearing: headingDegrees,
+        ),
+      );
+    } on PlatformException catch (error) {
+      // The indicator is cosmetic: the next position update retries it.
+      debugPrint('[map] could not show the user location: $error');
+    }
+  }
 
   @override
   Future<void> showRoute(List<GeoPoint> geometry) async {
