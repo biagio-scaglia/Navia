@@ -5,6 +5,7 @@ import '../../../app/config/app_config.dart';
 import '../../../app/theme/navia_tokens.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/utils/open_link.dart';
+import '../../../core/widgets/navia_buttons.dart';
 import '../../../core/widgets/navia_icon.dart';
 import '../../../core/widgets/navia_logo.dart';
 import '../../../shared/providers/package_info_provider.dart';
@@ -44,7 +45,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.settings)),
+      appBar: AppBar(
+        leading: const NaviaBackButton(),
+        title: const Text(AppStrings.settings),
+      ),
       body: SafeArea(
         top: false,
         child: Align(
@@ -59,6 +63,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 NaviaSpacing.xxl,
               ),
               children: const [
+                _AppHeader(),
                 _Section(title: AppStrings.appearance, child: _ThemeSelector()),
                 _Section(title: AppStrings.location, child: _LocationSection()),
                 _Section(title: AppStrings.map, child: _MapSection()),
@@ -71,6 +76,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Navia's identity at the top of the settings.
+class _AppHeader extends StatelessWidget {
+  const _AppHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: NaviaSpacing.md,
+        left: NaviaSpacing.xs,
+      ),
+      child: Row(
+        children: [
+          const NaviaLogoMark(size: 56),
+          const SizedBox(width: NaviaSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppConfig.appName,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                Text(
+                  AppStrings.appTagline,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

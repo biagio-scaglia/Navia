@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/navia_tokens.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/widgets/navia_buttons.dart';
 import '../../../core/widgets/navia_icon.dart';
 import '../../../core/widgets/navia_sheet.dart';
 import '../domain/favorite.dart';
@@ -60,7 +61,10 @@ class FavoritesScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.favorites)),
+      appBar: AppBar(
+        leading: const NaviaBackButton(),
+        title: const Text(AppStrings.favorites),
+      ),
       body: SafeArea(
         top: false,
         child: favorites.isEmpty
@@ -70,11 +74,7 @@ class FavoritesScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      NaviaIcon(
-                        NaviaIcons.star,
-                        size: 48,
-                        color: theme.colorScheme.primary,
-                      ),
+                      const NaviaIconBadge(NaviaIcons.star, size: 88),
                       const SizedBox(height: NaviaSpacing.lg),
                       Text(
                         AppStrings.favoritesEmptyTitle,
@@ -98,10 +98,7 @@ class FavoritesScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final favorite = favorites[index];
                   return ListTile(
-                    leading: NaviaIcon(
-                      NaviaIcons.starFilled,
-                      color: theme.colorScheme.primary,
-                    ),
+                    leading: const NaviaIconBadge(NaviaIcons.starFilled),
                     title: Text(
                       favorite.name,
                       maxLines: 1,

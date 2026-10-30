@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/navia_tokens.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/widgets/navia_buttons.dart';
 import '../../../core/widgets/navia_icon.dart';
 import '../domain/place.dart';
 import 'search_controller.dart';
@@ -77,31 +78,43 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 72,
+        leading: const NaviaBackButton(),
         titleSpacing: 0,
-        title: TextField(
-          controller: _textController,
-          autofocus: true,
-          textInputAction: TextInputAction.search,
-          style: theme.textTheme.titleMedium,
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            border: InputBorder.none,
+        title: Padding(
+          padding: const EdgeInsets.only(right: NaviaSpacing.lg),
+          child: TextField(
+            controller: _textController,
+            autofocus: true,
+            textInputAction: TextInputAction.search,
+            style: theme.textTheme.bodyLarge,
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NaviaSpacing.md,
+                ),
+                child: NaviaIcon(
+                  NaviaIcons.search,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              prefixIconConstraints: const BoxConstraints(minWidth: 48),
+              suffixIcon: ListenableBuilder(
+                listenable: _textController,
+                builder: (context, _) => _textController.text.isEmpty
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        tooltip: AppStrings.clearSearch,
+                        onPressed: _clear,
+                        icon: const NaviaIcon(NaviaIcons.close, size: 20),
+                      ),
+              ),
+            ),
+            onChanged: ref.read(searchControllerProvider.notifier).updateQuery,
+            onSubmitted: ref.read(searchControllerProvider.notifier).submit,
           ),
-          onChanged: ref.read(searchControllerProvider.notifier).updateQuery,
-          onSubmitted: ref.read(searchControllerProvider.notifier).submit,
         ),
-        actions: [
-          ListenableBuilder(
-            listenable: _textController,
-            builder: (context, _) => _textController.text.isEmpty
-                ? const SizedBox.shrink()
-                : IconButton(
-                    tooltip: AppStrings.clearSearch,
-                    onPressed: _clear,
-                    icon: const NaviaIcon(NaviaIcons.close),
-                  ),
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
           child: loading
@@ -157,10 +170,7 @@ class _SearchResults extends ConsumerWidget {
       children: [
         if (offerCurrentLocation)
           ListTile(
-            leading: NaviaIcon(
-              NaviaIcons.locateFixed,
-              color: theme.colorScheme.primary,
-            ),
+            leading: const NaviaIconBadge(NaviaIcons.locateFixed),
             title: const Text(AppStrings.yourLocation),
             onTap: () => Navigator.of(context).pop(const CurrentLocationPick()),
           ),
@@ -226,10 +236,7 @@ class _PlaceTile extends StatelessWidget {
     final details = [?place.category, ?place.description].join(' · ');
 
     return ListTile(
-      leading: NaviaIcon(
-        NaviaIcons.destination,
-        color: theme.colorScheme.primary,
-      ),
+      leading: const NaviaIconBadge(NaviaIcons.destination),
       title: Text(place.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
