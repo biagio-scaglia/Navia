@@ -26,4 +26,12 @@ abstract interface class NaviaMapController {
 
   /// Replaces all markers drawn by Navia.
   Future<void> showMarkers(List<MapMarker> markers);
+
+  /// Tilts the camera and extrudes buildings from their real heights, or
+  /// returns to the flat top-down view.
+  Future<void> setBuildings3d(bool enabled);
+
+  /// The named point of interest drawn around [screenPoint], if any.
+  /// [screenPoint] uses the units reported by the map tap callback.
+  Future<MapPoi?> poiAt(Offset screenPoint);
 }

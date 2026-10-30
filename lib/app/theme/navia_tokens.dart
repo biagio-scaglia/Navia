@@ -39,6 +39,11 @@ abstract final class NaviaColors {
   static const routeCasing = Color(0xFF0B4FB8);
   static const routeCasingDark = Color(0xFF0B2A5C);
 
+  /// Extruded buildings in the 3D view: warm stone in light maps, slate
+  /// blue in dark maps, both muted so routes stay dominant.
+  static const building = Color(0xFFDCD6CC);
+  static const buildingDark = Color(0xFF2A3754);
+
   static const error = Color(0xFFD93A3A);
   static const errorDark = Color(0xFFFF8A80);
 }

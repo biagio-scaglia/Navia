@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' show Point;
 
 import 'package:flutter/material.dart';
@@ -9,28 +10,37 @@ import '../../../../shared/models/geo_point.dart';
 import '../../data/maplibre_navia_map_controller.dart';
 import '../../domain/map_camera.dart';
 import '../../domain/map_overlays.dart';
+import '../../domain/map_style_source.dart';
 import '../../domain/navia_map_controller.dart';
 
 /// Renders the map with MapLibre Native.
 ///
 /// This widget and [MapLibreNaviaMapController] are the only places that
 /// know about MapLibre; everything else talks to [NaviaMapController].
-/// The platform view stays mounted for the lifetime of the map screen: style
-/// and overlay changes are applied to the existing native map.
+/// The platform view stays mounted for the lifetime of the map screen: style,
+/// 3D and overlay changes are applied to the existing native map.
 class NaviaMapView extends StatefulWidget {
   const NaviaMapView({
     super.key,
-    required this.styleUrl,
+    required this.source,
+    required this.style,
+    required this.buildings3d,
     required this.initialCamera,
     required this.showUserLocation,
     required this.controlsPadding,
     required this.onMapReady,
     required this.onStyleLoadStarted,
     required this.onStyleLoaded,
+    required this.onTap,
     required this.onLongPress,
   });
 
-  final String styleUrl;
+  final MapStyleSource source;
+  final MapStyleId style;
+
+  /// Tilted camera with extruded buildings.
+  final bool buildings3d;
+
   final MapCamera initialCamera;
 
   /// Shows the user location indicator, fed through
@@ -48,6 +58,9 @@ class NaviaMapView extends StatefulWidget {
   /// Called once the style and Navia's overlay layers are ready.
   final VoidCallback onStyleLoaded;
 
+  /// A tap on the map, with the screen position for feature queries.
+  final void Function(Offset screenPoint, GeoPoint point) onTap;
+
   final ValueChanged<GeoPoint> onLongPress;
 
   @override
@@ -56,7 +69,8 @@ class NaviaMapView extends StatefulWidget {
 
 class _NaviaMapViewState extends State<NaviaMapView> {
   MapLibreNaviaMapController? _controller;
-  late MapOverlayStyle _overlayStyle;
+
+  String get _styleUrl => widget.source.urlFor(widget.style);
 
   @override
   void initState() {
@@ -65,15 +79,18 @@ class _NaviaMapViewState extends State<NaviaMapView> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _overlayStyle = _overlayStyleFor(Theme.of(context));
-  }
-
-  @override
   void didUpdateWidget(NaviaMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.styleUrl != widget.styleUrl) _notifyLoadStarted();
+    final controller = _controller;
+    if (oldWidget.source.urlFor(oldWidget.style) != _styleUrl) {
+      // Sent before MapLibre receives the new style, so the camera query is
+      // answered with the position the user was looking at.
+      if (controller != null) unawaited(controller.captureCamera());
+      _notifyLoadStarted();
+    }
+    if (oldWidget.buildings3d != widget.buildings3d && controller != null) {
+      unawaited(controller.setBuildings3d(widget.buildings3d));
+    }
   }
 
   // Deferred so that listeners can update state outside of build.
@@ -92,13 +109,34 @@ class _NaviaMapViewState extends State<NaviaMapView> {
   Future<void> _onStyleLoaded() async {
     final controller = _controller;
     if (controller == null) return;
+    final source = widget.source;
     try {
-      await controller.installOverlays(_overlayStyle);
+      await controller.installOverlays(
+        _overlayStyleFor(widget.style),
+        buildings3d: widget.buildings3d,
+        buildingsSource: source.supportsBuildings3d
+            ? (
+                sourceId: source.buildingsSourceId!,
+                sourceLayer: source.buildingsSourceLayer!,
+              )
+            : null,
+      );
+      await controller.restoreCamera();
     } on Exception catch (error) {
       // The map stays usable without overlays; report it for debugging.
       debugPrint('[map] could not install overlays: $error');
     }
     if (mounted) widget.onStyleLoaded();
+  }
+
+  void _onTap(Point<double> screenPoint, LatLng coordinates) {
+    final point = GeoPoint.tryCreate(
+      coordinates.latitude,
+      coordinates.longitude,
+    );
+    if (point != null) {
+      widget.onTap(Offset(screenPoint.x, screenPoint.y), point);
+    }
   }
 
   void _onLongPress(Point<double> _, LatLng coordinates) {
@@ -109,15 +147,18 @@ class _NaviaMapViewState extends State<NaviaMapView> {
     if (point != null) widget.onLongPress(point);
   }
 
-  static MapOverlayStyle _overlayStyleFor(ThemeData theme) {
-    final dark = theme.brightness == Brightness.dark;
+  /// Overlay colors follow the map style, not the app theme, so they stay
+  /// readable when, e.g., a dark map is shown in the light theme.
+  static MapOverlayStyle _overlayStyleFor(MapStyleId style) {
+    final dark = style.isDark;
     return MapOverlayStyle(
       route: dark ? NaviaColors.brandLight : NaviaColors.brand,
       routeCasing: dark ? NaviaColors.routeCasingDark : NaviaColors.routeCasing,
       origin: dark ? NaviaColors.aquaLight : NaviaColors.aqua,
       destination: dark ? NaviaColors.destinationDark : NaviaColors.destination,
-      selection: theme.colorScheme.onSurface,
+      selection: dark ? NaviaColors.inkDark : NaviaColors.inkLight,
       markerStroke: dark ? NaviaColors.surfaceDark : Colors.white,
+      buildings: dark ? NaviaColors.buildingDark : NaviaColors.building,
     );
   }
 
@@ -127,12 +168,12 @@ class _NaviaMapViewState extends State<NaviaMapView> {
     final padding = widget.controlsPadding;
 
     return MapLibreMap(
-      styleString: widget.styleUrl,
+      styleString: _styleUrl,
       initialCameraPosition: CameraPosition(
         target: MapLibreNaviaMapController.toLatLng(camera.target),
         zoom: camera.zoom,
         bearing: camera.bearing,
-        tilt: camera.tilt,
+        tilt: widget.buildings3d ? AppConfig.pitch3d : camera.tilt,
       ),
       minMaxZoomPreference: const MinMaxZoomPreference(
         AppConfig.minZoom,
@@ -140,6 +181,7 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       ),
       onMapCreated: _onMapCreated,
       onStyleLoadedCallback: _onStyleLoaded,
+      onMapClick: _onTap,
       onMapLongClick: _onLongPress,
       locationSource: const ManualLocationSource(),
       myLocationEnabled: widget.showUserLocation,
@@ -147,7 +189,9 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       compassViewMargins: Point(padding.right, padding.top),
       attributionButtonPosition: AttributionButtonPosition.topLeft,
       attributionButtonMargins: Point(padding.left, padding.top),
-      attributionButtonColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      attributionButtonColor: widget.style.isDark
+          ? NaviaColors.inkDarkMuted
+          : NaviaColors.inkLightMuted,
       foregroundLoadColor: Theme.of(context).scaffoldBackgroundColor,
     );
   }

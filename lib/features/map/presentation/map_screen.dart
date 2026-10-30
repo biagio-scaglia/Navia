@@ -124,6 +124,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     await _map?.moveTo(place.point, zoom: AppConfig.userLocationZoom);
   }
 
+  /// A tap selects the named place under the finger, if the style draws
+  /// one there; a tap on an empty spot dismisses the current selection.
+  Future<void> _onTap(Offset screenPoint, GeoPoint point) async {
+    final poi = await _map?.poiAt(screenPoint);
+    if (!mounted) return;
+    if (poi == null) {
+      _navigation.clearSelection();
+      return;
+    }
+    _navigation.select(
+      PointWaypoint(poi.point, label: poi.name, description: poi.category),
+    );
+  }
+
   void _onLongPress(GeoPoint point) {
     unawaited(HapticFeedback.selectionClick());
     _navigation.select(PointWaypoint(point));
@@ -216,6 +230,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
                 onMapReady: _onMapReady,
                 onStyleLoaded: _onStyleLoaded,
+                onTap: _onTap,
                 onLongPress: _onLongPress,
               ),
             ),
@@ -244,12 +259,14 @@ class _MapLayer extends ConsumerWidget {
     required this.controlsPadding,
     required this.onMapReady,
     required this.onStyleLoaded,
+    required this.onTap,
     required this.onLongPress,
   });
 
   final EdgeInsets controlsPadding;
   final ValueChanged<NaviaMapController> onMapReady;
   final VoidCallback onStyleLoaded;
+  final void Function(Offset screenPoint, GeoPoint point) onTap;
   final ValueChanged<GeoPoint> onLongPress;
 
   @override
@@ -258,9 +275,10 @@ class _MapLayer extends ConsumerWidget {
     final style = ref.watch(
       mapPreferencesProvider.select((p) => p.appearance.resolve(brightness)),
     );
-    final styleUrl = ref.watch(
-      mapStyleSourceProvider.select((s) => s.urlFor(style)),
+    final buildings3d = ref.watch(
+      mapPreferencesProvider.select((p) => p.buildings3d),
     );
+    final source = ref.watch(mapStyleSourceProvider);
     final attempt = ref.watch(
       mapLoadControllerProvider.select((s) => s.attempt),
     );
@@ -271,7 +289,9 @@ class _MapLayer extends ConsumerWidget {
     return NaviaMapView(
       // A new key recreates the platform view, only on explicit retry.
       key: ValueKey(attempt),
-      styleUrl: styleUrl,
+      source: source,
+      style: style,
+      buildings3d: buildings3d,
       initialCamera: AppConfig.initialCamera,
       showUserLocation: hasPosition,
       controlsPadding: controlsPadding,
@@ -280,6 +300,7 @@ class _MapLayer extends ConsumerWidget {
           .read(mapLoadControllerProvider.notifier)
           .loadStarted,
       onStyleLoaded: onStyleLoaded,
+      onTap: onTap,
       onLongPress: onLongPress,
     );
   }

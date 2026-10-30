@@ -77,6 +77,8 @@ abstract final class AppConfig {
       MapStyleId.minimal: 'https://tiles.openfreemap.org/styles/positron',
       MapStyleId.dark: 'https://tiles.openfreemap.org/styles/dark',
     },
+    buildingsSourceId: 'openmaptiles',
+    buildingsSourceLayer: 'building',
     attributions: [
       MapAttribution(
         label: '© OpenStreetMap contributors',

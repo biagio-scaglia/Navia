@@ -64,6 +64,8 @@ class MapStyleSource {
     required this.name,
     required this.styleUrls,
     required this.attributions,
+    this.buildingsSourceId,
+    this.buildingsSourceLayer,
   });
 
   /// Display name of the provider.
@@ -75,6 +77,16 @@ class MapStyleSource {
 
   /// Notices to display, in order. Map data notices must never be removed.
   final List<MapAttribution> attributions;
+
+  /// Vector source and layer holding building footprints with real heights
+  /// (`render_height`, `render_min_height` in the OpenMapTiles schema).
+  /// Null when the provider has no height data: 3D buildings are then
+  /// unavailable rather than faked.
+  final String? buildingsSourceId;
+  final String? buildingsSourceLayer;
+
+  bool get supportsBuildings3d =>
+      buildingsSourceId != null && buildingsSourceLayer != null;
 
   /// Styles this provider offers.
   Iterable<MapStyleId> get styles => styleUrls.keys;

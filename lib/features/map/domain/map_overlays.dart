@@ -31,6 +31,7 @@ class MapOverlayStyle {
     required this.destination,
     required this.selection,
     required this.markerStroke,
+    required this.buildings,
   });
 
   final Color route;
@@ -39,4 +40,19 @@ class MapOverlayStyle {
   final Color destination;
   final Color selection;
   final Color markerStroke;
+
+  /// Color of extruded buildings in the 3D view.
+  final Color buildings;
+}
+
+/// A named point of interest rendered by the map style.
+@immutable
+class MapPoi {
+  const MapPoi({required this.name, required this.point, this.category});
+
+  final String name;
+  final GeoPoint point;
+
+  /// Italian category label, when the feature class is known.
+  final String? category;
 }
