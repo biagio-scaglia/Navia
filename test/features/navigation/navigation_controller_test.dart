@@ -103,19 +103,39 @@ _Setup _setup({
 Future<void> _flush() => Future<void>.delayed(Duration.zero);
 
 void main() {
-  test('selection becomes destination with the user location as origin', () {
-    final (:container, router: _, location: _) = _setup();
-    final controller = container.read(navigationControllerProvider.notifier);
+  test('directions to a selection start from the user location', () async {
+    final (:container, :router, location: _) = _setup();
+    final controller = container.read(navigationControllerProvider.notifier)
+      ..select(_b);
 
-    controller
-      ..select(_b)
-      ..useSelectionAsDestination();
-
-    final state = container.read(navigationControllerProvider);
+    final directions = controller.useSelectionAsDestination();
+    var state = container.read(navigationControllerProvider);
     expect(state.selection, isNull);
     expect(state.origin, const CurrentLocationWaypoint());
     expect(state.destination, _b);
-    expect(state.canCalculate, isTrue);
+    expect(state.routeStatus, RouteStatus.loading);
+
+    await _flush();
+    router.completeLast();
+    await directions;
+
+    state = container.read(navigationControllerProvider);
+    expect(state.routeStatus, RouteStatus.ready);
+    expect(router.requests.single.origin, _gps);
+    expect(router.requests.single.destination, _b.point);
+  });
+
+  test('a selection used as origin waits for a destination', () async {
+    final (:container, :router, location: _) = _setup();
+    final controller = container.read(navigationControllerProvider.notifier)
+      ..select(_a);
+
+    await controller.useSelectionAsOrigin();
+
+    final state = container.read(navigationControllerProvider);
+    expect(state.origin, _a);
+    expect(state.routeStatus, RouteStatus.idle);
+    expect(router.requests, isEmpty);
   });
 
   test('clearing a selection keeps the planned route points', () {
@@ -129,16 +149,21 @@ void main() {
     expect(controller.state.origin, _a);
   });
 
-  test('swaps origin and destination', () {
-    final (:container, router: _, location: _) = _setup();
-    container.read(navigationControllerProvider.notifier)
+  test('swaps origin and destination and recalculates', () async {
+    final (:container, :router, location: _) = _setup();
+    final controller = container.read(navigationControllerProvider.notifier)
       ..setOrigin(_a)
-      ..setDestination(_b)
-      ..swap();
+      ..setDestination(_b);
 
+    final swap = controller.swap();
     final state = container.read(navigationControllerProvider);
     expect(state.origin, _b);
     expect(state.destination, _a);
+
+    await _flush();
+    router.completeLast();
+    await swap;
+    expect(router.requests.single.origin, _b.point);
   });
 
   test('calculates a route through loading and ready states', () async {

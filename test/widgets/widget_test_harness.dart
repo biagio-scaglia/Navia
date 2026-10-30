@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navia/app/theme/navia_theme.dart';
 import 'package:navia/features/location/data/geolocator_location_repository.dart';
+import 'package:navia/features/location/domain/location_models.dart';
+import 'package:navia/shared/models/geo_point.dart';
 import 'package:navia/shared/providers/package_info_provider.dart';
 import 'package:navia/shared/providers/shared_preferences_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -21,7 +23,12 @@ Future<ProviderContainer> pumpNaviaWidget(
 }) async {
   SharedPreferences.setMockInitialValues({});
   final preferences = await SharedPreferences.getInstance();
-  final location = FakeLocationRepository();
+  final location = FakeLocationRepository(
+    position: UserPosition(
+      point: const GeoPoint(latitude: 41.1253, longitude: 16.8667),
+      timestamp: DateTime.utc(2026),
+    ),
+  );
   addTearDown(location.close);
 
   await tester.pumpWidget(

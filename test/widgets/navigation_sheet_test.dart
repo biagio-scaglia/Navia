@@ -83,12 +83,33 @@ void main() {
     expect(find.text('Punto selezionato'), findsOneWidget);
     expect(find.textContaining('41.11710, 16.87190'), findsOneWidget);
 
-    await tester.tap(find.text('Destinazione'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Indicazioni'));
     await tester.pumpAndSettle();
 
     expect(find.text('La tua posizione'), findsOneWidget);
     expect(find.text('Punto sulla mappa'), findsOneWidget);
-    expect(find.text('Calcola percorso'), findsOneWidget);
+    // The route is requested right away, without a separate step.
+    expect(find.text('3 min'), findsOneWidget);
+    expect(find.text('Calcola percorso'), findsNothing);
+  });
+
+  testWidgets('shows the route as soon as a destination is chosen', (
+    tester,
+  ) async {
+    final controller = await _pump(tester);
+    controller
+      ..setOrigin(
+        const PointWaypoint(GeoPoint(latitude: 41.12, longitude: 16.86)),
+      )
+      ..select(_point);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Indicazioni'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('3 min'), findsOneWidget);
+    expect(find.text('1,7 km'), findsOneWidget);
+    expect(find.textContaining('Arrivo alle'), findsOneWidget);
   });
 
   testWidgets('calculates and summarizes a route', (tester) async {

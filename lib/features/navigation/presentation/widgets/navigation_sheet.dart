@@ -1,14 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/config/app_config.dart';
+import '../../../../app/theme/navia_surfaces.dart';
 import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/open_link.dart';
-import '../../../../core/widgets/floating_surface.dart';
+import '../../../../core/widgets/navia_buttons.dart';
 import '../../../../core/widgets/navia_icon.dart';
 import '../../../../core/widgets/navia_sheet.dart';
+import '../../../favorites/domain/favorite.dart';
 import '../../../favorites/presentation/favorites_controller.dart';
 import '../../../search/data/photon_geocoding_repository.dart';
 import '../../../search/presentation/search_screen.dart';
@@ -17,7 +21,8 @@ import '../../domain/navigation_models.dart';
 import '../navigation_controller.dart';
 import '../navigation_labels.dart';
 
-/// Collapsible bottom panel for point selection and route planning.
+/// Panel docked to the bottom of the map: where-to entry, the selected
+/// place, and route planning.
 ///
 /// It is laid out next to the map, not inside it, so expanding or collapsing
 /// it never rebuilds the map view.
@@ -60,31 +65,33 @@ class _NavigationSheetState extends ConsumerState<NavigationSheet> {
         place.point,
         label: place.name,
         description: place.description,
+        category: place.category,
       ),
     };
   }
 
   Future<void> _pickOrigin() async {
     final waypoint = await _pickWaypoint(origin: true);
-    if (waypoint != null && mounted) _controller.setOrigin(waypoint);
+    if (waypoint == null || !mounted) return;
+    _controller.setOrigin(waypoint);
+    await _controller.calculate();
   }
 
   Future<void> _pickDestination() async {
     final waypoint = await _pickWaypoint(origin: false);
     if (waypoint == null || !mounted) return;
+    _routeTo(waypoint);
+  }
+
+  /// Plans a route to [destination], from the user location unless an
+  /// origin was already chosen.
+  void _routeTo(Waypoint destination) {
+    _setExpanded(true);
     if (ref.read(navigationControllerProvider).origin == null) {
       _controller.setOrigin(const CurrentLocationWaypoint());
     }
-    _controller.setDestination(waypoint);
-  }
-
-  Future<void> _startPlanning() async {
-    setState(() => _expanded = true);
-    if (_searchAvailable) {
-      await _pickDestination();
-    } else {
-      _controller.setOrigin(const CurrentLocationWaypoint());
-    }
+    _controller.setDestination(destination);
+    unawaited(_controller.calculate());
   }
 
   void _setExpanded(bool expanded) {
@@ -109,13 +116,13 @@ class _NavigationSheetState extends ConsumerState<NavigationSheet> {
       content = _SelectionCard(
         selection: selection,
         routingAvailable: routingAvailable,
-        onUseAsOrigin: () {
+        onStartHere: () {
           _setExpanded(true);
-          _controller.useSelectionAsOrigin();
+          unawaited(_controller.useSelectionAsOrigin());
         },
-        onUseAsDestination: () {
+        onDirections: () {
           _setExpanded(true);
-          _controller.useSelectionAsDestination();
+          unawaited(_controller.useSelectionAsDestination());
         },
         onClose: _controller.clearSelection,
       );
@@ -127,58 +134,144 @@ class _NavigationSheetState extends ConsumerState<NavigationSheet> {
         onPickDestination: _pickDestination,
       );
     } else if (routingAvailable) {
-      content = _WhereToButton(onPressed: _startPlanning);
+      content = _WhereToPanel(
+        onSearch: _pickDestination,
+        onFavorite: (favorite) =>
+            _routeTo(PointWaypoint(favorite.point, label: favorite.name)),
+      );
     } else {
       content = null;
     }
     if (content == null) return const SizedBox.shrink();
 
-    return FloatingSurface(
-      child: AnimatedSize(
-        duration: NaviaDurations.medium,
-        curve: Curves.easeOutCubic,
-        alignment: Alignment.bottomCenter,
-        // Scrolls when the parent caps the height (small or landscape
-        // screens), so the sheet never overflows or hides the whole map.
-        child: SingleChildScrollView(child: content),
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    return DecoratedBox(
+      decoration: context.naviaSurfaces.dockedDecoration(),
+      child: Material(
+        type: MaterialType.transparency,
+        child: AnimatedSize(
+          duration: NaviaDurations.medium,
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.bottomCenter,
+          // Scrolls when the parent caps the height (small or landscape
+          // screens), so the panel never hides the whole map.
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(bottom: safeBottom),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [const _DragHandle(), content],
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _WhereToButton extends StatelessWidget {
-  const _WhereToButton({required this.onPressed});
-
-  final VoidCallback onPressed;
+class _DragHandle extends StatelessWidget {
+  const _DragHandle();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onPressed,
+    return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: NaviaSpacing.lg,
-          vertical: NaviaSpacing.md,
+        padding: const EdgeInsets.only(top: NaviaSpacing.sm),
+        child: Container(
+          width: 36,
+          height: 4,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            borderRadius: NaviaRadii.pill,
+          ),
         ),
-        child: Row(
-          children: [
-            NaviaIcon(NaviaIcons.directions, color: theme.colorScheme.primary),
-            const SizedBox(width: NaviaSpacing.md),
-            Expanded(
-              child: Text(
-                AppStrings.whereTo,
-                style: theme.textTheme.titleMedium,
+      ),
+    );
+  }
+}
+
+/// Idle state: a large where-to field and quick routes to favorites.
+class _WhereToPanel extends ConsumerWidget {
+  const _WhereToPanel({required this.onSearch, required this.onFavorite});
+
+  final VoidCallback onSearch;
+  final ValueChanged<Favorite> onFavorite;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final favorites = ref.watch(favoritesProvider);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        NaviaSpacing.lg,
+        NaviaSpacing.md,
+        NaviaSpacing.lg,
+        NaviaSpacing.lg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            button: true,
+            label: AppStrings.whereTo,
+            excludeSemantics: true,
+            child: Material(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+              shape: const StadiumBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: onSearch,
+                child: SizedBox(
+                  height: 56,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: NaviaSpacing.sm),
+                      const NaviaIconBadge(NaviaIcons.directions),
+                      const SizedBox(width: NaviaSpacing.md),
+                      Expanded(
+                        child: Text(
+                          AppStrings.whereTo,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                      NaviaIcon(
+                        NaviaIcons.search,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: NaviaSpacing.lg),
+                    ],
+                  ),
+                ),
               ),
             ),
-            Text(
-              AppStrings.directions,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.primary,
+          ),
+          if (favorites.isNotEmpty) ...[
+            const SizedBox(height: NaviaSpacing.md),
+            SizedBox(
+              height: NaviaSizes.minTouchTarget,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: favorites.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: NaviaSpacing.sm),
+                itemBuilder: (context, index) {
+                  final favorite = favorites[index];
+                  return ActionChip(
+                    avatar: NaviaIcon(
+                      NaviaIcons.starFilled,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                    label: Text(favorite.name),
+                    tooltip: '${AppStrings.directions}: ${favorite.name}',
+                    onPressed: () => onFavorite(favorite),
+                  );
+                },
               ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -188,15 +281,15 @@ class _SelectionCard extends ConsumerWidget {
   const _SelectionCard({
     required this.selection,
     required this.routingAvailable,
-    required this.onUseAsOrigin,
-    required this.onUseAsDestination,
+    required this.onStartHere,
+    required this.onDirections,
     required this.onClose,
   });
 
   final PointWaypoint selection;
   final bool routingAvailable;
-  final VoidCallback onUseAsOrigin;
-  final VoidCallback onUseAsDestination;
+  final VoidCallback onStartHere;
+  final VoidCallback onDirections;
   final VoidCallback onClose;
 
   Future<void> _save(BuildContext context, WidgetRef ref) async {
@@ -229,7 +322,7 @@ class _SelectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final muted = theme.textTheme.bodySmall?.copyWith(
+    final muted = theme.textTheme.bodyMedium?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
     final lookup = ref.watch(
@@ -245,12 +338,15 @@ class _SelectionCard extends ConsumerWidget {
       ),
     );
     final category = selection.category;
+    final destinationColor = theme.brightness == Brightness.dark
+        ? NaviaColors.destinationDark
+        : NaviaColors.destination;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         NaviaSpacing.lg,
         NaviaSpacing.md,
-        NaviaSpacing.xs,
+        NaviaSpacing.lg,
         NaviaSpacing.lg,
       ),
       child: Column(
@@ -259,13 +355,7 @@ class _SelectionCard extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: NaviaSpacing.xs),
-                child: NaviaIcon(
-                  NaviaIcons.destination,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
+              NaviaIconBadge(NaviaIcons.destination, color: destinationColor),
               const SizedBox(width: NaviaSpacing.md),
               Expanded(
                 child: Column(
@@ -276,12 +366,13 @@ class _SelectionCard extends ConsumerWidget {
                         category.toUpperCase(),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
                         ),
                       ),
                     Text(
                       selection.label ?? AppStrings.selectedPoint,
-                      style: theme.textTheme.titleMedium,
+                      style: theme.textTheme.titleLarge,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -300,53 +391,60 @@ class _SelectionCard extends ConsumerWidget {
                       semanticsLabel:
                           '${AppStrings.coordinates}: '
                           '${selection.point.toDisplayString()}',
-                      style: muted?.copyWith(
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
                 ),
               ),
-              IconButton(
+              const SizedBox(width: NaviaSpacing.sm),
+              NaviaTonalIconButton(
+                icon: saved ? NaviaIcons.starFilled : NaviaIcons.star,
                 tooltip: saved
                     ? AppStrings.savedFavorite
                     : AppStrings.saveFavorite,
+                selected: saved,
                 onPressed: () => _save(context, ref),
-                icon: NaviaIcon(
-                  saved ? NaviaIcons.starFilled : NaviaIcons.star,
-                  color: saved ? theme.colorScheme.primary : null,
-                ),
               ),
-              IconButton(
+              const SizedBox(width: NaviaSpacing.sm),
+              NaviaTonalIconButton(
+                icon: NaviaIcons.close,
                 tooltip: AppStrings.close,
                 onPressed: onClose,
-                icon: const NaviaIcon(NaviaIcons.close),
               ),
             ],
           ),
           if (routingAvailable) ...[
-            const SizedBox(height: NaviaSpacing.md),
-            Padding(
-              padding: const EdgeInsets.only(right: NaviaSpacing.md),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: onUseAsOrigin,
-                      icon: const NaviaIcon(NaviaIcons.origin),
-                      label: const Text(AppStrings.origin),
+            const SizedBox(height: NaviaSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: onDirections,
+                    icon: const NaviaIcon(NaviaIcons.directions, size: 20),
+                    label: const Text(AppStrings.directions),
+                  ),
+                ),
+                const SizedBox(width: NaviaSpacing.sm),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: NaviaSpacing.md,
+                      ),
+                    ),
+                    onPressed: onStartHere,
+                    icon: const NaviaIcon(NaviaIcons.origin, size: 20),
+                    label: const Text(
+                      AppStrings.startHere,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: NaviaSpacing.sm),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: onUseAsDestination,
-                      icon: const NaviaIcon(NaviaIcons.destination),
-                      label: const Text(AppStrings.destination),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ],
@@ -376,7 +474,7 @@ class _PlanningPanel extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SheetHeader(
+        _PlanningHeader(
           expanded: expanded,
           onExpandedChanged: onExpandedChanged,
           onClose: controller.clear,
@@ -384,9 +482,9 @@ class _PlanningPanel extends ConsumerWidget {
         if (expanded)
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              NaviaSpacing.md,
+              NaviaSpacing.lg,
               0,
-              NaviaSpacing.md,
+              NaviaSpacing.lg,
               NaviaSpacing.lg,
             ),
             child: Column(
@@ -397,7 +495,7 @@ class _PlanningPanel extends ConsumerWidget {
                   onPickDestination: onPickDestination,
                 ),
                 const _ModeSelector(),
-                const SizedBox(height: NaviaSpacing.md),
+                const SizedBox(height: NaviaSpacing.lg),
                 const _RouteStatusArea(),
               ],
             ),
@@ -407,8 +505,9 @@ class _PlanningPanel extends ConsumerWidget {
   }
 }
 
-class _SheetHeader extends ConsumerWidget {
-  const _SheetHeader({
+/// Title row of the planning panel. Collapsed, it summarizes the route.
+class _PlanningHeader extends ConsumerWidget {
+  const _PlanningHeader({
     required this.expanded,
     required this.onExpandedChanged,
     required this.onClose,
@@ -426,7 +525,9 @@ class _SheetHeader extends ConsumerWidget {
         (s) => (s.mode, s.route, s.destination),
       ),
     );
-    final title = route != null
+    final title = expanded
+        ? AppStrings.directions
+        : route != null
         ? '${formatDuration(route.duration)} · '
               '${formatDistance(route.distanceMeters)}'
         : destination?.title ?? AppStrings.chooseDestination;
@@ -437,56 +538,46 @@ class _SheetHeader extends ConsumerWidget {
         final velocity = details.primaryVelocity ?? 0;
         if (velocity.abs() > 200) onExpandedChanged(velocity < 0);
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: NaviaSpacing.sm),
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.outlineVariant,
-                borderRadius: const BorderRadius.all(Radius.circular(2)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          NaviaSpacing.lg,
+          NaviaSpacing.sm,
+          NaviaSpacing.md,
+          NaviaSpacing.md,
+        ),
+        child: Row(
+          children: [
+            NaviaIconBadge(mode.icon, size: 36),
+            const SizedBox(width: NaviaSpacing.md),
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.titleLarge,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-          Row(
-            children: [
-              const SizedBox(width: NaviaSpacing.lg),
-              NaviaIcon(mode.icon, size: 20, color: theme.colorScheme.primary),
-              const SizedBox(width: NaviaSpacing.sm),
-              Expanded(
-                child: Text(
-                  expanded ? AppStrings.directions : title,
-                  style: theme.textTheme.titleMedium,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                tooltip: expanded
-                    ? AppStrings.collapseSheet
-                    : AppStrings.expandSheet,
-                onPressed: () => onExpandedChanged(!expanded),
-                icon: NaviaIcon(
-                  expanded ? NaviaIcons.chevronDown : NaviaIcons.chevronUp,
-                ),
-              ),
-              IconButton(
-                tooltip: AppStrings.closeRoute,
-                onPressed: onClose,
-                icon: const NaviaIcon(NaviaIcons.close),
-              ),
-              const SizedBox(width: NaviaSpacing.xs),
-            ],
-          ),
-        ],
+            NaviaTonalIconButton(
+              icon: expanded ? NaviaIcons.chevronDown : NaviaIcons.chevronUp,
+              tooltip: expanded
+                  ? AppStrings.collapseSheet
+                  : AppStrings.expandSheet,
+              onPressed: () => onExpandedChanged(!expanded),
+            ),
+            const SizedBox(width: NaviaSpacing.sm),
+            NaviaTonalIconButton(
+              icon: NaviaIcons.close,
+              tooltip: AppStrings.closeRoute,
+              onPressed: onClose,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+/// Origin and destination joined by a dotted line, with the swap action.
 class _WaypointFields extends ConsumerWidget {
   const _WaypointFields({
     required this.onPickOrigin,
@@ -504,16 +595,15 @@ class _WaypointFields extends ConsumerWidget {
       navigationControllerProvider.select((s) => (s.origin, s.destination)),
     );
 
-    return Row(
-      children: [
-        Expanded(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(
-                alpha: 0.5,
-              ),
-              borderRadius: NaviaRadii.mdAll,
-            ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.04),
+        borderRadius: NaviaRadii.mdAll,
+        border: Border.all(color: context.naviaSurfaces.hairline),
+      ),
+      child: Row(
+        children: [
+          Expanded(
             child: Column(
               children: [
                 _WaypointField(
@@ -522,9 +612,9 @@ class _WaypointFields extends ConsumerWidget {
                   waypoint: origin,
                   icon: NaviaIcons.origin,
                   iconColor: dark ? NaviaColors.aquaLight : NaviaColors.aqua,
+                  connector: _Connector.below,
                   onTap: onPickOrigin,
                 ),
-                const Divider(indent: 48),
                 _WaypointField(
                   label: AppStrings.destination,
                   placeholder: AppStrings.chooseDestination,
@@ -533,23 +623,32 @@ class _WaypointFields extends ConsumerWidget {
                   iconColor: dark
                       ? NaviaColors.destinationDark
                       : NaviaColors.destination,
+                  connector: _Connector.above,
                   onTap: onPickDestination,
                 ),
               ],
             ),
           ),
-        ),
-        IconButton(
-          tooltip: AppStrings.swapWaypoints,
-          onPressed: origin == null && destination == null
-              ? null
-              : ref.read(navigationControllerProvider.notifier).swap,
-          icon: const NaviaIcon(NaviaIcons.swap),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.only(right: NaviaSpacing.sm),
+            child: NaviaTonalIconButton(
+              icon: NaviaIcons.swap,
+              tooltip: AppStrings.swapWaypoints,
+              onPressed: origin == null && destination == null
+                  ? null
+                  : () => unawaited(
+                      ref.read(navigationControllerProvider.notifier).swap(),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+/// Which side of a waypoint icon the dotted route line continues on.
+enum _Connector { above, below }
 
 class _WaypointField extends StatelessWidget {
   const _WaypointField({
@@ -558,20 +657,27 @@ class _WaypointField extends StatelessWidget {
     required this.waypoint,
     required this.icon,
     required this.iconColor,
+    required this.connector,
     required this.onTap,
   });
+
+  static const _height = 60.0;
+  static const _iconColumn = 48.0;
 
   final String label;
   final String placeholder;
   final Waypoint? waypoint;
   final NaviaIcons icon;
   final Color iconColor;
+  final _Connector connector;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final waypoint = this.waypoint;
+    final dots = theme.colorScheme.outline.withValues(alpha: 0.6);
+
     return Semantics(
       button: true,
       label: '$label: ${waypoint?.title ?? placeholder}',
@@ -579,43 +685,48 @@ class _WaypointField extends StatelessWidget {
       child: InkWell(
         borderRadius: NaviaRadii.mdAll,
         onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 56),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: NaviaSpacing.md,
-              vertical: NaviaSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                NaviaIcon(icon, color: iconColor, size: 22),
-                const SizedBox(width: NaviaSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        label,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        waypoint?.title ?? placeholder,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: waypoint == null
-                              ? theme.colorScheme.onSurfaceVariant
-                              : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
+        child: SizedBox(
+          height: _height,
+          child: Row(
+            children: [
+              SizedBox(
+                width: _iconColumn,
+                height: _height,
+                child: CustomPaint(
+                  painter: _ConnectorPainter(connector, dots),
+                  child: Center(
+                    child: NaviaIcon(icon, color: iconColor, size: 22),
                   ),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      waypoint?.title ?? placeholder,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: waypoint == null
+                            ? FontWeight.w400
+                            : FontWeight.w600,
+                        color: waypoint == null
+                            ? theme.colorScheme.onSurfaceVariant
+                            : theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -623,6 +734,34 @@ class _WaypointField extends StatelessWidget {
   }
 }
 
+/// Draws the dotted segment that links the origin and destination icons.
+class _ConnectorPainter extends CustomPainter {
+  const _ConnectorPainter(this.connector, this.color);
+
+  final _Connector connector;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final x = size.width / 2;
+    final center = size.height / 2;
+    const gap = 16.0;
+    final (start, end) = switch (connector) {
+      _Connector.below => (center + gap, size.height),
+      _Connector.above => (0.0, center - gap),
+    };
+    for (var y = start + 2; y < end; y += 6) {
+      canvas.drawCircle(Offset(x, y), 1.5, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConnectorPainter oldDelegate) =>
+      oldDelegate.connector != connector || oldDelegate.color != color;
+}
+
+/// Travel modes as equal-width pills.
 class _ModeSelector extends ConsumerWidget {
   const _ModeSelector();
 
@@ -635,21 +774,91 @@ class _ModeSelector extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(top: NaviaSpacing.md),
-      child: SegmentedButton<TravelMode>(
-        showSelectedIcon: false,
-        segments: [
+      child: Row(
+        children: [
           for (final candidate in TravelMode.values)
             if (modes.contains(candidate))
-              ButtonSegment(
-                value: candidate,
-                label: Text(candidate.label),
-                icon: NaviaIcon(candidate.icon),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: NaviaSpacing.xs / 2,
+                  ),
+                  child: _ModePill(
+                    mode: candidate,
+                    selected: candidate == mode,
+                    onSelected: () => unawaited(
+                      ref
+                          .read(navigationControllerProvider.notifier)
+                          .setMode(candidate),
+                    ),
+                  ),
+                ),
               ),
         ],
-        selected: {mode},
-        onSelectionChanged: (selection) => ref
-            .read(navigationControllerProvider.notifier)
-            .setMode(selection.single),
+      ),
+    );
+  }
+}
+
+class _ModePill extends StatelessWidget {
+  const _ModePill({
+    required this.mode,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final TravelMode mode;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final foreground = selected ? scheme.onPrimary : scheme.onSurface;
+
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: mode.label,
+      excludeSemantics: true,
+      child: AnimatedContainer(
+        duration: NaviaDurations.fast,
+        decoration: ShapeDecoration(
+          color: selected ? scheme.primary : Colors.transparent,
+          shape: StadiumBorder(
+            side: BorderSide(
+              color: selected ? scheme.primary : scheme.outlineVariant,
+            ),
+          ),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const StadiumBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: selected ? null : onSelected,
+            child: SizedBox(
+              height: 44,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  NaviaIcon(mode.icon, size: 20, color: foreground),
+                  const SizedBox(width: NaviaSpacing.xs + 2),
+                  Flexible(
+                    child: Text(
+                      mode.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelLarge?.copyWith(color: foreground),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -669,53 +878,76 @@ class _RouteStatusArea extends ConsumerWidget {
     );
 
     return switch (status) {
-      RouteStatus.idle => FilledButton.icon(
-        onPressed: canCalculate ? controller.calculate : null,
-        icon: const NaviaIcon(NaviaIcons.directions),
+      RouteStatus.idle when canCalculate => FilledButton.icon(
+        onPressed: controller.calculate,
+        icon: const NaviaIcon(NaviaIcons.directions, size: 20),
         label: const Text(AppStrings.calculateRoute),
+      ),
+      RouteStatus.idle => Text(
+        AppStrings.routeHint,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
       ),
       RouteStatus.loading => Semantics(
         liveRegion: true,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: NaviaSpacing.md),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2.5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const ClipRRect(
+              borderRadius: NaviaRadii.pill,
+              child: LinearProgressIndicator(minHeight: 4),
+            ),
+            const SizedBox(height: NaviaSpacing.md),
+            Text(
+              AppStrings.calculatingRoute,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-              SizedBox(width: NaviaSpacing.md),
-              Text(AppStrings.calculatingRoute),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       RouteStatus.ready when route != null => _RouteSummary(route: route),
       _ => Semantics(
         liveRegion: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              AppStrings.routeUnavailable,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.error,
-              ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.error.withValues(alpha: 0.08),
+            borderRadius: NaviaRadii.mdAll,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(NaviaSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppStrings.routeUnavailable,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.error,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (error != null) ...[
+                  const SizedBox(height: NaviaSpacing.xs),
+                  Text(error.message, style: theme.textTheme.bodyMedium),
+                ],
+                if (error?.isRetryable ?? true) ...[
+                  const SizedBox(height: NaviaSpacing.md),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: canCalculate ? controller.calculate : null,
+                      icon: const NaviaIcon(NaviaIcons.refresh, size: 20),
+                      label: const Text(AppStrings.retry),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            if (error != null) ...[
-              const SizedBox(height: NaviaSpacing.xs),
-              Text(error.message, style: theme.textTheme.bodyMedium),
-            ],
-            if (error?.isRetryable ?? true) ...[
-              const SizedBox(height: NaviaSpacing.md),
-              OutlinedButton.icon(
-                onPressed: canCalculate ? controller.calculate : null,
-                icon: const NaviaIcon(NaviaIcons.refresh),
-                label: const Text(AppStrings.retry),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     };
@@ -733,6 +965,7 @@ class _RouteSummary extends StatelessWidget {
     final muted = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
+    final arrival = DateTime.now().add(route.duration);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -743,28 +976,27 @@ class _RouteSummary extends StatelessWidget {
           children: [
             Text(
               formatDuration(route.duration),
-              style: theme.textTheme.headlineSmall?.copyWith(
+              style: theme.textTheme.headlineMedium?.copyWith(
                 color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
               ),
             ),
             const SizedBox(width: NaviaSpacing.md),
             Text(
               formatDistance(route.distanceMeters),
-              style: theme.textTheme.titleMedium,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-            const Spacer(),
-            NaviaIcon(
-              route.mode.icon,
-              size: 20,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(width: NaviaSpacing.xs),
-            Text(route.mode.label, style: theme.textTheme.labelLarge),
           ],
         ),
-        const SizedBox(height: NaviaSpacing.xs),
-        Text(AppStrings.routeEstimateNote, style: muted),
+        Text(
+          AppStrings.arrivalAt(formatClockTime(arrival)),
+          style: theme.textTheme.titleSmall,
+        ),
         const SizedBox(height: NaviaSpacing.sm),
+        Text(AppStrings.routeEstimateNote, style: muted),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: NaviaSpacing.sm,

@@ -118,9 +118,10 @@ class NavigationState {
 
 /// Plans a route from origin to destination.
 ///
-/// Changing origin or destination discards the current route; it is then
-/// recalculated only on request, so no network call happens while the user
-/// is still editing. Changing the travel mode recalculates a shown route.
+/// [setOrigin] and [setDestination] only edit the plan. The user-facing
+/// actions ([useSelectionAsOrigin], [useSelectionAsDestination], [swap] and
+/// [setMode]) also calculate the route as soon as both ends are known, so
+/// picking a destination is enough to see the route.
 class NavigationController extends Notifier<NavigationState> {
   int _generation = 0;
   int _selectionGeneration = 0;
@@ -181,13 +182,14 @@ class NavigationController extends Notifier<NavigationState> {
     return ++_selectionGeneration;
   }
 
-  void useSelectionAsOrigin() {
+  Future<void> useSelectionAsOrigin() async {
     final selection = state.selection;
     if (selection == null) return;
     _updateWaypoints(origin: selection, destination: state.destination);
+    await calculate();
   }
 
-  void useSelectionAsDestination() {
+  Future<void> useSelectionAsDestination() async {
     final selection = state.selection;
     if (selection == null) return;
     // Starting from the user location is the most common case.
@@ -195,6 +197,7 @@ class NavigationController extends Notifier<NavigationState> {
       origin: state.origin ?? const CurrentLocationWaypoint(),
       destination: selection,
     );
+    await calculate();
   }
 
   void setOrigin(Waypoint? origin) =>
@@ -203,15 +206,13 @@ class NavigationController extends Notifier<NavigationState> {
   void setDestination(Waypoint? destination) =>
       _updateWaypoints(origin: state.origin, destination: destination);
 
-  void swap() {
-    final hadRoute = state.routeStatus == RouteStatus.ready;
+  Future<void> swap() async {
     _updateWaypoints(origin: state.destination, destination: state.origin);
-    if (hadRoute) unawaited(calculate());
+    await calculate();
   }
 
   Future<void> setMode(TravelMode mode) async {
     if (mode == state.mode || !supportedModes.contains(mode)) return;
-    final hadRoute = state.route != null || state.error != null;
     _generation++;
     state = state.copyWith(
       mode: mode,
@@ -219,7 +220,7 @@ class NavigationController extends Notifier<NavigationState> {
       route: () => null,
       error: () => null,
     );
-    if (hadRoute) await calculate();
+    await calculate();
   }
 
   /// Ends route planning and removes the route from the map.
