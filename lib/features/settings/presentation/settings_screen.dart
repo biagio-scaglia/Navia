@@ -61,6 +61,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _Section(title: AppStrings.appearance, child: _ThemeSelector()),
                 _Section(title: AppStrings.location, child: _LocationSection()),
                 _Section(title: AppStrings.map, child: _MapSection()),
+                _Section(
+                  title: AppStrings.onlineServices,
+                  child: _ServicesSection(),
+                ),
                 _Section(title: AppStrings.about, child: _AboutSection()),
               ],
             ),
@@ -230,6 +234,55 @@ class _MapSection extends ConsumerWidget {
         ),
         const Divider(indent: NaviaSpacing.lg, endIndent: NaviaSpacing.lg),
         MapAttributionList(source: source),
+      ],
+    );
+  }
+}
+
+class _ServicesSection extends StatelessWidget {
+  const _ServicesSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Widget service(IconData icon, String title, String detail) => ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(detail),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            NaviaSpacing.lg,
+            NaviaSpacing.sm,
+            NaviaSpacing.lg,
+            0,
+          ),
+          child: Text(
+            AppStrings.onlineServicesInfo,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        service(
+          Icons.map_outlined,
+          AppStrings.serviceMap,
+          AppStrings.serviceMapDetail,
+        ),
+        service(
+          Icons.search_rounded,
+          AppStrings.serviceSearch,
+          AppStrings.serviceSearchDetail,
+        ),
+        service(
+          Icons.directions_outlined,
+          AppStrings.serviceRouting,
+          AppStrings.serviceRoutingDetail,
+        ),
       ],
     );
   }
