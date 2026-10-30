@@ -4,6 +4,7 @@ import '../../../app/config/app_config.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/network/json_http_client.dart';
 import '../../../shared/models/geo_point.dart';
+import '../../../shared/models/place_category.dart';
 import '../domain/geocoding_repository.dart';
 import '../domain/place.dart';
 
@@ -32,6 +33,24 @@ class PhotonGeocodingRepository implements GeocodingRepository {
         },
       },
     );
+    return parse(await _get(uri));
+  }
+
+  @override
+  Future<Place?> reverse(GeoPoint point) async {
+    final uri = Uri.parse('$baseUrl/reverse').replace(
+      queryParameters: {
+        'lat': point.latitude.toStringAsFixed(6),
+        'lon': point.longitude.toStringAsFixed(6),
+        'limit': '1',
+        'lang': 'default',
+      },
+    );
+    final places = parse(await _get(uri));
+    return places.isEmpty ? null : places.first;
+  }
+
+  Future<Map<String, dynamic>> _get(Uri uri) async {
     final response = await _client.getJson(uri);
     if (response.statusCode != 200) {
       throw ServiceException(
@@ -39,7 +58,7 @@ class PhotonGeocodingRepository implements GeocodingRepository {
         'HTTP ${response.statusCode}',
       );
     }
-    return parse(response.body);
+    return response.body;
   }
 
   /// Parses a Photon GeoJSON response. Features without a usable name or
@@ -65,6 +84,10 @@ class PhotonGeocodingRepository implements GeocodingRepository {
         Place(
           name: name,
           description: _description(properties, name),
+          category: PlaceCategory.firstLabel([
+            _string(properties, 'osm_value'),
+            _string(properties, 'type'),
+          ]),
           point: point,
         ),
       );

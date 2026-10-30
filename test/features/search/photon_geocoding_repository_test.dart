@@ -43,6 +43,37 @@ void main() {
       );
     });
 
+    test('labels known categories and omits unknown ones', () {
+      final places = PhotonGeocodingRepository.parse({
+        'features': [
+          _feature(
+            {
+              'name': 'Farmacia Centrale',
+              'osm_key': 'amenity',
+              'osm_value': 'pharmacy',
+              'type': 'house',
+            },
+            [16.87, 41.12],
+          ),
+          _feature(
+            {
+              'name': 'Via Sparano da Bari',
+              'osm_key': 'highway',
+              'osm_value': 'pedestrian',
+              'type': 'street',
+            },
+            [16.87, 41.12],
+          ),
+          _feature(
+            {'name': 'Something', 'osm_value': 'unknown_value'},
+            [16.87, 41.12],
+          ),
+        ],
+      });
+
+      expect(places.map((p) => p.category), ['Farmacia', 'Strada', null]);
+    });
+
     test('falls back to the street when there is no name', () {
       final places = PhotonGeocodingRepository.parse({
         'features': [
@@ -118,5 +149,50 @@ void main() {
       'lat': '41.12',
       'lon': '16.87',
     });
+  });
+
+  test('reverse geocodes the nearest place with full precision', () async {
+    late Uri requested;
+    final repository = PhotonGeocodingRepository(
+      JsonHttpClient(
+        MockClient((request) async {
+          requested = request.url;
+          return http.Response(
+            '{"features":[{"type":"Feature","geometry":{"type":"Point",'
+            '"coordinates":[16.8698,41.1202]},"properties":{"street":'
+            '"Via Sparano da Bari","housenumber":"5","city":"Bari",'
+            '"type":"house"}}]}',
+            200,
+          );
+        }),
+        userAgent: 'Navia/test',
+      ),
+      baseUrl: 'https://photon.example.org',
+    );
+
+    final place = await repository.reverse(
+      const GeoPoint(latitude: 41.12021, longitude: 16.86985),
+    );
+
+    expect(requested.path, '/reverse');
+    expect(requested.queryParameters['lat'], '41.120210');
+    expect(requested.queryParameters['lon'], '16.869850');
+    expect(place?.name, 'Via Sparano da Bari, 5');
+    expect(place?.category, 'Indirizzo');
+  });
+
+  test('reverse geocoding returns null when nothing is found', () async {
+    final repository = PhotonGeocodingRepository(
+      JsonHttpClient(
+        MockClient((_) async => http.Response('{"features":[]}', 200)),
+        userAgent: 'Navia/test',
+      ),
+      baseUrl: 'https://photon.example.org',
+    );
+
+    expect(
+      await repository.reverse(const GeoPoint(latitude: 0.5, longitude: 0.5)),
+      isNull,
+    );
   });
 }

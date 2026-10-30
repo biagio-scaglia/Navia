@@ -24,6 +24,9 @@ class _ControlledGeocoder implements GeocodingRepository {
     queries.add(query);
     return (pending[query] = Completer<List<Place>>()).future;
   }
+
+  @override
+  Future<Place?> reverse(GeoPoint point) async => null;
 }
 
 ProviderContainer _container(GeocodingRepository? repository) {
