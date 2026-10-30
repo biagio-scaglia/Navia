@@ -163,4 +163,38 @@ void main() {
       ServiceFailure.notConfigured,
     );
   });
+
+  test('submit searches immediately, skipping the debounce', () async {
+    final geocoder = _ControlledGeocoder();
+    final container = _container(geocoder);
+    final controller = container.read(searchControllerProvider.notifier);
+
+    controller.updateQuery('Bari');
+    final submitted = controller.submit('Bari');
+    expect(geocoder.queries, ['Bari']);
+
+    geocoder.pending['Bari']!.complete([_place('Bari')]);
+    await submitted;
+    // The cancelled debounce must not send a second request.
+    await _pastDebounce();
+
+    expect(geocoder.queries, ['Bari']);
+    expect(
+      container.read(searchControllerProvider).status,
+      SearchStatus.results,
+    );
+  });
+
+  test('submit does not repeat a request already in flight', () async {
+    final geocoder = _ControlledGeocoder();
+    final container = _container(geocoder);
+    final controller = container.read(searchControllerProvider.notifier);
+
+    final first = controller.submit('Bari');
+    final second = controller.submit('Bari');
+    geocoder.pending['Bari']!.complete([_place('Bari')]);
+    await Future.wait([first, second]);
+
+    expect(geocoder.queries, ['Bari']);
+  });
 }

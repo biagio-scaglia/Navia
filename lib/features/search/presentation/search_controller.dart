@@ -75,6 +75,33 @@ class SearchController extends Notifier<SearchState> {
     );
   }
 
+  /// Searches [text] right away, e.g. when the keyboard search key is
+  /// pressed, instead of waiting for the debounce.
+  Future<void> submit(String text) async {
+    final query = text.trim();
+    if (query.length < AppConfig.searchMinLength) return;
+    final cached = _cache[_key(query)];
+    if (cached != null) {
+      _debounce?.cancel();
+      state = _resultsState(query, cached);
+      return;
+    }
+    // Already showing or fetching this query: nothing to do.
+    if (query == state.query &&
+        state.status != SearchStatus.failed &&
+        _debounce?.isActive != true) {
+      return;
+    }
+    _debounce?.cancel();
+    final generation = ++_generation;
+    state = SearchState(
+      query: query,
+      status: SearchStatus.loading,
+      results: state.results,
+    );
+    await _search(query, generation);
+  }
+
   Future<void> retry() async {
     final query = state.query;
     if (query.length < AppConfig.searchMinLength) return;

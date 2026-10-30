@@ -88,6 +88,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             border: InputBorder.none,
           ),
           onChanged: ref.read(searchControllerProvider.notifier).updateQuery,
+          onSubmitted: ref.read(searchControllerProvider.notifier).submit,
         ),
         actions: [
           ListenableBuilder(
@@ -164,20 +165,8 @@ class _SearchResults extends ConsumerWidget {
             onTap: () => Navigator.of(context).pop(const CurrentLocationPick()),
           ),
         for (final place in state.results)
-          ListTile(
-            leading: const NaviaIcon(NaviaIcons.destination),
-            title: Text(
-              place.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: place.description == null
-                ? null
-                : Text(
-                    place.description!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+          _PlaceTile(
+            place: place,
             onTap: () => Navigator.of(context).pop(PlacePick(place)),
           ),
         if (message != null)
@@ -217,6 +206,52 @@ class _SearchResults extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// A search result: name, category and address, and coordinates.
+class _PlaceTile extends StatelessWidget {
+  const _PlaceTile({required this.place, required this.onTap});
+
+  final Place place;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    final details = [?place.category, ?place.description].join(' · ');
+
+    return ListTile(
+      leading: NaviaIcon(
+        NaviaIcons.destination,
+        color: theme.colorScheme.primary,
+      ),
+      title: Text(place.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (details.isNotEmpty)
+            Text(
+              details,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          Text(
+            place.point.toDisplayString(),
+            style: muted?.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+      onTap: onTap,
     );
   }
 }
