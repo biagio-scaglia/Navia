@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:navia/app/theme/navia_theme.dart';
+import 'package:navia/features/location/data/geolocator_location_repository.dart';
+import 'package:navia/shared/providers/package_info_provider.dart';
+import 'package:navia/shared/providers/shared_preferences_provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../features/location/fake_location_repository.dart';
+
+/// Pumps [child] inside the app theme, Italian localizations and a
+/// [ProviderScope] whose platform services are replaced by fakes.
+Future<ProviderContainer> pumpNaviaWidget(
+  WidgetTester tester,
+  Widget child, {
+  List<Override> overrides = const [],
+}) async {
+  SharedPreferences.setMockInitialValues({});
+  final preferences = await SharedPreferences.getInstance();
+  final location = FakeLocationRepository();
+  addTearDown(location.close);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
+        packageInfoProvider.overrideWithValue(
+          PackageInfo(
+            appName: 'Navia',
+            packageName: 'io.github.biagioscaglia.navia',
+            version: '0.2.0',
+            buildNumber: '2',
+          ),
+        ),
+        locationRepositoryProvider.overrideWithValue(location),
+        ...overrides,
+      ],
+      child: MaterialApp(
+        theme: NaviaTheme.light,
+        locale: const Locale('it', 'IT'),
+        supportedLocales: const [Locale('it', 'IT')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        home: child,
+      ),
+    ),
+  );
+  return ProviderScope.containerOf(tester.element(find.byWidget(child)));
+}
