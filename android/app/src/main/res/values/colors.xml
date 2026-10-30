@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches NaviaColors.backgroundLight, so the splash blends into the app. -->
+    <color name="navia_background">#F5F8FC</color>
+    <color name="navia_brand">#1677FF</color>
+</resources>
