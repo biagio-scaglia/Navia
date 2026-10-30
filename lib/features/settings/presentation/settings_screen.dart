@@ -14,6 +14,8 @@ import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
 import '../../map/presentation/map_providers.dart';
 import '../../map/presentation/widgets/map_attribution.dart';
+import '../../places/data/place_data_client.dart';
+import '../../places/presentation/offline_places_screen.dart';
 import '../domain/theme_preference.dart';
 import 'privacy_screen.dart';
 import 'theme_preference_controller.dart';
@@ -281,6 +283,14 @@ class _MapSection extends ConsumerWidget {
             style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
+        if (ref.watch(placeDataClientProvider) != null)
+          ListTile(
+            leading: const NaviaIcon(NaviaIcons.cloudOff),
+            title: const Text(AppStrings.offlinePlaces),
+            subtitle: const Text(AppStrings.offlinePlacesDetail),
+            trailing: const NaviaIcon(NaviaIcons.chevronRight),
+            onTap: () => OfflinePlacesScreen.open(context),
+          ),
         const Divider(indent: NaviaSpacing.lg, endIndent: NaviaSpacing.lg),
         MapAttributionList(source: source),
       ],
@@ -336,6 +346,11 @@ class _ServicesSection extends StatelessWidget {
           NaviaIcons.restaurant,
           AppStrings.servicePlaces,
           AppStrings.servicePlacesDetail,
+        ),
+        service(
+          NaviaIcons.cloudOff,
+          AppStrings.serviceOfflinePlaces,
+          AppStrings.serviceOfflinePlacesDetail,
         ),
       ],
     );

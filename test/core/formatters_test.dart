@@ -37,4 +37,17 @@ void main() {
     expect(formatClockTime(DateTime(2026, 10, 30, 9, 5)), '9:05');
     expect(formatClockTime(DateTime(2026, 10, 30, 14, 32)), '14:32');
   });
+
+  test('formatBytes uses kB below 1 MB and one decimal above', () {
+    expect(formatBytes(850), '1 kB');
+    expect(formatBytes(420000), '420 kB');
+    expect(formatBytes(3041781), '3,0 MB');
+  });
+
+  test('formatCount and formatShortDate follow Italian conventions', () {
+    expect(formatCount(7), '7');
+    expect(formatCount(126088), '126.088');
+    expect(formatCount(1234567), '1.234.567');
+    expect(formatShortDate(DateTime(2026, 3, 5)), '05/03/2026');
+  });
 }

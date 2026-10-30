@@ -6,9 +6,11 @@ import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/errors/failure_messages.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/navia_icon.dart';
-import '../../data/overpass_places_repository.dart';
+import '../../data/place_data_client.dart';
 import '../../domain/poi_category.dart';
+import '../offline_places_screen.dart';
 import '../place_discovery_controller.dart';
+import '../places_providers.dart';
 
 extension PoiCategoryIcon on PoiCategory {
   NaviaIcons get icon => switch (this) {
@@ -185,6 +187,11 @@ class _DiscoveryStatus extends ConsumerWidget {
         state.failure?.isRetryable ?? true,
       ),
     };
+    // Downloaded regions answer without the busy online service.
+    final offerDownload =
+        state.status == DiscoveryStatus.failed &&
+        ref.watch(placeDataClientProvider) != null;
+    final actions = retry || offerDownload;
 
     return Semantics(
       liveRegion: true,
@@ -195,9 +202,9 @@ class _DiscoveryStatus extends ConsumerWidget {
         child: Padding(
           padding: EdgeInsets.fromLTRB(
             NaviaSpacing.md,
-            retry ? 0 : NaviaSpacing.sm,
-            retry ? 0 : NaviaSpacing.md,
-            retry ? 0 : NaviaSpacing.sm,
+            actions ? 0 : NaviaSpacing.sm,
+            actions ? 0 : NaviaSpacing.md,
+            actions ? 0 : NaviaSpacing.sm,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -223,6 +230,11 @@ class _DiscoveryStatus extends ConsumerWidget {
                 TextButton(
                   onPressed: controller.retry,
                   child: const Text(AppStrings.retry),
+                ),
+              if (offerDownload)
+                TextButton(
+                  onPressed: () => OfflinePlacesScreen.open(context),
+                  child: const Text(AppStrings.downloadArea),
                 ),
             ],
           ),

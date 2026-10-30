@@ -122,6 +122,40 @@ abstract final class AppStrings {
   static const copyCoordinates = 'Copia coordinate';
   static const coordinatesCopied = 'Coordinate copiate.';
 
+  // Offline places.
+  static const offlinePlaces = 'Luoghi offline';
+  static const offlinePlacesDetail =
+      'Scarica i luoghi di una zona per usarli senza connessione.';
+  static const offlinePlacesIntro =
+      'Scarica una volta i luoghi della tua zona: ristoranti, farmacie, '
+      'parcheggi e le altre categorie funzioneranno subito e senza '
+      'connessione. I dati restano solo su questo dispositivo e puoi '
+      'eliminarli quando vuoi. Vengono aggiornati ogni mese da '
+      'OpenStreetMap.';
+  static const offlinePlacesLicense =
+      'Dati © OpenStreetMap contributors, con licenza ODbL. I file sono '
+      'pubblicati su GitHub nel repository di Navia.';
+  static const offlineCatalogUnavailable =
+      'Impossibile leggere l’elenco delle zone.';
+  static const download = 'Scarica';
+  static const updateRegion = 'Aggiorna';
+  static const installingRegion = 'Installazione in corso…';
+  static String downloadingRegion(int percent) => 'Download: $percent%';
+  static String downloadRegionTitle(String name) => 'Scaricare la zona $name?';
+  static String downloadRegionBody(String size, String count) =>
+      'Verranno scaricati $size da GitHub ($count luoghi). GitHub vedrà il '
+      'tuo indirizzo IP, come per ogni download. I dati restano solo su '
+      'questo dispositivo e puoi eliminarli in qualsiasi momento.';
+  static String deleteRegionTitle(String name) => 'Eliminare la zona $name?';
+  static const deleteRegionBody =
+      'I luoghi di questa zona verranno cancellati dal dispositivo. Potrai '
+      'scaricarli di nuovo quando vuoi.';
+  static String regionInstalled(String date, String size) =>
+      'Scaricata il $date · $size sul dispositivo';
+  static String regionAvailable(String size, String count) =>
+      '$size · $count luoghi';
+  static const downloadArea = 'Scarica la zona';
+
   // Place discovery.
   static const clearFilter = 'tocca per rimuovere il filtro';
   static const placesLoading =
@@ -166,6 +200,10 @@ abstract final class AppStrings {
       'Riceve il testo cercato, una posizione approssimata (circa 1 km) e '
       'i punti che tieni premuti sulla mappa, per trovarne l’indirizzo.';
   static const serviceRouting = 'Percorsi: OSRM (FOSSGIS)';
+  static const serviceOfflinePlaces = 'Luoghi offline: GitHub';
+  static const serviceOfflinePlacesDetail =
+      'Solo quando apri “Luoghi offline” o scarichi una zona: riceve la '
+      'richiesta dell’elenco o del file della zona scelta.';
   static const servicePlaces = 'Luoghi: Overpass API';
   static const servicePlacesDetail =
       'Quando scegli una categoria, riceve la categoria e la zona '

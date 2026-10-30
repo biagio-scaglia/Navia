@@ -26,3 +26,28 @@ String formatDuration(Duration duration) {
 /// Formats a local time of day with the 24-hour clock: "9:05", "14:32".
 String formatClockTime(DateTime time) =>
     '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+
+/// Formats a size in bytes: "850 kB", "3,0 MB".
+String formatBytes(int bytes) {
+  if (bytes < 1000 * 1000) {
+    return '${(bytes / 1000).ceil()} kB';
+  }
+  final mb = bytes / (1000 * 1000);
+  return '${mb.toStringAsFixed(1).replaceAll('.', ',')} MB';
+}
+
+/// Formats a date as "30/10/2026".
+String formatShortDate(DateTime date) =>
+    '${date.day.toString().padLeft(2, '0')}/'
+    '${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+/// Formats a count with Italian thousands separators: "126.088".
+String formatCount(int count) {
+  final digits = count.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 == 0) buffer.write('.');
+    buffer.write(digits[i]);
+  }
+  return buffer.toString();
+}
