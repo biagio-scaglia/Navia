@@ -130,7 +130,7 @@ autocomplete.
 ## Requirements
 
 - Flutter 3.41 (stable channel) and Dart 3.11
-- JDK 17
+- JDK 21 (the `maplibre_gl` plugin compiles with Java 21; Android Studio bundles it)
 - Android SDK with platform 36 and build tools; accept the licenses with
   `flutter doctor --android-licenses`
 - An Android device or emulator running Android 7.0 (API 24) or later
