@@ -122,7 +122,8 @@ abstract final class AppStrings {
   static const serviceMapDetail = 'Riceve la zona di mappa visualizzata.';
   static const serviceSearch = 'Ricerca: Photon (komoot)';
   static const serviceSearchDetail =
-      'Riceve il testo cercato e una posizione approssimata (circa 1 km).';
+      'Riceve il testo cercato, una posizione approssimata (circa 1 km) e '
+      'i punti che tieni premuti sulla mappa, per trovarne l’indirizzo.';
   static const serviceRouting = 'Percorsi: OSRM (FOSSGIS)';
   static const serviceRoutingDetail =
       'Riceve le coordinate di partenza e destinazione.';
