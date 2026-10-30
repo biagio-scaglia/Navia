@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 enum NaviaIcons {
   bike,
   car,
+  check,
   chevronDown('chevron_down'),
   chevronRight('chevron_right'),
   chevronUp('chevron_up'),
@@ -15,9 +16,11 @@ enum NaviaIcons {
   cloudOff('cloud_off'),
   code,
   copyright,
+  cube,
   destination,
   directions,
   document,
+  edit,
   externalLink('external_link'),
   info,
   layers,
@@ -30,10 +33,13 @@ enum NaviaIcons {
   search,
   settings,
   shield,
+  star,
+  starFilled('star_filled'),
   swap,
   themeDark('theme_dark'),
   themeLight('theme_light'),
   themeSystem('theme_system'),
+  trash,
   walk;
 
   const NaviaIcons([this._file]);
