@@ -27,6 +27,9 @@ extension PoiCategoryIcon on PoiCategory {
     PoiCategory.parking => NaviaIcons.parking,
     PoiCategory.fuel => NaviaIcons.fuel,
     PoiCategory.atms => NaviaIcons.cash,
+    PoiCategory.drinkingWater => NaviaIcons.water,
+    PoiCategory.toilets => NaviaIcons.toilet,
+    PoiCategory.beaches => NaviaIcons.beach,
   };
 }
 

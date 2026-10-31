@@ -25,6 +25,9 @@ extension PoiCategoryMarker on PoiCategory {
     PoiCategory.parking => const Color(0xFF364FC7),
     PoiCategory.fuel => const Color(0xFF495057),
     PoiCategory.atms => const Color(0xFF0C8599),
+    PoiCategory.drinkingWater => const Color(0xFF1098AD),
+    PoiCategory.toilets => const Color(0xFF5F3DC4),
+    PoiCategory.beaches => const Color(0xFFF08C00),
   };
 
   /// Name of the marker image registered with the map style.

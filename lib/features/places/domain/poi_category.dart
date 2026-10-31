@@ -41,6 +41,16 @@ enum PoiCategory {
   }),
   atms('Bancomat', {
     'amenity': ['atm'],
+  }),
+  drinkingWater('Fontanelle', {
+    'amenity': ['drinking_water'],
+  }),
+  toilets('Bagni', {
+    'amenity': ['toilets'],
+  }),
+  beaches('Spiagge', {
+    'natural': ['beach'],
+    'leisure': ['beach_resort'],
   });
 
   const PoiCategory(this.label, this.tags);

@@ -57,7 +57,8 @@ abstract final class PlaceCategory {
     'charging_station': 'Ricarica veicoli elettrici',
     'parking': 'Parcheggio',
     'bicycle_parking': 'Parcheggio bici',
-    'toilets': 'Servizi igienici',
+    'toilets': 'Bagni pubblici',
+    'drinking_water': 'Fontanella',
     'library': 'Biblioteca',
     // Education.
     'school': 'Scuola',
@@ -84,6 +85,7 @@ abstract final class PlaceCategory {
     'sports_centre': 'Centro sportivo',
     'swimming_pool': 'Piscina',
     'beach': 'Spiaggia',
+    'beach_resort': 'Lido',
     'viewpoint': 'Punto panoramico',
     // Lodging.
     'hotel': 'Hotel',

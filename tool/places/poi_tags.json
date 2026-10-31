@@ -83,5 +83,23 @@
     "amenity": [
       "atm"
     ]
+  },
+  "drinkingWater": {
+    "amenity": [
+      "drinking_water"
+    ]
+  },
+  "toilets": {
+    "amenity": [
+      "toilets"
+    ]
+  },
+  "beaches": {
+    "natural": [
+      "beach"
+    ],
+    "leisure": [
+      "beach_resort"
+    ]
   }
 }

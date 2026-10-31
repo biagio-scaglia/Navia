@@ -24,6 +24,7 @@ abstract final class OsmPoiParser {
         tags['shop'],
         tags['tourism'],
         tags['leisure'],
+        tags['natural'],
         tags['railway'],
         tags['highway'],
       ]),

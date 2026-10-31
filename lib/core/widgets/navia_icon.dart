@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 enum NaviaIcons {
   accessible,
   arrowBack('arrow_back'),
+  beach,
   bed,
   bike,
   bus,
@@ -58,9 +59,11 @@ enum NaviaIcons {
   themeDark('theme_dark'),
   themeLight('theme_light'),
   themeSystem('theme_system'),
+  toilet,
   trash,
   tree,
-  walk;
+  walk,
+  water;
 
   const NaviaIcons([this._file]);
 

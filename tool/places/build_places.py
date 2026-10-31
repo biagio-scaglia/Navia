@@ -28,7 +28,8 @@ import osmium.filter
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 KEEP_TAGS = {
-    'name', 'name:it', 'amenity', 'shop', 'tourism', 'leisure', 'railway',
+    'name', 'name:it', 'amenity', 'shop', 'tourism', 'leisure', 'natural',
+    'railway',
     'highway', 'addr:street', 'addr:housenumber', 'addr:city',
     'opening_hours', 'website', 'contact:website', 'phone', 'contact:phone',
     'cuisine', 'wheelchair', 'wikidata', 'wikipedia',
