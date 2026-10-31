@@ -5,7 +5,7 @@ the Navia Android app actually handles data, as implemented in this
 repository. It has not been reviewed by a lawyer, and it does not claim
 certified compliance with the GDPR or any other law.
 
-Last updated: 2026-10-30. Applies to Navia 0.4.0 and later.
+Last updated: 2026-10-31. Applies to Navia 0.7.0 and later.
 
 The app shows the same policy in Italian under *Impostazioni → Privacy*.
 
@@ -76,6 +76,7 @@ it contains no user or device identifier.
 | **OpenFreeMap** (`tiles.openfreemap.org`) | Whenever the map is shown | The map tiles for the area and zoom level you are viewing | Draw the map |
 | **Photon by komoot** (`photon.komoot.io`) | When you search | The text you type; an approximate position rounded to about 1 km (your position if you located yourself, otherwise the default area of Bari) to rank nearby results first | Find places and addresses |
 | **Photon by komoot** | When you long-press a point on the map | The exact coordinates of that point | Show its address |
+| **Wikipedia and Wikidata** (`wikipedia.org`, `wikidata.org`, images from `wikimedia.org`) | Only when you open the card of a place linked to Wikipedia or Wikidata | The article title or Wikidata id of that place; then the request for its image | Show the place's description |
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Luoghi offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download place data for offline use |
 | **Overpass API** (`overpass-api.de`) | When you select a place category, such as "Farmacie", and move the map while it is selected, outside the regions you downloaded | The category and the area you are viewing, enlarged and rounded outwards to a grid of about 1 km | List real places of that category |
 | **OSRM on FOSSGIS servers** (`routing.openstreetmap.de`) | When a route is calculated | Origin and destination coordinates, and the travel mode. If the origin is "La tua posizione", this is your current device location | Calculate the route |
@@ -93,6 +94,7 @@ control:
 - FOSSGIS e.V. (routing.openstreetmap.de):
   <https://www.fossgis.de/datenschutzerklaerung/>
 - GitHub: <https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement>
+- Wikimedia Foundation: <https://foundation.wikimedia.org/wiki/Policy:Privacy_policy>
 - Overpass API main instance: <https://overpass-api.de>
   (`[TO BE VERIFIED: operator and privacy notice of the instance]`)
 
@@ -118,7 +120,16 @@ README), in which case those services receive the same data instead.
 - You can revoke the permission at any time in Android settings
   (*Impostazioni → Posizione → Gestisci nelle impostazioni di sistema*).
 
-## 6. Actions that open other apps
+## 6. Turn-by-turn guidance
+
+During guidance the device location is read continuously, only while the
+app is open and in the foreground, to follow you along the route. The voice
+instructions are produced on the device by Android's text-to-speech
+engine; Navia sends them nowhere. When you leave the route, the route is
+recalculated from your current position through the routing service listed
+above, at most every 15 seconds.
+
+## 7. Actions that open other apps
 
 Some actions hand data to another app only when you tap them:
 
@@ -128,14 +139,14 @@ Some actions hand data to another app only when you tap them:
 
 Those apps apply their own privacy policies.
 
-## 7. Legal bases
+## 8. Legal bases
 
 `[TO BE CONFIRMED during legal review.]` The intended basis is that each
 request is necessary to provide the feature you explicitly use
 (GDPR art. 6(1)(b)), and location access relies on your permission, which
 you can withdraw at any time.
 
-## 8. Your rights
+## 9. Your rights
 
 Navia's maintainer holds no personal data about you, so there is nothing
 the maintainer can access, correct or delete on your behalf. You control
@@ -148,12 +159,12 @@ those providers. You also have the right to lodge a complaint with a
 supervisory authority; in Italy, the Garante per la protezione dei dati
 personali (<https://www.garanteprivacy.it>).
 
-## 9. Children
+## 10. Children
 
 Navia does not knowingly collect data from children and has no accounts or
 profiles.
 
-## 10. Changes to this policy
+## 11. Changes to this policy
 
 Changes are published in this file and in the app, with a new "Last
 updated" date. The full history is available in the repository's Git log.

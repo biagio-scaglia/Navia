@@ -2,7 +2,7 @@
 ///
 /// It mirrors `PRIVACY.md` at the repository root: update both together.
 abstract final class PrivacyPolicy {
-  static const lastUpdated = '30 ottobre 2026';
+  static const lastUpdated = '31 ottobre 2026';
 
   static const draftNotice =
       'Bozza in attesa di revisione legale. Descrive il funzionamento reale '
@@ -66,6 +66,9 @@ abstract final class PrivacyPolicy {
           'fuori dalle zone scaricate, riceve la categoria e la zona '
           'visualizzata, allargata e arrotondata a circa 1 km. Il server '
           'predefinito è overpass-api.de.',
+      'Wikipedia e Wikidata: solo quando apri la scheda di un luogo collegato '
+          'a Wikipedia, ricevono il titolo della voce o il codice Wikidata e '
+          'la richiesta della sua immagine.',
       'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta.',
@@ -81,6 +84,13 @@ abstract final class PrivacyPolicy {
       'Puoi negare il permesso: mappa, ricerca, dettagli dei luoghi e '
           'percorsi tra luoghi scelti da te continuano a funzionare.',
       'Puoi revocarlo in qualsiasi momento dalle impostazioni di Android.',
+    ]),
+    PrivacySection('Navigazione guidata', [
+      'Durante la guida la posizione viene letta di continuo, solo con l’app '
+          'aperta, per seguirti lungo il percorso. Le istruzioni vocali sono '
+          'prodotte sul dispositivo dalla sintesi vocale di Android e non '
+          'vengono inviate a nessuno. Se esci dal percorso, il percorso viene '
+          'ricalcolato dalla tua posizione al massimo ogni 15 secondi.',
     ]),
     PrivacySection('Azioni che aprono altre app', [
       'Aprire un sito web o un luogo su OpenStreetMap usa il tuo browser. '
