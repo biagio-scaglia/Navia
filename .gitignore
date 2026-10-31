@@ -1,3 +1,9 @@
+# Website / local tooling
+.taste-skill/
+website/node_modules/
+website/dist/
+dimensional-dwarf/
+
 # Miscellaneous
 *.class
 *.log

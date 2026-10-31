@@ -1,0 +1,160 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #f5f4ef;
+  --color-sheet: #fffdf8;
+  --color-ink: #202521;
+  --color-muted: #5c6b63;
+  --color-rule: #c9c5b8;
+  --color-accent: #e56b35;
+  --color-forest: #315c49;
+  --color-water: #b7c9c0;
+  --color-park: #c7d4b8;
+  --color-land: #e8e4d8;
+  --color-road: #f7f5ef;
+
+  --font-display: 'Satoshi', 'Segoe UI', sans-serif;
+  --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --spacing-gutter: 1.5rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 28%, white);
+    color: var(--color-ink);
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+}
+
+@layer components {
+  .site-shell {
+    min-height: 100vh;
+  }
+
+  .measure {
+    width: min(100% - 2 * var(--spacing-gutter), 72rem);
+    margin-inline: auto;
+  }
+
+  .measure-narrow {
+    width: min(100% - 2 * var(--spacing-gutter), 42rem);
+    margin-inline: auto;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum' 1;
+  }
+
+  .rule {
+    border: 0;
+    border-top: 1px solid var(--color-rule);
+  }
+
+  .link-quiet {
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 160ms ease, color 160ms ease;
+  }
+
+  .link-quiet:hover,
+  .link-quiet:focus-visible {
+    border-bottom-color: currentColor;
+    color: var(--color-forest);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.25rem;
+    border: 1px solid transparent;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .btn-accent {
+    background: var(--color-accent);
+    color: #fffdf8;
+  }
+
+  .btn-accent:hover {
+    background: color-mix(in srgb, var(--color-accent) 88%, black);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .section-pad {
+    padding-block: clamp(4rem, 8vw, 7rem);
+  }
+
+  .topo-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--color-rule) 55%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-rule) 55%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
