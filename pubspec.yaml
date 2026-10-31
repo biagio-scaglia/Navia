@@ -69,6 +69,7 @@ flutter:
   assets:
     - assets/brand/navia_logo.svg
     - assets/icons/
+    - assets/map_styles/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'dart:ui' show Brightness;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,7 +48,26 @@ void main() {
         expect(AppConfig.openFreeMap.supports(appearance), isTrue);
       }
       for (final url in AppConfig.openFreeMap.styleUrls.values) {
-        expect(Uri.parse(url).scheme, 'https');
+        if (url.startsWith('assets/')) {
+          // A bundled style: its tiles, sprites and fonts must be HTTPS.
+          final style =
+              jsonDecode(File(url).readAsStringSync()) as Map<String, dynamic>;
+          final sources = (style['sources'] as Map<String, dynamic>).values
+              .cast<Map<String, dynamic>>();
+          final urls = [
+            style['sprite'] as String,
+            style['glyphs'] as String,
+            for (final source in sources) ...[
+              if (source['url'] case final String url) url,
+              ...((source['tiles'] as List?) ?? const []).cast<String>(),
+            ],
+          ];
+          for (final resource in urls) {
+            expect(resource, startsWith('https://'), reason: url);
+          }
+        } else {
+          expect(Uri.parse(url).scheme, 'https');
+        }
       }
     });
 
