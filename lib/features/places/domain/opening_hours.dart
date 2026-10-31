@@ -7,18 +7,33 @@ enum OpeningStatus { open, closed }
 /// A weekly schedule parsed from the OpenStreetMap `opening_hours` tag.
 ///
 /// Only the common subset of the syntax is supported: weekday selectors
-/// (`Mo-Fr`, `Sa,Su`), time ranges (`08:30-13:00,16:00-19:30`, overnight
-/// ranges such as `20:00-02:00`), `off`/`closed` and `24/7`. Anything else,
-/// such as public holidays (`PH`), months, week numbers, sunrise or
-/// comments, makes [tryParse] return null: the status would otherwise be
-/// wrong on some days, and Navia then shows the original text instead.
+/// (`Mo-Fr`, `Sa,Su`), Italian national public holidays (`PH`), time ranges
+/// (`08:30-13:00,16:00-19:30`, overnight ranges such as `20:00-02:00`),
+/// `off`/`closed` and `24/7`. Anything else, such as school holidays
+/// (`SH`), months, week numbers, sunrise or comments, makes [tryParse]
+/// return null: the status would otherwise be wrong on some days, and Navia
+/// then shows the original text instead.
 @immutable
 class OpeningHours {
-  const OpeningHours._(this._days);
+  const OpeningHours._(
+    this._days, [
+    this._dayRules = const [0, 0, 0, 0, 0, 0, 0],
+    this._holiday,
+    this._holidayRule = -1,
+  ]);
 
   /// Open ranges for each weekday, Monday first, in minutes from midnight.
   /// An end beyond 1440 continues into the next day.
   final List<List<(int, int)>> _days;
+
+  /// Index of the rule that last set each weekday.
+  final List<int> _dayRules;
+
+  /// Open ranges on public holidays, when a `PH` rule exists.
+  final List<(int, int)>? _holiday;
+
+  /// Index of the `PH` rule; a later weekday rule wins over it.
+  final int _holidayRule;
 
   static const _dayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -28,30 +43,44 @@ class OpeningHours {
     if (value == '24/7') {
       return OpeningHours._(List.filled(7, const [(0, 1440)]));
     }
-    final days = List<List<(int, int)>>.generate(7, (_) => []);
+    final schedule = _Schedule();
+    var index = 0;
     for (final rule in value.split(';')) {
       final trimmed = rule.trim();
       if (trimmed.isEmpty) continue;
-      if (!_applyRule(trimmed, days)) return null;
+      if (!_applyRule(trimmed, schedule, index++)) return null;
     }
-    return OpeningHours._(days);
+    return OpeningHours._(
+      schedule.days,
+      schedule.dayRules,
+      schedule.holiday,
+      schedule.holidayRule,
+    );
   }
+
+  static const _day = '(?:Mo|Tu|We|Th|Fr|Sa|Su)';
+  static const _selectorPart = '(?:PH|$_day(?:-$_day)?)';
+  static final _rulePattern = RegExp(
+    '^($_selectorPart(?:,$_selectorPart)*)?\\s*(.*)\$',
+  );
 
   /// Parses one rule and, as in the OSM specification, lets it replace the
   /// schedule of the days it names.
-  static bool _applyRule(String rule, List<List<(int, int)>> days) {
-    final match = RegExp(
-      r'^((?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?'
-      r'(?:,(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?)*)?'
-      r'\s*(.*)$',
-    ).firstMatch(rule);
+  static bool _applyRule(String rule, _Schedule schedule, int index) {
+    final match = _rulePattern.firstMatch(rule);
     if (match == null) return false;
     final selector = match.group(1);
     final rest = match.group(2)!.trim();
 
+    final parts = selector?.split(',') ?? const <String>[];
+    final holiday = parts.contains('PH');
+    final dayParts = [
+      for (final part in parts)
+        if (part != 'PH') part,
+    ];
     final selected = selector == null
         ? List<int>.generate(7, (i) => i)
-        : _selectedDays(selector);
+        : _selectedDays(dayParts);
 
     final List<(int, int)> ranges;
     if (rest == 'off' || rest == 'closed') {
@@ -62,14 +91,20 @@ class OpeningHours {
       ranges = parsed;
     }
     for (final day in selected) {
-      days[day] = ranges;
+      schedule.days[day] = ranges;
+      schedule.dayRules[day] = index;
+    }
+    if (holiday) {
+      schedule
+        ..holiday = ranges
+        ..holidayRule = index;
     }
     return true;
   }
 
-  static List<int> _selectedDays(String selector) {
+  static List<int> _selectedDays(List<String> parts) {
     final result = <int>{};
-    for (final part in selector.split(',')) {
+    for (final part in parts) {
       final bounds = part.split('-').map(_dayNames.indexOf).toList();
       final start = bounds.first;
       final end = bounds.last;
@@ -107,8 +142,15 @@ class OpeningHours {
     final day = localTime.weekday - 1;
     final minute = localTime.hour * 60 + localTime.minute;
     final previous = (day + 6) % 7;
+    final holiday = _holiday;
+    final today =
+        holiday != null &&
+            _holidayRule > _dayRules[day] &&
+            ItalianHolidays.isHoliday(localTime)
+        ? holiday
+        : _days[day];
     final open =
-        _days[day].any((r) => minute >= r.$1 && minute < r.$2) ||
+        today.any((r) => minute >= r.$1 && minute < r.$2) ||
         _days[previous].any((r) => r.$2 > 1440 && minute < r.$2 - 1440);
     return open ? OpeningStatus.open : OpeningStatus.closed;
   }
@@ -157,4 +199,58 @@ class OpeningHours {
     final sunday = lastDay.subtract(Duration(days: lastDay.weekday % 7));
     return DateTime.utc(year, month, sunday.day, 1);
   }
+}
+
+class _Schedule {
+  final days = List<List<(int, int)>>.generate(7, (_) => []);
+  final dayRules = List<int>.filled(7, -1);
+  List<(int, int)>? holiday;
+  int holidayRule = -1;
+}
+
+/// Italian national public holidays. Local patron saint days are not
+/// included: they differ by town and OpenStreetMap's `PH` rarely covers
+/// them.
+abstract final class ItalianHolidays {
+  static const _fixed = {
+    (1, 1), // Capodanno
+    (1, 6), // Epifania
+    (4, 25), // Festa della Liberazione
+    (5, 1), // Festa dei Lavoratori
+    (6, 2), // Festa della Repubblica
+    (8, 15), // Ferragosto
+    (11, 1), // Ognissanti
+    (12, 8), // Immacolata Concezione
+    (12, 25), // Natale
+    (12, 26), // Santo Stefano
+  };
+
+  static bool isHoliday(DateTime date) {
+    if (_fixed.contains((date.month, date.day))) return true;
+    final easter = easterSunday(date.year);
+    final monday = easter.add(const Duration(days: 1));
+    return _sameDay(date, easter) || _sameDay(date, monday);
+  }
+
+  /// Gregorian Easter Sunday (anonymous Gregorian algorithm).
+  static DateTime easterSunday(int year) {
+    final a = year % 19;
+    final b = year ~/ 100;
+    final c = year % 100;
+    final d = b ~/ 4;
+    final e = b % 4;
+    final f = (b + 8) ~/ 25;
+    final g = (b - f + 1) ~/ 3;
+    final h = (19 * a + b - d - g + 15) % 30;
+    final i = c ~/ 4;
+    final k = c % 4;
+    final l = (32 + 2 * e + 2 * i - h - k) % 7;
+    final m = (a + 11 * h + 22 * l) ~/ 451;
+    final month = (h + l - 7 * m + 114) ~/ 31;
+    final day = (h + l - 7 * m + 114) % 31 + 1;
+    return DateTime(year, month, day);
+  }
+
+  static bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 }

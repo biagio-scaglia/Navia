@@ -68,13 +68,13 @@ void main() {
           place: Poi(
             ref: OsmRef(OsmElementType.node, 1),
             point: GeoPoint(latitude: 41.12, longitude: 16.87),
-            openingHours: 'Mo-Fr 09:00-18:00; PH off',
+            openingHours: 'Mo-Fr 09:00-18:00; SH off',
           ),
         ),
       ),
     );
 
-    expect(find.text('Mo-Fr 09:00-18:00; PH off'), findsOneWidget);
+    expect(find.text('Mo-Fr 09:00-18:00; SH off'), findsOneWidget);
     expect(find.text('Aperto ora'), findsNothing);
     expect(find.text('Chiuso ora'), findsNothing);
   });

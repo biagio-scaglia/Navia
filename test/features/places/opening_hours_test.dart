@@ -43,7 +43,8 @@ void main() {
     for (final value in [
       null,
       '',
-      'Mo-Fr 08:00-18:00; PH off',
+      'Mo-Fr 08:00-18:00; SH off',
+      'PH-Mo 08:00-18:00',
       'Jan-Mar 09:00-17:00',
       'Mo-Fr 08:00-12:00 "su appuntamento"',
       'Mo-Fr sunrise-sunset',
@@ -54,6 +55,47 @@ void main() {
     ]) {
       expect(OpeningHours.tryParse(value), isNull, reason: '$value');
     }
+  });
+
+  group('public holidays', () {
+    test('computes Easter and the Italian national holidays', () {
+      expect(ItalianHolidays.easterSunday(2026), DateTime(2026, 4, 5));
+      expect(ItalianHolidays.easterSunday(2027), DateTime(2027, 3, 28));
+      expect(ItalianHolidays.isHoliday(DateTime(2026, 4, 6)), isTrue);
+      expect(ItalianHolidays.isHoliday(DateTime(2026, 6, 2)), isTrue);
+      expect(ItalianHolidays.isHoliday(DateTime(2026, 12, 26)), isTrue);
+      expect(ItalianHolidays.isHoliday(DateTime(2026, 6, 3)), isFalse);
+    });
+
+    test('applies PH rules on holidays only', () {
+      final hours = OpeningHours.tryParse('Mo-Sa 08:30-20:00; PH off')!;
+      // Tuesday 2 June 2026, Festa della Repubblica.
+      expect(hours.statusAt(DateTime(2026, 6, 2, 10)), OpeningStatus.closed);
+      expect(hours.statusAt(DateTime(2026, 6, 3, 10)), OpeningStatus.open);
+
+      final shortened = OpeningHours.tryParse(
+        'Mo-Su 09:00-20:00; PH 09:00-13:00',
+      )!;
+      expect(
+        shortened.statusAt(DateTime(2026, 12, 25, 12)),
+        OpeningStatus.open,
+      );
+      expect(
+        shortened.statusAt(DateTime(2026, 12, 25, 15)),
+        OpeningStatus.closed,
+      );
+    });
+
+    test('a later weekday rule wins over an earlier PH rule', () {
+      final hours = OpeningHours.tryParse('PH off; Tu 09:00-12:00')!;
+      expect(hours.statusAt(DateTime(2026, 6, 2, 10)), OpeningStatus.open);
+    });
+
+    test('accepts PH mixed with weekdays', () {
+      final hours = OpeningHours.tryParse('Mo-Sa 09:00-19:00; Su,PH off')!;
+      expect(hours.statusAt(DateTime(2026, 4, 6, 10)), OpeningStatus.closed);
+      expect(hours.statusAt(DateTime(2026, 4, 7, 10)), OpeningStatus.open);
+    });
   });
 
   group('local time', () {
