@@ -9,8 +9,10 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/navia_buttons.dart';
 import '../../../core/widgets/navia_icon.dart';
+import '../data/fuel_prices_store.dart';
 import '../domain/place_region.dart';
 import 'offline_places_controller.dart';
+import 'widgets/fuel_prices_section.dart';
 
 /// Lists the regions whose places can be stored on the device, with their
 /// download state.
@@ -79,6 +81,10 @@ class _OfflinePlacesScreenState extends ConsumerState<OfflinePlacesScreen> {
               children: [
                 Text(AppStrings.offlinePlacesIntro, style: muted),
                 const SizedBox(height: NaviaSpacing.lg),
+                if (ref.watch(fuelPricesStoreProvider) != null) ...[
+                  const FuelDataCard(),
+                  const SizedBox(height: NaviaSpacing.md),
+                ],
                 if (state.catalogStatus == CatalogStatus.loading &&
                     regions.isEmpty)
                   const Padding(

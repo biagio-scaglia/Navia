@@ -48,6 +48,7 @@ Navia stores the following data in the app's private storage
 | Theme (system, light, dark) | Remember your choice | Until you change it or uninstall the app |
 | Map appearance and 3D buildings setting | Remember your choice | Same |
 | Favorites: the name you chose, coordinates, the time you saved it and, when available, the place's OpenStreetMap category, address and identifier | Show your saved places, also offline | Until you delete the favorite or uninstall the app |
+| Fuel prices: the national list of fuel stations and prices published by the Ministry, when you download it (public data, not data about you) | Show prices in fuel station cards | Until you delete it in *Impostazioni → Luoghi offline* or uninstall the app |
 | Offline places: the OpenStreetMap places of the regions you chose to download (public map data, not data about you) | Show places without a connection and without requests to Overpass | Until you delete the region in *Impostazioni → Luoghi offline* or uninstall the app |
 
 This data never leaves the device through Navia. Android cloud backup is
@@ -77,7 +78,7 @@ it contains no user or device identifier.
 | **Photon by komoot** (`photon.komoot.io`) | When you search | The text you type; an approximate position rounded to about 1 km (your position if you located yourself, otherwise the default area of Bari) to rank nearby results first | Find places and addresses |
 | **Photon by komoot** | When you long-press a point on the map | The exact coordinates of that point | Show its address |
 | **Wikipedia and Wikidata** (`wikipedia.org`, `wikidata.org`, images from `wikimedia.org`) | Only when you open the card of a place linked to Wikipedia or Wikidata | The article title or Wikidata id of that place; then the request for its image | Show the place's description |
-| **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Luoghi offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download place data for offline use |
+| **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Luoghi offline*, and when you confirm the download of a region or of the fuel prices | A request for the list of regions, for the file of the region you chose, or for the national fuel price file | Download place data and fuel prices for offline use |
 | **Overpass API** (`overpass-api.de`) | When you select a place category, such as "Farmacie", and move the map while it is selected, outside the regions you downloaded | The category and the area you are viewing, enlarged and rounded outwards to a grid of about 1 km | List real places of that category |
 | **OSRM on FOSSGIS servers** (`routing.openstreetmap.de`) | When a route is calculated | Origin and destination coordinates, and the travel mode. If the origin is "La tua posizione", this is your current device location | Calculate the route |
 

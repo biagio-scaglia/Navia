@@ -14,6 +14,7 @@ import '../../../../core/widgets/navia_icon.dart';
 import '../../../../core/widgets/navia_sheet.dart';
 import '../../../favorites/domain/favorite.dart';
 import '../../../favorites/presentation/favorites_controller.dart';
+import '../../../places/presentation/widgets/fuel_prices_section.dart';
 import '../../../places/presentation/widgets/place_article.dart';
 import '../../../places/presentation/widgets/place_details.dart';
 import '../../../search/data/photon_geocoding_repository.dart';
@@ -439,6 +440,8 @@ class _SelectionCard extends ConsumerWidget {
           ),
           if (place != null) ...[
             PlaceArticleSection(place: place),
+            if (place.fuel case final station?)
+              FuelPricesSection(station: station),
             const SizedBox(height: NaviaSpacing.sm),
             PlaceDetailsList(place: place),
           ],

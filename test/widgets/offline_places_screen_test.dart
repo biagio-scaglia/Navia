@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:navia/core/network/json_http_client.dart';
+import 'package:navia/features/places/data/fuel_prices_store.dart';
 import 'package:navia/features/places/data/place_data_client.dart';
 import 'package:navia/features/places/presentation/offline_places_controller.dart';
 import 'package:navia/features/places/presentation/offline_places_screen.dart';
@@ -56,6 +57,8 @@ void main() {
       tester,
       const OfflinePlacesScreen(),
       overrides: [
+        // Fuel prices have their own card and tests.
+        fuelPricesStoreProvider.overrideWithValue(null),
         placeDataClientProvider.overrideWithValue(
           PlaceDataClient(
             mock,

@@ -114,6 +114,26 @@ abstract final class AppStrings {
   static String remaining(String distance) => '$distance rimanenti';
   static String routeSteps(int count) => 'Istruzioni ($count)';
 
+  // Fuel prices.
+  static const fuelPrices = 'PREZZI CARBURANTI';
+  static const fuelSelf = 'Self';
+  static const fuelServed = 'Servito';
+  static String fuelReported(String date) =>
+      'Prezzi comunicati dal gestore al Ministero, aggiornati al $date.';
+  static const fuelSource = 'Fonte: MIMIT – Osservaprezzi carburanti, IODL 2.0';
+  static const fuelPricesTitle = 'Prezzi carburanti · Italia';
+  static const fuelPricesDetail =
+      'Prezzi dei distributori pubblicati ogni giorno dal Ministero.';
+  static const fuelNotDownloaded = 'Circa 1,5 MB per tutta Italia.';
+  static String fuelInstalled(String date, String size) =>
+      'Prezzi del $date · $size';
+  static const fuelDownloadTitle = 'Scaricare i prezzi dei carburanti?';
+  static const fuelDownloadBody =
+      'Verrà scaricato circa 1,5 MB da GitHub con i prezzi di tutti i '
+      'distributori italiani. GitHub vedrà il tuo indirizzo IP, come per '
+      'ogni download. I dati restano sul dispositivo: tocca “Aggiorna” per i '
+      'prezzi del giorno.';
+
   // Wikipedia.
   static const fromWikipedia = 'DA WIKIPEDIA';
   static const readOnWikipedia = 'Leggi su Wikipedia';
