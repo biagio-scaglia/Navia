@@ -15,7 +15,7 @@ ads, no analytics and no Navia backend: the app talks directly to open,
 OpenStreetMap-based services, and only when you use the feature that needs
 them.
 
-> **Status: early development (v0.7).** Navia offers turn-by-turn guidance
+> **Status: early development (v0.8).** Navia offers turn-by-turn guidance
 > with Italian voice instructions while the app is open. See
 > [Current limitations](#current-limitations).
 
@@ -37,9 +37,17 @@ them.
   you tap the location button, and updates stop when the app is in background.
 - **Search:** finds addresses and places with debounced search-as-you-type,
   ranked around your approximate position.
+- **Explore tabs:** the bottom panel has three tabs. *Vai* is the where-to
+  field with favorite shortcuts; *Scopri* lists the Wikipedia articles near
+  the map center (monuments, churches, squares, neighborhoods) with photo,
+  description and distance; *15 min* colors on the map the areas reachable
+  in 5, 10 and 15 minutes on foot, by bike or by car.
+- **Weather:** the current weather and today's range at a place and at the
+  route destination, from Open-Meteo.
 - **Place discovery:** filter real OpenStreetMap places by category
   (Ristoranti, Bar e caffè, Supermercati, Farmacie, Ospedali, Musei,
-  Attrazioni, Parchi, Hotel, Trasporti, Parcheggi, Carburante, Bancomat).
+  Attrazioni, Parchi, Hotel, Trasporti, Parcheggi, Carburante, Bancomat,
+  Fontanelle, Bagni, Spiagge).
   Places appear on the map with their names; tap one to open its card.
 - **Offline places:** download the places of an Italian macro-region
   (*Impostazioni → Luoghi offline*), after a confirmation that shows the
@@ -116,6 +124,9 @@ Navia has no server of its own. These third-party services receive requests:
 | OpenFreeMap | While the map is shown | Style, tile and font requests for the visible area |
 | Photon (komoot) | While you type a search, or when you long-press the map | The search text, plus your position rounded to about 1 km for ranking; or the long-pressed point, to find its address |
 | OSRM by FOSSGIS | When a route is calculated | Origin and destination coordinates |
+| Wikipedia | When you tap *Scopri qui intorno* | The map center |
+| Valhalla (FOSSGIS) | When you tap *Mostra sulla mappa* in *15 min* | The starting point and travel mode |
+| Open-Meteo | When a place card or a route summary is shown | The position rounded to about 1 km |
 | Overpass API | When a place category is selected and the map stops moving | The category and the visible area, enlarged and rounded to about 1 km |
 
 Every request carries a `User-Agent` that identifies Navia and its version, as
@@ -189,6 +200,9 @@ ever embedded in the APK:
 | `NAVIA_OSRM_BIKE_URL` | `https://routing.openstreetmap.de/routed-bike` | Bike mode is hidden |
 | `NAVIA_OSRM_FOOT_URL` | `https://routing.openstreetmap.de/routed-foot` | Walking mode is hidden |
 | `NAVIA_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | Places come only from downloaded regions |
+| `NAVIA_WIKIPEDIA_API_URL` | `https://it.wikipedia.org/w/api.php` | The Scopri tab finds nothing |
+| `NAVIA_ISOCHRONE_URL` | `https://valhalla1.openstreetmap.de/isochrone` | The 15 min tab is unavailable |
+| `NAVIA_WEATHER_URL` | `https://api.open-meteo.com/v1/forecast` | Weather is hidden |
 | `NAVIA_FUEL_DATA_URL` | `https://www.mimit.gov.it/images/exportCSV/` | Fuel prices are hidden |
 | `NAVIA_PLACES_DATA_URL` | `https://github.com/biagio-scaglia/Navia/releases/download/places-data` | Offline places are hidden |
 

@@ -80,14 +80,22 @@ done only when it works, has tests, and is documented.
 - Banner with the next maneuver, camera following the user, arrival time
 - Off-route detection and recalculation at most every 15 seconds
 
+### 0.8: Explore
+
+- Bottom panel tabs: Vai, Scopri (Wikipedia nearby) and 15 min (reachable
+  areas from Valhalla)
+- Weather at places and at the destination (Open-Meteo)
+- Fontanelle, Bagni and Spiagge categories
+- Daily fuel prices from the Ministry open data, downloaded on request
+
 ## Next
 
-### 0.8: Offline maps
+### 0.9: Offline maps
 
 - Check PMTiles support in the MapLibre version in use
 - Map regions built in CI and downloaded with consent, progress and deletion
 
-### 0.9: Public transport
+### 0.10: Public transport
 
 - Open GTFS timetables, starting from Bari and Puglia, prepared in CI
 - Stops with lines and next scheduled departures, also offline

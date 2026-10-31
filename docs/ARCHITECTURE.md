@@ -321,6 +321,32 @@ When the origin is "La tua posizione", it is resolved through
   at zoom 17 with the GPS heading; recalculated routes do not reframe the
   camera during guidance.
 
+### Explore tabs
+
+The idle panel (`ExplorePanel`) has three tabs, so each tool keeps a clean
+screen:
+
+- **Vai:** the where-to field and favorite shortcuts.
+- **Scopri** (`features/discover`): `NearbyArticlesRepository` calls the
+  Italian Wikipedia API with `generator=geosearch` around the map center
+  (3 km, 25 results) and `prop=coordinates|pageimages|description|info`,
+  skips administrative areas (provinces, dioceses) and sorts by distance.
+  Tapping an article selects it as a point and moves the map there.
+- **15 min** (`features/reach`): `ReachRepository` sends a Valhalla
+  `isochrone` request to the FOSSGIS server (`pedestrian`, `bicycle` or
+  `auto`; contours 5, 10 and 15 minutes; polygons). The rings become
+  `MapArea`s drawn as one translucent fill layer below places and route, so
+  overlapping bands look stronger near the start; the map frames the
+  largest area. Areas are re-installed after style changes.
+
+### Weather
+
+`features/weather` reads Open-Meteo `current` and `daily` values with
+coordinates rounded to two decimals, maps WMO codes to Italian text and a
+Material icon, and caches answers per rounded point
+(`weatherProvider`, auto-disposed). `WeatherLine` is shown in place cards
+and, as "A destinazione", in the route summary.
+
 ### Wikipedia
 
 `WikipediaRepository` reads the REST summary of the article linked by the

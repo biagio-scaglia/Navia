@@ -97,6 +97,15 @@ card credits the source and license.
 - **Patron saints (Wikidata):** many saints have several feast days, so a
   local holiday cannot be computed reliably.
 
+## Open-Meteo and Valhalla
+
+Open-Meteo forecasts are free for non-commercial use without a key and
+require attribution (CC BY 4.0); the weather line names Open-Meteo. A
+commercial distribution of Navia needs Open-Meteo's commercial plan or a
+self-hosted instance (`NAVIA_WEATHER_URL`). The FOSSGIS Valhalla server
+follows the same fair-use terms as the routing servers; reachable areas
+show "Valhalla (FOSSGIS) · © OpenStreetMap".
+
 ## Wikipedia and Wikimedia Commons
 
 Article summaries are licensed under CC BY-SA 4.0; the place card names the
