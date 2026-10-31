@@ -124,15 +124,17 @@ abstract final class AppStrings {
   static const fuelPricesTitle = 'Prezzi carburanti · Italia';
   static const fuelPricesDetail =
       'Prezzi dei distributori pubblicati ogni giorno dal Ministero.';
-  static const fuelNotDownloaded = 'Circa 1,5 MB per tutta Italia.';
+  static const fuelNotDownloaded =
+      'Circa 7,5 MB dal sito del Ministero per tutta Italia.';
   static String fuelInstalled(String date, String size) =>
       'Prezzi del $date · $size';
   static const fuelDownloadTitle = 'Scaricare i prezzi dei carburanti?';
   static const fuelDownloadBody =
-      'Verrà scaricato circa 1,5 MB da GitHub con i prezzi di tutti i '
-      'distributori italiani. GitHub vedrà il tuo indirizzo IP, come per '
-      'ogni download. I dati restano sul dispositivo: tocca “Aggiorna” per i '
-      'prezzi del giorno.';
+      'Verranno scaricati circa 7,5 MB dal sito del Ministero delle Imprese '
+      'e del Made in Italy (mimit.gov.it) con i prezzi di tutti i '
+      'distributori italiani. Il Ministero vedrà il tuo indirizzo IP, come '
+      'per ogni download. I dati restano sul dispositivo: tocca “Aggiorna” '
+      'per i prezzi del giorno.';
 
   // Wikipedia.
   static const fromWikipedia = 'DA WIKIPEDIA';
@@ -246,6 +248,10 @@ abstract final class AppStrings {
   static const serviceOfflinePlacesDetail =
       'Solo quando apri “Luoghi offline” o scarichi una zona: riceve la '
       'richiesta dell’elenco o del file della zona scelta.';
+  static const serviceFuel = 'Prezzi carburanti: MIMIT';
+  static const serviceFuelDetail =
+      'Solo quando scarichi o aggiorni i prezzi: riceve la richiesta dei '
+      'file nazionali dei distributori e dei prezzi.';
   static const servicePlaces = 'Luoghi: Overpass API';
   static const servicePlacesDetail =
       'Quando scegli una categoria, riceve la categoria e la zona '

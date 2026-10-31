@@ -69,8 +69,9 @@ abstract final class PrivacyPolicy {
       'Wikipedia e Wikidata: solo quando apri la scheda di un luogo collegato '
           'a Wikipedia, ricevono il titolo della voce o il codice Wikidata e '
           'la richiesta della sua immagine.',
-      'GitHub (prezzi carburanti): solo quando confermi il download o '
-          'l’aggiornamento dei prezzi, riceve la richiesta del file nazionale.',
+      'Ministero delle Imprese e del Made in Italy (prezzi carburanti): solo '
+          'quando confermi il download o l’aggiornamento dei prezzi, riceve la '
+          'richiesta dei file nazionali di distributori e prezzi.',
       'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta.',
