@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -28,16 +27,6 @@ const _entry = [
     ['Broken'],
   ],
 ];
-
-List<int> _dataset() => gzip.encode(
-  utf8.encode(
-    jsonEncode({
-      'version': 1,
-      'extracted': '2026-10-30',
-      'stations': [_entry],
-    }),
-  ),
-);
 
 Poi _poi(int id, GeoPoint point) =>
     Poi(ref: OsmRef(OsmElementType.node, id), point: point);
@@ -78,33 +67,67 @@ void main() {
     expect(annotated.last.fuel, isNull);
   });
 
-  test('downloads, validates, loads and deletes the dataset', () async {
-    final store = FuelPricesStore(
-      _tempDir(),
-      MockClient((_) async => http.Response.bytes(_dataset(), 200)),
-      url: Uri.parse('https://data.example/fuel-prices.json.gz'),
+  const stationsCsv =
+      'Estrazione del 2026-10-30\n'
+      'idImpianto|Gestore|Bandiera|Tipo Impianto|Nome Impianto|Indirizzo|'
+      'Comune|Provincia|Latitudine|Longitudine\n'
+      '59183|ENI SPA|Agip Eni|Stradale|Bari Centro|Via  Sparano 1|BARI|BA|'
+      '41.12|16.87\n'
+      '1|X|Y|Stradale|Fuori|Via|LONDRA|XX|51.5|-0.1\n';
+  const pricesCsv =
+      'Estrazione del 2026-10-30\n'
+      'idImpianto|descCarburante|prezzo|isSelf|dtComu\n'
+      '59183|Benzina|1.99|1|28/10/2026 12:58:00\n'
+      '59183|Gasolio|2.4|0|28/10/2026 15:07:00\n'
+      '59183|Gasolio|99|1|28/10/2026 15:07:00\n'
+      '1|Benzina|1.8|1|28/10/2026 10:00:00\n';
+
+  FuelPricesStore store(MockClientHandler handler) => FuelPricesStore(
+    _tempDir(),
+    MockClient(handler),
+    url: Uri.parse('https://data.example/exportCSV/'),
+  );
+
+  test('downloads the Ministry files, joins, loads and deletes them', () async {
+    final requested = <String>[];
+    final fuel = store((request) async {
+      requested.add(request.url.path);
+      return http.Response(
+        request.url.path.endsWith('prezzo_alle_8.csv')
+            ? pricesCsv
+            : stationsCsv,
+        200,
+      );
+    });
+    expect(fuel.info(), isNull);
+
+    final progress = <int>[];
+    final info = await fuel.download(
+      userAgent: 'Navia/test',
+      onProgress: (received, total) => progress.add(received),
     );
-    expect(store.info(), isNull);
-
-    final info = await store.download(userAgent: 'Navia/test');
+    expect(requested, [
+      '/exportCSV/anagrafica_impianti_attivi.csv',
+      '/exportCSV/prezzo_alle_8.csv',
+    ]);
     expect(info.extracted, DateTime(2026, 10, 30));
-    expect(store.info()?.bytes, info.bytes);
-    expect((await store.load()).single.name, 'Bari Centro');
+    expect(progress.last, 2000);
 
-    await store.delete();
-    expect(store.info(), isNull);
+    final station = (await fuel.load()).single;
+    expect(station.name, 'Bari Centro');
+    expect(station.address, 'Via Sparano 1');
+    // The implausible 99 EUR price is dropped.
+    expect(station.prices, hasLength(2));
+    expect(station.prices.first.reportedAt, DateTime(2026, 10, 28, 12, 58));
+
+    await fuel.delete();
+    expect(fuel.info(), isNull);
   });
 
-  test('rejects a file that is not a fuel dataset', () async {
-    final store = FuelPricesStore(
-      _tempDir(),
-      MockClient(
-        (_) async => http.Response.bytes(gzip.encode(utf8.encode('{}')), 200),
-      ),
-      url: Uri.parse('https://data.example/fuel-prices.json.gz'),
-    );
+  test('rejects files that are not the Ministry datasets', () async {
+    final fuel = store((_) async => http.Response('<html>errore</html>', 200));
     await expectLater(
-      store.download(userAgent: 'Navia/test'),
+      fuel.download(userAgent: 'Navia/test'),
       throwsA(
         isA<ServiceException>().having(
           (e) => e.failure,
@@ -113,7 +136,7 @@ void main() {
         ),
       ),
     );
-    expect(store.info(), isNull);
+    expect(fuel.info(), isNull);
   });
 
   test('only fuel discovery gets prices attached', () async {

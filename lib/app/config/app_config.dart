@@ -94,12 +94,11 @@ abstract final class AppConfig {
     defaultValue: '$sourceCodeUrl/releases/download/places-data',
   );
 
-  /// Daily fuel prices (MIMIT open data), published by the `Fuel data`
-  /// workflow. An empty value disables fuel prices.
+  /// Folder of the Ministry's daily fuel open data (MIMIT, IODL 2.0), with
+  /// a trailing slash. An empty value disables fuel prices.
   static const fuelDataUrl = String.fromEnvironment(
     'NAVIA_FUEL_DATA_URL',
-    defaultValue:
-        '$sourceCodeUrl/releases/download/fuel-data/fuel-prices.json.gz',
+    defaultValue: 'https://www.mimit.gov.it/images/exportCSV/',
   );
 
   /// Minimum interval between place requests.
