@@ -59,6 +59,7 @@ class NavRoute {
     required this.geometry,
     required this.distanceMeters,
     required this.duration,
+    this.steps = const [],
   });
 
   final TravelMode mode;
@@ -68,4 +69,77 @@ class NavRoute {
 
   final double distanceMeters;
   final Duration duration;
+
+  /// Maneuvers from departure to arrival; empty if the service sent none.
+  final List<RouteStep> steps;
+}
+
+/// Kinds of maneuvers, following OSRM's `maneuver.type`.
+enum ManeuverKind {
+  depart,
+  turn,
+  continueStraight,
+  newName,
+  merge,
+  ramp,
+  fork,
+  endOfRoad,
+  roundabout,
+  arrive,
+  other,
+}
+
+/// Direction of a maneuver, following OSRM's `maneuver.modifier`.
+enum ManeuverDirection {
+  uturn,
+  sharpRight,
+  right,
+  slightRight,
+  straight,
+  slightLeft,
+  left,
+  sharpLeft,
+}
+
+/// One maneuver of a route and the stretch that follows it.
+@immutable
+class RouteStep {
+  const RouteStep({
+    required this.kind,
+    required this.location,
+    required this.distanceMeters,
+    this.direction,
+    this.streetName,
+    this.exit,
+  });
+
+  final ManeuverKind kind;
+
+  /// Where the maneuver happens.
+  final GeoPoint location;
+
+  /// Length of the stretch after the maneuver, up to the next one.
+  final double distanceMeters;
+
+  final ManeuverDirection? direction;
+
+  /// The street taken, when it has a name.
+  final String? streetName;
+
+  /// Roundabout exit number.
+  final int? exit;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RouteStep &&
+      other.kind == kind &&
+      other.location == location &&
+      other.distanceMeters == distanceMeters &&
+      other.direction == direction &&
+      other.streetName == streetName &&
+      other.exit == exit;
+
+  @override
+  int get hashCode =>
+      Object.hash(kind, location, distanceMeters, direction, streetName, exit);
 }

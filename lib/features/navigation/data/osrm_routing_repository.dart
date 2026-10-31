@@ -54,7 +54,7 @@ class OsrmRoutingRepository implements RoutingRepository {
             'overview': 'full',
             'geometries': 'geojson',
             'alternatives': 'false',
-            'steps': 'false',
+            'steps': 'true',
           },
         );
     final response = await _client.getJson(uri);
@@ -113,8 +113,72 @@ class OsrmRoutingRepository implements RoutingRepository {
       geometry: List.unmodifiable(points),
       distanceMeters: distance.toDouble(),
       duration: Duration(milliseconds: (duration * 1000).round()),
+      steps: List.unmodifiable(_steps(route['legs'])),
     );
   }
+
+  /// Reads the maneuvers of every leg; unusable steps are skipped.
+  static List<RouteStep> _steps(Object? legs) {
+    if (legs is! List) return const [];
+    final steps = <RouteStep>[];
+    for (final leg in legs) {
+      final legSteps = leg is Map ? leg['steps'] : null;
+      if (legSteps is! List) continue;
+      for (final step in legSteps) {
+        if (step is! Map) continue;
+        final maneuver = step['maneuver'];
+        final distance = step['distance'];
+        if (maneuver is! Map || distance is! num) continue;
+        final location = GeoPoint.tryParseLngLat(maneuver['location']);
+        if (location == null) continue;
+        final name = step['name'];
+        final exit = maneuver['exit'];
+        steps.add(
+          RouteStep(
+            kind: _kind(maneuver['type']),
+            location: location,
+            distanceMeters: distance.toDouble(),
+            direction: _direction(maneuver['modifier']),
+            streetName: name is String && name.trim().isNotEmpty
+                ? name.trim()
+                : null,
+            exit: exit is int && exit > 0 ? exit : null,
+          ),
+        );
+      }
+    }
+    return steps;
+  }
+
+  static ManeuverKind _kind(Object? type) => switch (type) {
+    'depart' => ManeuverKind.depart,
+    'turn' => ManeuverKind.turn,
+    'continue' => ManeuverKind.continueStraight,
+    'new name' => ManeuverKind.newName,
+    'merge' => ManeuverKind.merge,
+    'on ramp' || 'off ramp' => ManeuverKind.ramp,
+    'fork' => ManeuverKind.fork,
+    'end of road' => ManeuverKind.endOfRoad,
+    'roundabout' ||
+    'rotary' ||
+    'roundabout turn' ||
+    'exit roundabout' ||
+    'exit rotary' => ManeuverKind.roundabout,
+    'arrive' => ManeuverKind.arrive,
+    _ => ManeuverKind.other,
+  };
+
+  static ManeuverDirection? _direction(Object? modifier) => switch (modifier) {
+    'uturn' => ManeuverDirection.uturn,
+    'sharp right' => ManeuverDirection.sharpRight,
+    'right' => ManeuverDirection.right,
+    'slight right' => ManeuverDirection.slightRight,
+    'straight' => ManeuverDirection.straight,
+    'slight left' => ManeuverDirection.slightLeft,
+    'left' => ManeuverDirection.left,
+    'sharp left' => ManeuverDirection.sharpLeft,
+    _ => null,
+  };
 
   /// OSRM servers serve one profile each and ignore this path segment, but
   /// it is set to the documented profile names for clarity.
