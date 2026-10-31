@@ -53,6 +53,18 @@ class MapOverlayStyle {
   final Color placeLabelHalo;
 }
 
+/// An area drawn as a translucent fill, such as the places reachable in a
+/// given time. [level] 0 is the nearest band.
+@immutable
+class MapArea {
+  const MapArea({required this.level, required this.rings});
+
+  final int level;
+
+  /// Closed rings of `[longitude, latitude]` positions.
+  final List<List<List<double>>> rings;
+}
+
 /// A discovered place drawn by Navia, identified by a stable [key].
 @immutable
 class MapPlace {

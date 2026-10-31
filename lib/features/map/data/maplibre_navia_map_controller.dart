@@ -28,6 +28,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
   static const _routeCasingLayer = 'navia-route-casing';
   static const _placesSource = 'navia-places';
   static const _placesLayer = 'navia-places';
+  static const _areasSource = 'navia-areas';
+  static const _areasLayer = 'navia-areas';
   static const _placeColumnsSource = 'navia-place-columns';
   static const _placeColumnsLayer = 'navia-place-columns';
 
@@ -50,6 +52,7 @@ class MapLibreNaviaMapController implements NaviaMapController {
   List<GeoPoint> _route = const [];
   List<MapMarker> _markers = const [];
   List<MapPlace> _places = const [];
+  List<MapArea> _areas = const [];
   Map<String, Uint8List> _placeImages = const {};
 
   /// Marker images already added to the current style.
@@ -107,7 +110,22 @@ class MapLibreNaviaMapController implements NaviaMapController {
     _buildings3d = buildings3d;
     _buildingsSource = buildingsSource;
     _buildingsLayerAdded = false;
-    // Places first, so that the route and markers are drawn above them.
+    // Areas first, then places: the route and markers are drawn above.
+    await _controller.addGeoJsonSource(
+      _areasSource,
+      MapOverlayGeoJson.areas(_areas),
+    );
+    // Overlapping bands add up, so the nearest area looks the strongest.
+    await _controller.addFillLayer(
+      _areasSource,
+      _areasLayer,
+      FillLayerProperties(
+        fillColor: _hex(style.route),
+        fillOpacity: 0.16,
+        fillOutlineColor: _hex(style.routeCasing),
+      ),
+      enableInteraction: false,
+    );
     _imagesInStyle.clear();
     await _addMissingImages();
     await _controller.addGeoJsonSource(
@@ -309,8 +327,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
           '!',
           ['has', 'hide_3d'],
         ],
-        // Keeps places, the route and markers drawn above the buildings.
-        belowLayerId: _placeColumnsLayer,
+        // Keeps areas, places, the route and markers above the buildings.
+        belowLayerId: _areasLayer,
         enableInteraction: false,
       );
       _buildingsLayerAdded = true;
@@ -375,6 +393,16 @@ class MapLibreNaviaMapController implements NaviaMapController {
     for (final MapEntry(:key, :value) in _placeImages.entries) {
       if (_imagesInStyle.add(key)) await _controller.addImage(key, value);
     }
+  }
+
+  @override
+  Future<void> showAreas(List<MapArea> areas) async {
+    _areas = areas;
+    if (!_overlaysReady) return;
+    await _controller.setGeoJsonSource(
+      _areasSource,
+      MapOverlayGeoJson.areas(areas),
+    );
   }
 
   @override

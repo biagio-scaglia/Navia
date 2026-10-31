@@ -114,6 +114,35 @@ abstract final class AppStrings {
   static String remaining(String distance) => '$distance rimanenti';
   static String routeSteps(int count) => 'Istruzioni ($count)';
 
+  // Explore tabs.
+  static const tabGo = 'Vai';
+  static const tabDiscover = 'Scopri';
+  static const tabReach = '15 min';
+  static const discoverIntro =
+      'Monumenti, chiese, piazze e storia della zona, da Wikipedia. La '
+      'ricerca parte dal centro della mappa.';
+  static const discoverHere = 'Scopri qui intorno';
+  static const discoverAgain = 'Cerca di nuovo qui';
+  static const discoverEmpty = 'Nessuna voce di Wikipedia qui intorno.';
+  static const discoverAttribution = 'Da Wikipedia · testi CC BY-SA 4.0';
+  static const reachIntro =
+      'Colora sulla mappa dove arrivi in 5, 10 e 15 minuti.';
+  static const reachFromYou = 'Dalla tua posizione.';
+  static const reachFromCenter =
+      'Dal centro della mappa: attiva la posizione per partire da te.';
+  static const reachShow = 'Mostra sulla mappa';
+  static const reachUpdate = 'Aggiorna';
+  static const reachHide = 'Nascondi';
+  static const reachAttribution =
+      'Calcolo: Valhalla (FOSSGIS) · © OpenStreetMap';
+  static const serviceDiscover = 'Scopri: Wikipedia';
+  static const serviceDiscoverDetail =
+      'Solo quando tocchi “Scopri qui intorno”: riceve il centro della mappa.';
+  static const serviceReach = 'Aree raggiungibili: Valhalla (FOSSGIS)';
+  static const serviceReachDetail =
+      'Solo quando tocchi “Mostra sulla mappa”: riceve il punto di partenza '
+      'e il mezzo.';
+
   // Weather.
   static const atDestination = 'A destinazione';
   static const serviceWeather = 'Meteo: Open-Meteo';

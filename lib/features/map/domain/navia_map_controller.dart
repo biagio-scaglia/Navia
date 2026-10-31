@@ -42,6 +42,10 @@ abstract interface class NaviaMapController {
   /// [screenPoint] uses the units reported by the map tap callback.
   Future<MapPoi?> poiAt(Offset screenPoint);
 
+  /// Replaces the translucent areas, e.g. reachable areas; empty removes
+  /// them.
+  Future<void> showAreas(List<MapArea> areas);
+
   /// Replaces the discovered places drawn by Navia.
   Future<void> showPlaces(List<MapPlace> places);
 

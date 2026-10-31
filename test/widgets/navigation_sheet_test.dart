@@ -48,8 +48,15 @@ Future<NavigationController> _pump(
 }) async {
   final container = await pumpNaviaWidget(
     tester,
-    const Scaffold(
-      body: Align(alignment: Alignment.bottomCenter, child: NavigationSheet()),
+    Scaffold(
+      body: Align(
+        alignment: Alignment.bottomCenter,
+        child: NavigationSheet(
+          mapCenter: () async =>
+              const GeoPoint(latitude: 41.12, longitude: 16.87),
+          onFocusArticle: (_) {},
+        ),
+      ),
     ),
     overrides: [
       routingRepositoryProvider.overrideWithValue(

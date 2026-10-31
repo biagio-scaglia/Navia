@@ -353,6 +353,16 @@ class _ServicesSection extends StatelessWidget {
           AppStrings.serviceOfflinePlacesDetail,
         ),
         service(
+          NaviaIcons.flag,
+          AppStrings.serviceDiscover,
+          AppStrings.serviceDiscoverDetail,
+        ),
+        service(
+          NaviaIcons.clock,
+          AppStrings.serviceReach,
+          AppStrings.serviceReachDetail,
+        ),
+        service(
           NaviaIcons.globe,
           AppStrings.serviceWeather,
           AppStrings.serviceWeatherDetail,

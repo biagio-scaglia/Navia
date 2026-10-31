@@ -42,6 +42,20 @@ abstract final class MapOverlayGeoJson {
       },
   ]);
 
+  static Map<String, dynamic> areas(List<MapArea> areas) => _collection([
+    for (final area in areas)
+      {
+        'type': 'Feature',
+        'properties': {'level': area.level},
+        'geometry': {
+          'type': 'MultiPolygon',
+          'coordinates': [
+            for (final ring in area.rings) [ring],
+          ],
+        },
+      },
+  ]);
+
   /// Small squares under each place, extruded into colored columns.
   static Map<String, dynamic> placeColumns(List<MapPlace> places) =>
       _collection([

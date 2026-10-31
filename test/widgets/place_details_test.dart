@@ -103,10 +103,14 @@ void main() {
 
     final container = await pumpNaviaWidget(
       tester,
-      const Scaffold(
+      Scaffold(
         body: Align(
           alignment: Alignment.bottomCenter,
-          child: NavigationSheet(),
+          child: NavigationSheet(
+            mapCenter: () async =>
+                const GeoPoint(latitude: 41.12, longitude: 16.87),
+            onFocusArticle: (_) {},
+          ),
         ),
       ),
       overrides: [geocodingRepositoryProvider.overrideWithValue(null)],

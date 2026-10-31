@@ -12,6 +12,7 @@ import '../../../core/widgets/floating_surface.dart';
 import '../../../core/widgets/map_control_button.dart';
 import '../../../core/widgets/navia_icon.dart';
 import '../../../shared/models/geo_point.dart';
+import '../../discover/discover.dart';
 import '../../favorites/presentation/favorites_screen.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
@@ -27,8 +28,10 @@ import '../../places/presentation/place_discovery_controller.dart';
 import '../../places/presentation/place_marker_style.dart';
 import '../../places/presentation/place_overlays.dart';
 import '../../places/presentation/widgets/place_category_bar.dart';
+import '../../reach/reach.dart';
 import '../../search/data/photon_geocoding_repository.dart';
 import '../../search/presentation/search_screen.dart';
+import '../domain/map_overlays.dart';
 import '../domain/navia_map_controller.dart';
 import 'map_preferences_controller.dart';
 import 'map_providers.dart';
@@ -96,6 +99,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     unawaited(map.showRoute(ref.read(routeGeometryProvider)));
     unawaited(map.showMarkers(ref.read(mapMarkersProvider)));
     unawaited(_registerMarkerImages(map));
+    unawaited(map.showAreas(_areasOf(ref.read(reachProvider).contours)));
     unawaited(map.showPlaces(ref.read(mapPlacesProvider)));
     unawaited(
       map.setStylePoisVisible(
@@ -103,6 +107,29 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
     );
   }
+
+  Future<GeoPoint?> _mapCenter() async =>
+      (await _map?.viewport())?.bounds.center ?? AppConfig.initialCamera.target;
+
+  /// Selects a discovered article and moves the map to it.
+  Future<void> _focusArticle(NearbyArticle article) async {
+    _navigation.select(
+      PointWaypoint(
+        article.point,
+        label: article.title,
+        description: article.description,
+      ),
+    );
+    await _map?.moveTo(article.point, zoom: AppConfig.userLocationZoom);
+  }
+
+  static List<MapArea> _areasOf(List<ReachContour> contours) => [
+    for (final contour in contours)
+      MapArea(
+        level: ReachRepository.minutes.indexOf(contour.minutes),
+        rings: contour.rings,
+      ),
+  ];
 
   /// Gives the map the category marker images, rendered once per session.
   Future<void> _registerMarkerImages(NaviaMapController map) async {
@@ -277,6 +304,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listen(mapPlacesProvider, (_, places) {
       unawaited(_map?.showPlaces(places));
     });
+    ref.listen(reachProvider.select((s) => s.contours), (_, contours) {
+      unawaited(_map?.showAreas(_areasOf(contours)));
+      // Frames the largest area, so that its edge is visible.
+      if (contours.isEmpty) return;
+      final outline = [
+        for (final ring in contours.first.rings)
+          for (final position in ring)
+            GeoPoint(latitude: position[1], longitude: position[0]),
+      ];
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fitRoute(outline);
+      });
+    });
     ref.listen(placeDiscoveryProvider.select((s) => s.category), (_, category) {
       // The style's own labels would duplicate the discovered places.
       unawaited(_map?.setStylePoisVisible(category == null));
@@ -327,6 +367,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   onLocationPressed: _onLocationPressed,
                   onOpenFavorites: _openFavorites,
                   onShowRoute: () => _fitRoute(ref.read(routeGeometryProvider)),
+                  mapCenter: _mapCenter,
+                  onFocusArticle: _focusArticle,
                 ),
               ),
             ],
@@ -480,8 +522,12 @@ class _MapOverlays extends ConsumerWidget {
     required this.onLocationPressed,
     required this.onOpenFavorites,
     required this.onShowRoute,
+    required this.mapCenter,
+    required this.onFocusArticle,
   });
 
+  final Future<GeoPoint?> Function() mapCenter;
+  final ValueChanged<NearbyArticle> onFocusArticle;
   final GlobalKey sheetKey;
   final VoidCallback onOpenSearch;
   final VoidCallback onLocationPressed;
@@ -587,7 +633,11 @@ class _MapOverlays extends ConsumerWidget {
                   // The map always keeps most of the screen.
                   maxHeight: constraints.maxHeight * 0.6,
                 ),
-                child: NavigationSheet(key: sheetKey),
+                child: NavigationSheet(
+                  key: sheetKey,
+                  mapCenter: mapCenter,
+                  onFocusArticle: onFocusArticle,
+                ),
               ),
             ),
           ] else

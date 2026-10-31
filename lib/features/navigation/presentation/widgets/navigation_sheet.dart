@@ -12,6 +12,8 @@ import '../../../../core/utils/open_link.dart';
 import '../../../../core/widgets/navia_buttons.dart';
 import '../../../../core/widgets/navia_icon.dart';
 import '../../../../core/widgets/navia_sheet.dart';
+import '../../../../shared/models/geo_point.dart';
+import '../../../discover/discover.dart';
 import '../../../favorites/domain/favorite.dart';
 import '../../../favorites/presentation/favorites_controller.dart';
 import '../../../places/presentation/widgets/fuel_prices_section.dart';
@@ -25,6 +27,7 @@ import '../../domain/navigation_models.dart';
 import '../guidance_controller.dart';
 import '../navigation_controller.dart';
 import '../navigation_labels.dart';
+import 'explore_panel.dart';
 import 'guidance_widgets.dart';
 
 /// Panel docked to the bottom of the map: where-to entry, the selected
@@ -33,7 +36,17 @@ import 'guidance_widgets.dart';
 /// It is laid out next to the map, not inside it, so expanding or collapsing
 /// it never rebuilds the map view.
 class NavigationSheet extends ConsumerStatefulWidget {
-  const NavigationSheet({super.key});
+  const NavigationSheet({
+    super.key,
+    required this.mapCenter,
+    required this.onFocusArticle,
+  });
+
+  /// The point at the center of the map, for searches "here".
+  final Future<GeoPoint?> Function() mapCenter;
+
+  /// Shows a discovered Wikipedia article on the map.
+  final ValueChanged<NearbyArticle> onFocusArticle;
 
   @override
   ConsumerState<NavigationSheet> createState() => _NavigationSheetState();
@@ -143,10 +156,14 @@ class _NavigationSheetState extends ConsumerState<NavigationSheet> {
         onPickDestination: _pickDestination,
       );
     } else if (routingAvailable) {
-      content = _WhereToPanel(
-        onSearch: _pickDestination,
-        onFavorite: (favorite) =>
-            _routeTo(PointWaypoint(favorite.point, label: favorite.name)),
+      content = ExplorePanel(
+        mapCenter: widget.mapCenter,
+        onFocus: widget.onFocusArticle,
+        goTab: _WhereToPanel(
+          onSearch: _pickDestination,
+          onFavorite: (favorite) =>
+              _routeTo(PointWaypoint(favorite.point, label: favorite.name)),
+        ),
       );
     } else {
       content = null;
