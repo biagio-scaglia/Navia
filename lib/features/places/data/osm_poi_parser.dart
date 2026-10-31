@@ -37,7 +37,19 @@ abstract final class OsmPoiParser {
           .where((value) => value.isNotEmpty)
           .join(', '),
       wheelchair: WheelchairAccess.values.asNameMap()[tags['wheelchair']],
+      wikidata: _wikidata(tags['wikidata']),
+      wikipedia: _wikipedia(tags['wikipedia']),
     );
+  }
+
+  static String? _wikidata(String? value) =>
+      value != null && RegExp(r'^Q[1-9][0-9]*$').hasMatch(value) ? value : null;
+
+  /// Keeps "language:Title" values with a plausible language code.
+  static String? _wikipedia(String? value) {
+    if (value == null) return null;
+    final match = RegExp(r'^([a-z]{2,3}(?:-[a-z]+)?):(.+)$').firstMatch(value);
+    return match == null ? null : '${match[1]}:${match[2]!.trim()}';
   }
 
   /// "Via Sparano da Bari, 5 · Bari", from whichever parts are tagged.

@@ -31,7 +31,7 @@ KEEP_TAGS = {
     'name', 'name:it', 'amenity', 'shop', 'tourism', 'leisure', 'railway',
     'highway', 'addr:street', 'addr:housenumber', 'addr:city',
     'opening_hours', 'website', 'contact:website', 'phone', 'contact:phone',
-    'cuisine', 'wheelchair',
+    'cuisine', 'wheelchair', 'wikidata', 'wikipedia',
 }
 
 

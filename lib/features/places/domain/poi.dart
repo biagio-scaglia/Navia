@@ -59,6 +59,8 @@ class Poi {
     this.phone,
     this.cuisine,
     this.wheelchair,
+    this.wikidata,
+    this.wikipedia,
   });
 
   final OsmRef ref;
@@ -89,6 +91,12 @@ class Poi {
 
   final WheelchairAccess? wheelchair;
 
+  /// Wikidata item id, e.g. "Q1234", from the `wikidata` tag.
+  final String? wikidata;
+
+  /// Wikipedia article as "language:Title", from the `wikipedia` tag.
+  final String? wikipedia;
+
   @override
   bool operator ==(Object other) =>
       other is Poi &&
@@ -101,7 +109,9 @@ class Poi {
       other.website == website &&
       other.phone == phone &&
       other.cuisine == cuisine &&
-      other.wheelchair == wheelchair;
+      other.wheelchair == wheelchair &&
+      other.wikidata == wikidata &&
+      other.wikipedia == wikipedia;
 
   @override
   int get hashCode => Object.hash(
@@ -115,5 +125,7 @@ class Poi {
     phone,
     cuisine,
     wheelchair,
+    wikidata,
+    wikipedia,
   );
 }
