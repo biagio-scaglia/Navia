@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/models/geo_point.dart';
+import 'fuel.dart';
 
 enum OsmElementType { node, way, relation }
 
@@ -61,6 +62,7 @@ class Poi {
     this.wheelchair,
     this.wikidata,
     this.wikipedia,
+    this.fuel,
   });
 
   final OsmRef ref;
@@ -97,6 +99,26 @@ class Poi {
   /// Wikipedia article as "language:Title", from the `wikipedia` tag.
   final String? wikipedia;
 
+  /// Ministry prices of the matching fuel station, when downloaded.
+  final FuelStation? fuel;
+
+  /// The same place with [fuel] prices attached.
+  Poi withFuel(FuelStation? fuel) => Poi(
+    ref: ref,
+    point: point,
+    name: name,
+    category: category,
+    address: address,
+    openingHours: openingHours,
+    website: website,
+    phone: phone,
+    cuisine: cuisine,
+    wheelchair: wheelchair,
+    wikidata: wikidata,
+    wikipedia: wikipedia,
+    fuel: fuel,
+  );
+
   @override
   bool operator ==(Object other) =>
       other is Poi &&
@@ -111,7 +133,8 @@ class Poi {
       other.cuisine == cuisine &&
       other.wheelchair == wheelchair &&
       other.wikidata == wikidata &&
-      other.wikipedia == wikipedia;
+      other.wikipedia == wikipedia &&
+      other.fuel?.id == fuel?.id;
 
   @override
   int get hashCode => Object.hash(
@@ -127,5 +150,6 @@ class Poi {
     wheelchair,
     wikidata,
     wikipedia,
+    fuel?.id,
   );
 }

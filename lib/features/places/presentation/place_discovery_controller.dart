@@ -10,6 +10,7 @@ import '../../../shared/models/geo_bounds.dart';
 import '../data/places_cache.dart';
 import '../domain/poi.dart';
 import '../domain/poi_category.dart';
+import 'fuel_prices_controller.dart';
 import 'offline_places_controller.dart';
 import 'places_providers.dart';
 
@@ -76,7 +77,11 @@ class PlaceDiscoveryController extends Notifier<PlaceDiscoveryState> {
     ref
       ..onDispose(() => _debounce?.cancel())
       // A region was downloaded or deleted: answers may now differ.
-      ..listen(installedRegionsProvider, (_, _) => _reloadAfterSourceChange());
+      ..listen(installedRegionsProvider, (_, _) => _reloadAfterSourceChange())
+      ..listen(
+        fuelPricesProvider.select((s) => s.info),
+        (_, _) => _reloadAfterSourceChange(),
+      );
     return const PlaceDiscoveryState();
   }
 
