@@ -122,6 +122,7 @@ abstract final class AppStrings {
       'Prezzi comunicati dal gestore al Ministero, aggiornati al $date.';
   static const fuelSource = 'Fonte: MIMIT – Osservaprezzi carburanti, IODL 2.0';
   static const fuelPricesTitle = 'Prezzi carburanti · Italia';
+  static const fuelProcessing = 'Elaborazione dei prezzi…';
   static const fuelPricesDetail =
       'Prezzi dei distributori pubblicati ogni giorno dal Ministero.';
   static const fuelNotDownloaded =

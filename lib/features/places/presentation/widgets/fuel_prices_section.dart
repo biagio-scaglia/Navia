@@ -175,7 +175,9 @@ class FuelDataCard extends ConsumerWidget {
                       Text(AppStrings.fuelPricesDetail, style: muted),
                       const SizedBox(height: NaviaSpacing.xs),
                       Text(
-                        state.downloading
+                        state.processing
+                            ? AppStrings.fuelProcessing
+                            : state.downloading
                             ? AppStrings.downloadingRegion(
                                 ((state.progress ?? 0) * 100).round(),
                               )
@@ -203,9 +205,10 @@ class FuelDataCard extends ConsumerWidget {
               const SizedBox(height: NaviaSpacing.md),
               ClipRRect(
                 borderRadius: NaviaRadii.pill,
+                // Indeterminate while the prices are being joined.
                 child: LinearProgressIndicator(
                   minHeight: 6,
-                  value: state.progress,
+                  value: state.processing ? null : state.progress,
                 ),
               ),
             ],
@@ -214,7 +217,9 @@ class FuelDataCard extends ConsumerWidget {
               alignment: WrapAlignment.end,
               spacing: NaviaSpacing.sm,
               children: [
-                if (state.downloading)
+                if (state.processing)
+                  const SizedBox.shrink()
+                else if (state.downloading)
                   TextButton(
                     onPressed: controller.cancel,
                     child: const Text(AppStrings.cancel),

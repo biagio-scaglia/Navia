@@ -66,6 +66,7 @@ class FuelPricesStore {
   /// downloads the open data directly, only when the user asks.
   Future<FuelDataInfo> download({
     void Function(int received, int? total)? onProgress,
+    void Function()? onProcessing,
     bool Function()? isCancelled,
     required String userAgent,
   }) async {
@@ -92,6 +93,8 @@ class FuelPricesStore {
         parts[1].path,
         '${_data.path}.download',
       );
+      // Joining about 22,000 stations takes a few seconds on a phone.
+      onProcessing?.call();
       final extracted = await Isolate.run(
         () => joinMinistryFiles(stationsPath, pricesPath, dataPath),
       );
@@ -100,6 +103,7 @@ class FuelPricesStore {
       }
       final joined = File(dataPath);
       final bytes = joined.lengthSync();
+      if (_data.existsSync()) await _data.delete();
       await joined.rename(_data.path);
       await _info.writeAsString(
         jsonEncode({'extracted': extracted.toIso8601String(), 'bytes': bytes}),

@@ -568,12 +568,11 @@ class _MapOverlays extends ConsumerWidget {
                     edge + safe.right,
                     NaviaSpacing.md,
                   ),
-                  // Scrolls instead of overflowing when a tall panel leaves
-                  // little room above it.
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: _MapControls(
+                  // A tall panel can leave little room: only the controls
+                  // that fit entirely are shown, never a clipped one.
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => _MapControls(
+                      availableHeight: constraints.maxHeight,
                       onLocationPressed: onLocationPressed,
                       onShowRoute: onShowRoute,
                     ),
@@ -666,10 +665,13 @@ class _MapViewControls extends ConsumerWidget {
 
 class _MapControls extends ConsumerWidget {
   const _MapControls({
+    required this.availableHeight,
     required this.onLocationPressed,
     required this.onShowRoute,
   });
 
+  /// Room above the panel; controls that would not fit are left out.
+  final double availableHeight;
   final VoidCallback onLocationPressed;
   final VoidCallback onShowRoute;
 
@@ -682,11 +684,16 @@ class _MapControls extends ConsumerWidget {
       routeGeometryProvider.select((geometry) => geometry.isNotEmpty),
     );
     final accent = Theme.of(context).colorScheme.primary;
+    const button = NaviaSizes.mapControl;
+    final showLocation = availableHeight >= button;
+    final showRoute =
+        hasRoute && availableHeight >= button * 2 + NaviaSpacing.md;
+    if (!showLocation) return const SizedBox.shrink();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasRoute) ...[
+        if (showRoute) ...[
           MapControlButton(
             tooltip: AppStrings.showWholeRoute,
             onPressed: onShowRoute,

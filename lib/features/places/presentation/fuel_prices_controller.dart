@@ -13,7 +13,12 @@ import '../domain/poi_category.dart';
 
 @immutable
 class FuelPricesState {
-  const FuelPricesState({this.info, this.progress, this.failure});
+  const FuelPricesState({
+    this.info,
+    this.progress,
+    this.processing = false,
+    this.failure,
+  });
 
   /// The installed dataset, if any.
   final FuelDataInfo? info;
@@ -21,9 +26,12 @@ class FuelPricesState {
   /// Download progress from 0 to 1 (null value while unknown); absent when
   /// no download is running.
   final double? progress;
+
+  /// The files are downloaded and being joined on the device.
+  final bool processing;
   final ServiceFailure? failure;
 
-  bool get downloading => progress != null;
+  bool get downloading => progress != null || processing;
 }
 
 /// Downloads, refreshes and deletes the daily fuel prices, only on request.
@@ -47,6 +55,11 @@ class FuelPricesController extends Notifier<FuelPricesState> {
           if (!ref.mounted || total == null || total == 0) return;
           state = FuelPricesState(info: state.info, progress: received / total);
         },
+        onProcessing: () {
+          if (ref.mounted) {
+            state = FuelPricesState(info: state.info, processing: true);
+          }
+        },
       );
       if (ref.mounted) state = FuelPricesState(info: info);
     } on DownloadCancelled {
@@ -55,6 +68,16 @@ class FuelPricesController extends Notifier<FuelPricesState> {
       logServiceError('fuel prices', error);
       if (ref.mounted) {
         state = FuelPricesState(info: state.info, failure: error.failure);
+      }
+    } on Object catch (error) {
+      // Any other failure, such as storage errors, must not leave the
+      // download looking stuck.
+      logServiceError('fuel prices', error);
+      if (ref.mounted) {
+        state = FuelPricesState(
+          info: state.info,
+          failure: ServiceFailure.unavailable,
+        );
       }
     }
   }
