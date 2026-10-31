@@ -102,6 +102,16 @@ abstract final class AppStrings {
   static const close = 'Chiudi';
   static const back = 'Indietro';
 
+  // Wikipedia.
+  static const fromWikipedia = 'DA WIKIPEDIA';
+  static const readOnWikipedia = 'Leggi su Wikipedia';
+  static const loadingWikipedia = 'Caricamento da Wikipedia…';
+  static const wikipediaLicense = 'Testo CC BY-SA 4.0';
+  static const serviceWikipedia = 'Descrizioni: Wikipedia e Wikidata';
+  static const serviceWikipediaDetail =
+      'Solo quando apri la scheda di un luogo collegato a Wikipedia: riceve '
+      'il titolo della voce e scarica la sua immagine.';
+
   // Place details.
   static const openingHours = 'Orari';
   static const openNow = 'Aperto ora';
