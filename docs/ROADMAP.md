@@ -60,26 +60,44 @@ done only when it works, has tests, and is documented.
 - Offline places for Italy: monthly datasets built in CI from Geofabrik
   extracts, downloaded per macro-region on request, queried on the device
 
+### 0.5: Style and readability
+
+- Navia Notte, a readable night style, and Navia Essenziale, a muted day
+  style, both generated from OpenFreeMap Liberty with points of interest
+  and 3D buildings
+- Category markers with their own colors and icons, and colored columns in
+  the 3D view
+
+### 0.6: Richer places
+
+- Wikipedia summary with image in the place card, through Wikidata links
+- Italian national holidays in opening hours
+
+### 0.7: Turn-by-turn guidance
+
+- Italian instructions from OSRM maneuvers, with the full step list
+- Voice through Android text-to-speech, mute button, screen kept on
+- Banner with the next maneuver, camera following the user, arrival time
+- Off-route detection and recalculation at most every 15 seconds
+
 ## Next
 
-### 0.5: Guidance preview
+### 0.8: Offline maps
 
-- Step list for the calculated route (OSRM `steps` or Valhalla maneuvers),
-  with Italian instruction text
-- Recent destinations, stored only on the device
-- Profile-mode performance measurements on a mid-range device, documented in
-  the repository
-- Device testing matrix for small phones, tablets and landscape
+- Check PMTiles support in the MapLibre version in use
+- Map regions built in CI and downloaded with consent, progress and deletion
 
-### 0.6: Turn-by-turn navigation
+### 0.9: Public transport
 
-- Guidance session with a foreground service and a clear explanation before
-  continuous location use
-- Off-route detection and automatic rerouting, within provider rate limits
-- Optional voice instructions through Android text-to-speech, which works
-  offline
+- Open GTFS timetables, starting from Bari and Puglia, prepared in CI
+- Stops with lines and next scheduled departures, also offline
 
-### 0.7: Production services
+### 1.0: Offline routing (experimental)
+
+- Technical trial of Valhalla on Android (data size, memory, speed)
+- If it works out: offline routes and voice guidance
+
+### Production services
 
 - Documented self-hosting guides for Photon, Overpass and the routing engine
 - Offline place datasets for more countries
@@ -88,10 +106,7 @@ done only when it works, has tests, and is documented.
 
 ## Later
 
-- Offline map regions (PMTiles or MBTiles)
-- Offline routing through an on-device engine behind `RoutingRepository`
 - Favorites export and import
-- Public transport information, where open data allows it
 - Accessibility review with TalkBack users
 - More languages through ARB-based localization
 - F-Droid distribution, which requires removing Google Play Services
