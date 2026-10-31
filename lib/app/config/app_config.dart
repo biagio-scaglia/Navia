@@ -114,7 +114,9 @@ abstract final class AppConfig {
       // Liberty: streets, buildings (with real heights), POIs, parks, water.
       MapStyleId.standard: 'https://tiles.openfreemap.org/styles/liberty',
       MapStyleId.vivid: 'https://tiles.openfreemap.org/styles/bright',
-      MapStyleId.minimal: 'https://tiles.openfreemap.org/styles/positron',
+      // Navia Essenziale: Liberty with a muted palette, keeping POIs and
+      // building heights (tool/map_styles/build_essential_style.py).
+      MapStyleId.minimal: 'assets/map_styles/navia_essential.json',
       // Navia Notte: Liberty recolored for night use, bundled with the app
       // (tool/map_styles/build_night_style.py), same OpenFreeMap tiles.
       MapStyleId.dark: 'assets/map_styles/navia_night.json',
