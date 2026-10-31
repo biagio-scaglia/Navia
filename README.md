@@ -263,8 +263,8 @@ docs/         architecture, roadmap, data licenses and brand guide
 PRIVACY.md    privacy policy (draft for legal review)
 ```
 
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
-[docs/ROADMAP.md](docs/ROADMAP.md) for what comes next.
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and the
+[Roadmap](#roadmap) for what comes next.
 
 ## Current limitations
 
@@ -308,6 +308,33 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
   own location engine. Navia does not use that engine (it feeds positions
   from `geolocator`), but the dependency is still in the APK, which matters
   for F-Droid distribution.
+
+## Roadmap
+
+Done: map with Navia's own styles and 3D, search, routing with turn-by-turn
+voice guidance, OpenStreetMap places with offline regions, Wikipedia and
+weather in place cards, Scopri and 15 min tabs, fuel prices, favorites and
+an in-app privacy policy.
+
+Next, in order:
+
+1. **0.9 — Background guidance and fuel stations:** a Kotlin foreground
+   service so guidance continues with the screen locked, voice that lowers
+   other audio, and the official Ministry fuel stations in the Carburante
+   category.
+2. **0.10 — Offline maps:** map regions built monthly in CI with
+   Planetiler and downloaded on request, plus offline search in downloaded
+   places.
+3. **0.11 — Public transport:** current open GTFS timetables, starting
+   from Bari and Puglia.
+4. **0.12 — Small improvements:** marker clustering, sensor compass,
+   widget and shortcuts, saved routes.
+5. **1.0 — Offline routing and first release:** a trial of Valhalla or
+   GraphHopper on the device, testing on several phones, first public
+   release.
+
+Later: Android Auto, F-Droid distribution, shareable map images. Details
+are in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Attribution
 

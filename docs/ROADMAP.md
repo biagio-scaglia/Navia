@@ -90,35 +90,61 @@ done only when it works, has tests, and is documented.
 
 ## Next
 
-### 0.9: Offline maps
+### 0.9: Background guidance and fuel stations
 
-- Check PMTiles support in the MapLibre version in use
-- Map regions built in CI and downloaded with consent, progress and deletion
+- `navia_guidance` Kotlin package: a foreground service with a notification
+  showing the next maneuver and a stop button, so guidance continues with
+  the screen locked or in another app; background location only during
+  guidance, explained before it is requested
+- Voice instructions that lower other audio (audio focus)
+- Fuel category from the Ministry registry when prices are downloaded:
+  all official stations with brand, address and prices, instead of the
+  OpenStreetMap match
+- Verify the direct fuel price download on real phones
 
-### 0.10: Public transport
+### 0.10: Offline maps
 
-- Open GTFS timetables, starting from Bari and Puglia, prepared in CI
+- Technical trial on Bari: local PMTiles support in the MapLibre version in
+  use, file size, offline fonts
+- Map regions built monthly in CI with Planetiler (same OpenMapTiles schema
+  as the current styles); Protomaps extracts as a fallback
+- Download with consent, progress and deletion, like offline places
+- Offline search in downloaded places (SQLite)
+
+### 0.11: Public transport
+
+- Current open GTFS timetables, starting from Bari and Puglia (the AMTAB
+  feed expired in 2023), prepared in CI
 - Stops with lines and next scheduled departures, also offline
 
-### 1.0: Offline routing (experimental)
+### 0.12: Small improvements
 
-- Technical trial of Valhalla on Android (data size, memory, speed)
+- Marker clustering in dense areas
+- Compass heading from the device sensors when walking
+- Home screen widget and shortcuts for favorites
+- Saved routes, next to saved places
+
+### 1.0: Offline routing and first release
+
+- Technical trial of Valhalla or GraphHopper on Android (data size,
+  memory, speed)
 - If it works out: offline routes and voice guidance
+- Testing on several phones, then the first public release
 
 ### Production services
 
 - Documented self-hosting guides for Photon, Overpass and the routing engine
 - Offline place datasets for more countries
-- Evaluate Valhalla for richer profiles and maneuvers
 - Configurable providers per build flavor
 
 ## Later
 
+- Android Auto, through the Car App Library
+- F-Droid distribution, with a map plugin build without Google Play Services
+- Shareable route and place images (MapLibre snapshots)
 - Favorites export and import
 - Accessibility review with TalkBack users
 - More languages through ARB-based localization
-- F-Droid distribution, which requires removing Google Play Services
-  dependencies from the map plugin
 
 ## Not planned
 
