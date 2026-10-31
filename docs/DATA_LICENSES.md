@@ -78,6 +78,14 @@ Apache-2.0). The app lists all of them, generated from the build, under
 Notable native dependencies: MapLibre Native (BSD-2-Clause) and the Google
 Play Services location libraries pulled in by `maplibre_gl`.
 
+## Wikipedia and Wikimedia Commons
+
+Article summaries are licensed under CC BY-SA 4.0; the place card names the
+source and license and links to the article. Thumbnails come from Wikimedia
+Commons with licenses that vary per image; they are shown linked to the
+article, whose page credits them. Navia does not store or redistribute
+either.
+
 ## Privacy implications
 
 Each external request reveals the user's IP address and the request

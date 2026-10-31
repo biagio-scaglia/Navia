@@ -73,8 +73,12 @@ external link, info, layers, locate (idle, fixed, off), origin, refresh,
 route, search, settings, shield, star (outline, filled), swap, theme (dark,
 light, system), trash, walk.
 
-The only Material glyph left is the check mark inside switch thumbs, which
-the framework requires to be an `Icon`.
+Material glyphs are used only where a standard symbol reads faster than a
+custom one: the check mark inside switch thumbs, the maneuver arrows of
+turn-by-turn guidance and the volume icons of the voice toggle.
+
+Category markers are drawn at runtime from the category icons on a colored
+disc (`lib/features/places/presentation/place_marker_style.dart`).
 
 The logo and icon set are original Navia artwork, released under the
 project's MIT License.
