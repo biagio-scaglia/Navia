@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import Icon from '../components/Icon.astro'
 import { privacyMeta, privacySections, privacySummary } from '../data/privacy'
 import { site } from '../data/site'
 
@@ -11,27 +12,30 @@ const base = import.meta.env.BASE_URL
   description="How the Navia Android app handles data. Draft prepared for legal review."
   path="/privacy/"
 >
-  <article class="section-pad">
+  <article class="section">
     <div class="measure-narrow">
-      <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Legal</p>
-      <h1 class="mt-3 font-display text-[clamp(2.5rem,6vw,4rem)] font-semibold tracking-tight">
+      <p class="flex items-center gap-2 text-sm font-semibold text-muted">
+        <Icon name="shield" size={18} class="text-brand-deep" />
+        Legal
+      </p>
+      <h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">
         {privacyMeta.title}
       </h1>
       <div class="mono mt-6 flex flex-wrap gap-3 text-xs text-muted">
-        <span class="border border-rule bg-sheet px-3 py-2">Updated {privacyMeta.lastUpdated}</span>
-        <span class="border border-rule bg-sheet px-3 py-2">{privacyMeta.appliesTo}</span>
+        <span class="rounded-lg border border-line bg-surface px-3 py-2">Updated {privacyMeta.lastUpdated}</span>
+        <span class="rounded-lg border border-line bg-surface px-3 py-2">{privacyMeta.appliesTo}</span>
       </div>
-      <p class="mt-6 border border-[#d8c28a] bg-[#fff7e5] px-4 py-3 text-sm text-[#6a4b12]">
+      <p class="mt-6 rounded-xl border border-[#d8c28a] bg-[#fff7e5] px-4 py-3 text-sm text-[#6a4b12]">
         {privacyMeta.draftNotice}
       </p>
 
       <section class="mt-12" aria-labelledby="summary-title">
-        <h2 id="summary-title" class="font-display text-3xl font-semibold">In short</h2>
+        <h2 id="summary-title" class="font-display text-3xl font-bold">In short</h2>
         <ol class="mt-6 space-y-4">
           {
             privacySummary.map((item, i) => (
-              <li class="grid grid-cols-[3rem_1fr] gap-4 border-t border-rule pt-4">
-                <span class="mono text-sm text-accent">{String(i + 1).padStart(2, '0')}</span>
+              <li class="grid grid-cols-[2.5rem_1fr] gap-3 border-t border-line pt-4">
+                <span class="mono text-sm font-semibold text-brand-deep">{String(i + 1).padStart(2, '0')}</span>
                 <span>{item}</span>
               </li>
             ))
@@ -43,7 +47,7 @@ const base = import.meta.env.BASE_URL
         {
           privacySections.map((section) => (
             <section>
-              <h2 class="border-b border-rule pb-3 font-display text-2xl font-semibold">{section.title}</h2>
+              <h2 class="border-b border-line pb-3 font-display text-2xl font-bold">{section.title}</h2>
               <div class="mt-4 space-y-4 text-muted">
                 {section.paragraphs.map((p) => (
                   <p>{p}</p>
@@ -54,12 +58,13 @@ const base = import.meta.env.BASE_URL
         }
       </div>
 
-      <p class="mt-14 border-t border-rule pt-6 text-sm text-muted">
-        Canonical source:{' '}
-        <a class="link-quiet font-medium text-ink" href={site.privacyMd} rel="noreferrer" target="_blank">
-          PRIVACY.md
+      <p class="mt-14 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-6 text-sm text-muted">
+        <a class="inline-flex items-center gap-2 font-semibold text-ink link-quiet" href={site.privacyMd} rel="noreferrer" target="_blank">
+          <Icon name="document" size={16} /> PRIVACY.md
         </a>
-        . <a class="link-quiet font-medium text-ink" href={base}>Back to Navia</a>.
+        <a class="inline-flex items-center gap-2 font-semibold text-ink link-quiet" href={base}>
+          Back to Navia
+        </a>
       </p>
     </div>
   </article>

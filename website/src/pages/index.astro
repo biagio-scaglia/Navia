@@ -1,12 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Cartograph from '../components/Cartograph.astro'
+import Icon from '../components/Icon.astro'
 import InterfaceStudy from '../components/InterfaceStudy.astro'
 import {
   docs,
   features,
   limitations,
-  principles,
+  privacyPoints,
   site,
   stack,
 } from '../data/site'
@@ -15,133 +16,162 @@ const base = import.meta.env.BASE_URL
 ---
 
 <BaseLayout>
-  <!-- Hero -->
-  <section class="border-b border-rule" id="overview" aria-labelledby="hero-title">
-    <div class="measure grid items-end gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:py-16">
-      <div class="order-2 lg:order-1">
-        <p class="mono text-xs tracking-[0.14em] text-muted uppercase">
-          {site.coordinates.label} · {site.coordinates.lat} · {site.coordinates.lon} · {site.coordinates.zoom}
-        </p>
-        <p class="mt-8 font-display text-[clamp(3.5rem,12vw,8rem)] font-semibold leading-[0.88] tracking-[-0.05em]">
-          Navia
-        </p>
-        <h1 id="hero-title" class="mt-6 max-w-[12ch] font-display text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-tight">
-          {site.tagline}
+  <!-- Hero — product-first, like Organic Maps: clear promise + visual -->
+  <section class="section border-b border-line" id="overview" aria-labelledby="hero-title">
+    <div class="measure grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+      <div>
+        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold text-muted">
+          <Icon name="shield" size={16} class="text-brand-deep" />
+          {site.status} · v{site.version}
+        </div>
+        <p class="font-display text-5xl font-bold tracking-tight sm:text-6xl">{site.name}</p>
+        <h1 id="hero-title" class="mt-4 max-w-[18ch] font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          {site.headline}
         </h1>
-        <p class="mt-6 max-w-[38ch] text-lg text-muted">
-          {site.description}
-        </p>
+        <p class="mt-5 max-w-[42ch] text-lg text-muted">{site.description}</p>
         <div class="mt-8 flex flex-wrap gap-3">
-          <a class="btn btn-accent" href={site.github} rel="noreferrer" target="_blank">
-            View repository
+          <a class="btn btn-primary" href={site.github} rel="noreferrer" target="_blank">
+            <Icon name="github" size={18} />
+            View on GitHub
           </a>
-          <a class="btn btn-ghost" href={`${base}privacy/`}>
+          <a class="btn btn-secondary" href={`${base}privacy/`}>
+            <Icon name="shield" size={18} />
             Privacy policy
           </a>
         </div>
-        <p class="mono mt-8 text-xs text-muted">
-          {site.status} · v{site.version}{site.build} · Android 7.0+ · License {site.license}
+        <p class="mono mt-6 text-xs text-muted">
+          {site.coordinates.label} · {site.coordinates.lat} · {site.coordinates.lon}
         </p>
-        <p class="mt-3 max-w-[40ch] text-sm text-muted">
-          No public APK release is published yet. Build from source with Flutter, or follow the repository for future releases.
+        <p class="mt-2 max-w-[40ch] text-sm text-muted">
+          No public APK yet—build from source with Flutter, or watch the repository for releases.
         </p>
       </div>
-
-      <div class="order-1 lg:order-2">
-        <Cartograph />
-      </div>
+      <Cartograph />
     </div>
   </section>
 
-  <!-- Product showcase -->
-  <section class="section-pad border-b border-rule" aria-labelledby="showcase-title">
+  <!-- Privacy promise — Organic Maps style checklist -->
+  <section class="section border-b border-line bg-surface" id="privacy-promise" aria-labelledby="privacy-title">
     <div class="measure">
-      <div class="mb-10 max-w-2xl">
-        <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Product</p>
-        <h2 id="showcase-title" class="mt-3 font-display text-[clamp(2rem,4vw,3.25rem)] font-semibold">
-          The map is the interface
+      <div class="mb-8 max-w-2xl">
+        <h2 id="privacy-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          Built to leave you alone
         </h2>
-        <p class="mt-4 text-lg text-muted">
-          There are no marketing screenshots in the repository yet. This study
-          reconstructs the shipped Italian UI—tabs, route sheet and attribution—
-          so you can see how the product is organized without inventing a fake capture.
+        <p class="mt-3 text-lg text-muted">
+          Same idea as privacy-first map apps you already trust: the product should work without harvesting you.
+        </p>
+      </div>
+      <ul class="grid gap-3 sm:grid-cols-2">
+        {
+          privacyPoints.map((item) => (
+            <li class="privacy-item">
+              <span class="icon-badge">
+                <Icon name={item.icon} size={20} />
+              </span>
+              <div>
+                <h3 class="font-display text-lg font-bold">{item.title}</h3>
+                <p class="mt-1 text-sm text-muted">{item.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Features with icons -->
+  <section class="section border-b border-line" id="features" aria-labelledby="features-title">
+    <div class="measure grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
+      <div>
+        <h2 id="features-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          What you get in {site.version}
+        </h2>
+        <p class="mt-3 text-lg text-muted">
+          Only features that already ship. Roadmap items stay on the roadmap.
+        </p>
+        <div class="mt-8 rounded-[1rem] border border-line bg-tint p-5">
+          <h3 class="flex items-center gap-2 font-display text-lg font-bold">
+            <Icon name="cloud_off" size={20} class="text-brand-deep" />
+            Honest limits
+          </h3>
+          <ul class="mt-3 space-y-2">
+            {
+              limitations.map((item) => (
+                <li class="flex gap-2 text-sm text-muted">
+                  <Icon name="close" size={16} class="mt-0.5 shrink-0 text-destination" />
+                  <span>{item}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+      <ul>
+        {
+          features.map((feature) => (
+            <li class="feature-row">
+              <span class="icon-badge">
+                <Icon name={feature.icon} size={20} />
+              </span>
+              <div>
+                <h3 class="font-display text-xl font-bold">{feature.title}</h3>
+                <p class="mt-1 text-muted">{feature.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Product UI -->
+  <section class="section border-b border-line bg-surface" aria-labelledby="showcase-title">
+    <div class="measure">
+      <div class="mb-8 max-w-2xl">
+        <h2 id="showcase-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          Inside the app
+        </h2>
+        <p class="mt-3 text-lg text-muted">
+          No store screenshots in the repo yet. This panel mirrors the real Italian UI: explore tabs, route sheet, attribution.
         </p>
       </div>
       <InterfaceStudy />
     </div>
   </section>
 
-  <!-- Features -->
-  <section class="section-pad border-b border-rule" id="features" aria-labelledby="features-title">
-    <div class="measure">
-      <div class="mb-12 max-w-2xl">
-        <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Features</p>
-        <h2 id="features-title" class="mt-3 font-display text-[clamp(2rem,4vw,3.25rem)] font-semibold">
-          What ships in {site.version}
-        </h2>
-        <p class="mt-4 text-lg text-muted">
-          Every item below is implemented in the current codebase. Capabilities on the roadmap stay on the roadmap.
-        </p>
-      </div>
-
-      <ol class="divide-y divide-rule border-y border-rule">
-        {
-          features.map((feature, index) => (
-            <li class={`grid gap-6 py-10 md:grid-cols-[7rem_1fr_14rem] md:gap-8 ${index % 2 === 1 ? 'bg-sheet/60' : ''}`}>
-              <p class="mono text-sm text-accent">{feature.id}</p>
-              <div>
-                <h3 class="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{feature.title}</h3>
-                <p class="mt-3 max-w-[52ch] text-muted">{feature.body}</p>
-              </div>
-              <p class="mono self-start text-xs leading-relaxed text-muted md:text-right">{feature.note}</p>
-            </li>
-          ))
-        }
-      </ol>
-
-      <div class="mt-12 border border-rule bg-forest p-6 text-sheet sm:p-8">
-        <h3 class="font-display text-2xl font-semibold">Known limits</h3>
-        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
-          {
-            limitations.map((item) => (
-              <li class="border-t border-white/20 pt-3 text-sm text-white/85">{item}</li>
-            ))
-          }
-        </ul>
-      </div>
-    </div>
-  </section>
-
   <!-- Open source -->
-  <section class="section-pad border-b border-rule" id="open-source" aria-labelledby="oss-title">
-    <div class="measure grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+  <section class="section border-b border-line" id="open-source" aria-labelledby="oss-title">
+    <div class="measure grid gap-10 lg:grid-cols-2">
       <div>
-        <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Open source</p>
-        <h2 id="oss-title" class="mt-3 font-display text-[clamp(2rem,4vw,3.25rem)] font-semibold">
-          Readable software
+        <h2 id="oss-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          Open source, readable code
         </h2>
-        <p class="mt-4 text-lg text-muted">
-          Navia is MIT-licensed. Features are organized as domain, data and presentation layers. Endpoints are compile-time configuration—never secrets in the APK.
+        <p class="mt-3 text-lg text-muted">
+          MIT license. Flutter + MapLibre. Endpoints via <span class="mono text-sm">--dart-define</span>—no secrets in the APK.
         </p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a class="btn btn-accent" href={site.github} rel="noreferrer" target="_blank">GitHub</a>
-          <a class="btn btn-ghost" href={site.contributing} rel="noreferrer" target="_blank">Contributing</a>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a class="btn btn-primary" href={site.github} rel="noreferrer" target="_blank">
+            <Icon name="github" size={18} /> Repository
+          </a>
+          <a class="btn btn-secondary" href={site.contributing} rel="noreferrer" target="_blank">
+            <Icon name="code" size={18} /> Contributing
+          </a>
         </div>
       </div>
-
-      <div class="border border-rule bg-sheet">
-        <div class="border-b border-rule px-4 py-3 mono text-xs uppercase tracking-wide text-muted">
-          Stack · from docs/ARCHITECTURE.md
+      <div class="overflow-hidden rounded-[1rem] border border-line bg-surface">
+        <div class="flex items-center gap-2 border-b border-line px-4 py-3 text-sm font-semibold text-muted">
+          <Icon name="layers" size={18} />
+          Stack
         </div>
         <table class="w-full text-left text-sm">
           <tbody>
             {
               stack.map((row) => (
-                <tr class="border-b border-rule last:border-b-0">
-                  <th class="mono w-28 px-4 py-3 align-top font-medium text-muted" scope="row">
+                <tr class="border-b border-line last:border-0">
+                  <th class="w-28 px-4 py-3 align-top font-semibold text-muted" scope="row">
                     {row.area}
                   </th>
-                  <td class="px-4 py-3 text-ink">{row.value}</td>
+                  <td class="px-4 py-3">{row.value}</td>
                 </tr>
               ))
             }
@@ -151,56 +181,35 @@ const base = import.meta.env.BASE_URL
     </div>
   </section>
 
-  <!-- Philosophy -->
-  <section class="section-pad border-b border-rule topo-grid" aria-labelledby="why-title">
+  <!-- Docs -->
+  <section class="section" id="documentation" aria-labelledby="docs-title">
     <div class="measure">
-      <div class="max-w-3xl border border-rule bg-paper p-8 sm:p-10">
-        <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Why it exists</p>
-        <h2 id="why-title" class="mt-3 font-display text-[clamp(2rem,4vw,3.25rem)] font-semibold">
-          Independent navigation, plainly built
-        </h2>
-        <p class="mt-6 text-lg text-muted">
-          Navia starts in Bari and aims to stay small: a map you can trust, routes you request, and places that come from OpenStreetMap—without an account wall or a private telemetry pipeline.
-        </p>
-        <ul class="mt-10 space-y-6">
-          {
-            principles.map((item) => (
-              <li class="border-t border-rule pt-6">
-                <h3 class="font-display text-xl font-semibold">{item.title}</h3>
-                <p class="mt-2 max-w-[48ch] text-muted">{item.body}</p>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- Documentation -->
-  <section class="section-pad" id="documentation" aria-labelledby="docs-title">
-    <div class="measure">
-      <div class="mb-10 max-w-2xl">
-        <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Documentation</p>
-        <h2 id="docs-title" class="mt-3 font-display text-[clamp(2rem,4vw,3.25rem)] font-semibold">
-          Source of truth in the repo
-        </h2>
-        <p class="mt-4 text-lg text-muted">
-          Project documentation lives beside the code. These are the primary references.
-        </p>
-      </div>
-      <ul class="grid gap-0 border-t border-rule sm:grid-cols-2">
+      <h2 id="docs-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+        Documentation
+      </h2>
+      <p class="mt-3 max-w-2xl text-lg text-muted">
+        The docs live next to the code on GitHub.
+      </p>
+      <ul class="mt-8 grid gap-3 sm:grid-cols-2">
         {
           docs.map((doc) => (
-            <li class="border-b border-rule sm:odd:border-r">
+            <li>
               <a
-                class="group block p-6 no-underline transition-colors hover:bg-sheet"
+                class="privacy-item h-full no-underline transition-colors hover:border-brand"
                 href={doc.href}
                 rel="noreferrer"
                 target="_blank"
               >
-                <h3 class="font-display text-2xl font-semibold group-hover:text-forest">{doc.title}</h3>
-                <p class="mt-2 text-muted">{doc.body}</p>
-                <p class="mono mt-4 text-xs text-accent">Open on GitHub →</p>
+                <span class="icon-badge">
+                  <Icon name={doc.icon} size={20} />
+                </span>
+                <div>
+                  <h3 class="flex items-center gap-2 font-display text-lg font-bold">
+                    {doc.title}
+                    <Icon name="external_link" size={16} class="text-muted" />
+                  </h3>
+                  <p class="mt-1 text-sm text-muted">{doc.body}</p>
+                </div>
               </a>
             </li>
           ))

@@ -1,123 +1,112 @@
-/** Facts taken from the Navia repository. No invented metrics or features. */
+/** Facts from the Navia repository only. */
 
 export const site = {
   name: 'Navia',
   version: '0.8.0',
   build: '+7',
   status: 'Early development',
-  tagline: 'Find your way.',
+  headline: 'Privacy-friendly navigation on OpenStreetMap',
   description:
-    'An open-source, privacy-friendly navigation app for Android. Built with Flutter, MapLibre and OpenStreetMap. No account, no ads, no analytics, and no Navia backend.',
+    'An open-source Android app for maps, search and turn-by-turn guidance. No account, no ads, no analytics—and no Navia backend.',
   github: 'https://github.com/biagio-scaglia/Navia',
-  docsArchitecture: 'https://github.com/biagio-scaglia/Navia/blob/main/docs/ARCHITECTURE.md',
-  docsRoadmap: 'https://github.com/biagio-scaglia/Navia/blob/main/docs/ROADMAP.md',
   contributing: 'https://github.com/biagio-scaglia/Navia/blob/main/CONTRIBUTING.md',
   privacyMd: 'https://github.com/biagio-scaglia/Navia/blob/main/PRIVACY.md',
   license: 'MIT',
   copyright: '© 2026 Biagio Scaglia',
-  // Approximate map centre used by the app (Bari).
   coordinates: {
-    label: 'Bari, Italy',
+    label: 'Starts in Bari, Italy',
     lat: '41.1258° N',
     lon: '16.8667° E',
-    zoom: 'z14',
   },
 } as const
 
 export const nav = [
   { href: '#overview', label: 'Overview' },
   { href: '#features', label: 'Features' },
+  { href: '#privacy-promise', label: 'Privacy' },
   { href: '#open-source', label: 'Open Source' },
-  { href: '#documentation', label: 'Documentation' },
+  { href: '#documentation', label: 'Docs' },
 ] as const
 
-export const stack = [
-  { area: 'UI', value: 'Flutter · Material 3 · custom design system' },
-  { area: 'State', value: 'Riverpod 3' },
-  { area: 'Map', value: 'MapLibre Native via maplibre_gl' },
-  { area: 'Tiles', value: 'OpenFreeMap · OpenMapTiles · OpenStreetMap' },
-  { area: 'Search', value: 'Photon (komoot)' },
-  { area: 'Routing', value: 'OSRM on FOSSGIS servers' },
-  { area: 'Places', value: 'Overpass API · offline regional datasets' },
-  { area: 'Reach', value: 'Valhalla isochrones (FOSSGIS)' },
-  { area: 'Weather', value: 'Open-Meteo' },
-  { area: 'License', value: 'MIT (code) · ODbL (map data)' },
+export const privacyPoints = [
+  { icon: 'close' as const, title: 'No account', body: 'Nothing to register. Favorites stay on your phone.' },
+  { icon: 'close' as const, title: 'No ads or analytics', body: 'No advertising, analytics or crash SDKs.' },
+  { icon: 'locate' as const, title: 'Location on request', body: 'Asked only when you tap. Never in the background.' },
+  { icon: 'cloud_off' as const, title: 'No Navia server', body: 'The app talks to open map services only when a feature needs them.' },
 ] as const
 
 export const features = [
   {
-    id: '01',
-    title: 'Vector map, real heights',
-    body: 'A fullscreen OpenStreetMap view with styles Automatico, Standard, Vivace, Essenziale and Scuro. Optional 3D buildings extrude only where OpenStreetMap has height data—nothing is invented.',
-    note: 'MapLibre · OpenFreeMap',
+    icon: 'layers' as const,
+    title: 'Vector map with real 3D heights',
+    body: 'OpenStreetMap through MapLibre. Styles including Essenziale and Navia Notte. Buildings extrude only where OSM has height data.',
   },
   {
-    id: '02',
-    title: 'Routes you ask for',
-    body: 'Car, bike and walking routes through OSRM. Turn-by-turn guidance with Italian voice instructions via Android text-to-speech, off-route detection and recalculation—while the app is open.',
-    note: 'Foreground guidance only',
+    icon: 'directions' as const,
+    title: 'Routes and turn-by-turn',
+    body: 'Car, bike and walking via OSRM. Italian voice guidance on-device while the app is open, with off-route recalculation.',
   },
   {
-    id: '03',
-    title: 'Explore in three tabs',
-    body: 'Vai for destinations and favorites. Scopri for nearby Wikipedia articles. 15 min for areas reachable in five, ten or fifteen minutes on foot, by bike or by car.',
-    note: 'Wikipedia · Valhalla',
+    icon: 'search' as const,
+    title: 'Search and explore',
+    body: 'Photon search, favorites, Wikipedia nearby (Scopri), and 15-minute reachability areas.',
   },
   {
-    id: '04',
-    title: 'Places from the map itself',
-    body: 'Filter OpenStreetMap places by category. Cards show opening hours, accessibility, phone and website only when tagged. Offline place packs for Italian macro-regions download on request.',
-    note: 'Overpass · Geofabrik extracts',
+    icon: 'star' as const,
+    title: 'OpenStreetMap places',
+    body: 'Category filters, place cards from real tags, and optional offline packs for Italian regions.',
   },
   {
-    id: '05',
-    title: 'Privacy by construction',
-    body: 'No account. No advertising or analytics SDKs. Location is read only after you ask, only in the foreground. Favorites stay on the device. Android cloud backup is disabled for app data.',
-    note: 'See the privacy policy',
+    icon: 'shield' as const,
+    title: 'Privacy written into the product',
+    body: 'In-app policy, no location history, Android cloud backup disabled for app data.',
+  },
+  {
+    icon: 'cube' as const,
+    title: 'Built for Bari first',
+    body: 'Designed and tested around Bari. The map works worldwide; other regions have had less testing.',
   },
 ] as const
 
-export const principles = [
-  {
-    title: 'No Navia backend',
-    body: 'The app talks directly to replaceable OpenStreetMap-based services. The maintainer does not receive your location, searches or saved places.',
-  },
-  {
-    title: 'Explicit intent',
-    body: 'Network and location requests happen after a user action—not on a silent timer in the background.',
-  },
-  {
-    title: 'The renderer is not the product',
-    body: 'MapLibre draws. Search, routing and location stay behind interfaces that never import MapLibre types.',
-  },
+export const stack = [
+  { area: 'UI', value: 'Flutter · Material 3' },
+  { area: 'Map', value: 'MapLibre · OpenFreeMap' },
+  { area: 'Search', value: 'Photon' },
+  { area: 'Routing', value: 'OSRM (FOSSGIS)' },
+  { area: 'Places', value: 'Overpass · offline regions' },
+  { area: 'License', value: 'MIT · map data ODbL' },
 ] as const
 
 export const limitations = [
-  'Guidance runs only while the app is open in the foreground.',
-  'No live traffic, lane guidance or speed limits from the public OSRM server.',
-  'Offline support today covers downloaded places, not map tiles or routing.',
-  'Default public service endpoints are for fair, low-volume use.',
+  'Guidance works only with the app open in the foreground.',
+  'No live traffic, lane guidance or speed limits.',
+  'Offline today covers places you download—not map tiles or routing.',
+  'Default public endpoints are for fair, low-volume use.',
 ] as const
 
 export const docs = [
   {
+    icon: 'document' as const,
     title: 'Architecture',
     href: 'https://github.com/biagio-scaglia/Navia/blob/main/docs/ARCHITECTURE.md',
-    body: 'Layers, Riverpod state, map adapter and provider choices.',
+    body: 'Layers, state and map adapter.',
   },
   {
+    icon: 'route' as const,
     title: 'Roadmap',
     href: 'https://github.com/biagio-scaglia/Navia/blob/main/docs/ROADMAP.md',
-    body: 'Shipped milestones through 0.8 and planned offline maps, transit and routing.',
+    body: 'What shipped and what is next.',
   },
   {
+    icon: 'code' as const,
     title: 'Contributing',
     href: 'https://github.com/biagio-scaglia/Navia/blob/main/CONTRIBUTING.md',
-    body: 'Privacy rules, Conventional Commits, and the checks CI runs.',
+    body: 'Privacy rules and CI checks.',
   },
   {
+    icon: 'globe' as const,
     title: 'Data licenses',
     href: 'https://github.com/biagio-scaglia/Navia/blob/main/docs/DATA_LICENSES.md',
-    body: 'Obligations that come with OpenStreetMap and related datasets.',
+    body: 'OSM and related obligations.',
   },
 ] as const

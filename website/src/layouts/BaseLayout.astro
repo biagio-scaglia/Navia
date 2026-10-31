@@ -28,7 +28,7 @@ const ogImage = new URL(`${basePath}navia_logo_512.png`.replace(/\/{2,}/g, '/'),
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#315C49" />
+    <meta name="theme-color" content="#1677FF" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
     <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
@@ -54,10 +54,10 @@ const ogImage = new URL(`${basePath}navia_logo_512.png`.replace(/\/{2,}/g, '/'),
     />
     <title>{title}</title>
   </head>
-  <body class="site-shell antialiased">
+  <body class="antialiased">
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-sheet focus:px-4 focus:py-2"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2"
     >
       Skip to content
     </a>

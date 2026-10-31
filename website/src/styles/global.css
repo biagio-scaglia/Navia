@@ -1,23 +1,27 @@
 @import 'tailwindcss';
 
+/* Brand tokens from docs/BRAND.md — product identity, not a costume palette. */
 @theme {
-  --color-paper: #f5f4ef;
-  --color-sheet: #fffdf8;
-  --color-ink: #202521;
-  --color-muted: #5c6b63;
-  --color-rule: #c9c5b8;
-  --color-accent: #e56b35;
-  --color-forest: #315c49;
-  --color-water: #b7c9c0;
-  --color-park: #c7d4b8;
-  --color-land: #e8e4d8;
-  --color-road: #f7f5ef;
+  --color-bg: #f5f8fc;
+  --color-surface: #ffffff;
+  --color-ink: #0f1b2d;
+  --color-muted: #4a5a70;
+  --color-line: #d5deea;
+  --color-brand: #1677ff;
+  --color-brand-deep: #0b63e5;
+  --color-aqua: #00bfa6;
+  --color-tint: #eaf2fd;
+  --color-destination: #e5483b;
+  --color-land: #e4ecf6;
+  --color-water: #b9d0ea;
+  --color-park: #c9dfc4;
 
   --font-display: 'Satoshi', 'Segoe UI', sans-serif;
   --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
   --spacing-gutter: 1.5rem;
+  --radius-control: 0.75rem;
 }
 
 @layer base {
@@ -41,18 +45,16 @@
 
   body {
     margin: 0;
-    background: var(--color-paper);
+    background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-body);
     font-size: 1.0625rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 28%, white);
-    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-brand) 24%, white);
   }
 
   a {
@@ -60,7 +62,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-brand);
     outline-offset: 3px;
   }
 
@@ -68,24 +70,20 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: -0.03em;
-    line-height: 1.05;
+    line-height: 1.1;
   }
 }
 
 @layer components {
-  .site-shell {
-    min-height: 100vh;
-  }
-
   .measure {
-    width: min(100% - 2 * var(--spacing-gutter), 72rem);
+    width: min(100% - 2 * var(--spacing-gutter), 68rem);
     margin-inline: auto;
   }
 
   .measure-narrow {
-    width: min(100% - 2 * var(--spacing-gutter), 42rem);
+    width: min(100% - 2 * var(--spacing-gutter), 40rem);
     margin-inline: auto;
   }
 
@@ -94,21 +92,20 @@
     font-feature-settings: 'tnum' 1;
   }
 
-  .rule {
-    border: 0;
-    border-top: 1px solid var(--color-rule);
+  .section {
+    padding-block: clamp(3.5rem, 7vw, 5.5rem);
   }
 
   .link-quiet {
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: border-color 160ms ease, color 160ms ease;
+    transition: border-color 140ms ease, color 140ms ease;
   }
 
   .link-quiet:hover,
   .link-quiet:focus-visible {
     border-bottom-color: currentColor;
-    color: var(--color-forest);
+    color: var(--color-brand-deep);
   }
 
   .btn {
@@ -118,43 +115,63 @@
     gap: 0.5rem;
     min-height: 2.75rem;
     padding: 0 1.25rem;
+    border-radius: var(--radius-control);
     border: 1px solid transparent;
     font-family: var(--font-body);
-    font-size: 0.9375rem;
+    font-size: 0.975rem;
     font-weight: 600;
-    letter-spacing: 0.01em;
     text-decoration: none;
-    transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
   }
 
-  .btn-accent {
-    background: var(--color-accent);
-    color: #fffdf8;
+  .btn-primary {
+    background: var(--color-brand-deep);
+    color: #fff;
   }
 
-  .btn-accent:hover {
-    background: color-mix(in srgb, var(--color-accent) 88%, black);
+  .btn-primary:hover {
+    background: var(--color-brand);
   }
 
-  .btn-ghost {
-    background: transparent;
-    border-color: var(--color-ink);
+  .btn-secondary {
+    background: var(--color-surface);
+    border-color: var(--color-line);
     color: var(--color-ink);
   }
 
-  .btn-ghost:hover {
-    background: var(--color-ink);
-    color: var(--color-paper);
+  .btn-secondary:hover {
+    border-color: var(--color-brand);
+    color: var(--color-brand-deep);
   }
 
-  .section-pad {
-    padding-block: clamp(4rem, 8vw, 7rem);
+  .icon-badge {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-control);
+    background: var(--color-tint);
+    color: var(--color-brand-deep);
   }
 
-  .topo-grid {
-    background-image:
-      linear-gradient(to right, color-mix(in srgb, var(--color-rule) 55%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in srgb, var(--color-rule) 55%, transparent) 1px, transparent 1px);
-    background-size: 48px 48px;
+  .feature-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: start;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .privacy-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
   }
 }

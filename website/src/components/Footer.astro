@@ -1,56 +1,38 @@
 ---
+import Icon from './Icon.astro'
 import { site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
 
-<footer class="border-t border-ink bg-ink text-sheet">
-  <div class="measure section-pad">
-    <div class="grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
-      <div>
-        <p class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{site.name}</p>
-        <p class="mt-4 max-w-md text-base text-white/70">
-          Independent navigation software on OpenStreetMap. MIT-licensed code; map data remains under ODbL.
-        </p>
-
-        <dl class="mt-10 grid gap-4 border-t border-white/20 pt-6 sm:grid-cols-2">
-          <div>
-            <dt class="mono text-xs uppercase tracking-wide text-white/50">Legend</dt>
-            <dd class="mt-2 space-y-1 text-sm text-white/80">
-              <p><span class="inline-block h-2 w-2 bg-accent align-middle"></span> Destination / accent</p>
-              <p><span class="inline-block h-2 w-2 bg-[#7d9b8c] align-middle"></span> Origin / forest</p>
-              <p><span class="inline-block h-2 w-6 bg-water align-middle"></span> Water hatch</p>
-            </dd>
-          </div>
-          <div>
-            <dt class="mono text-xs uppercase tracking-wide text-white/50">Sheet</dt>
-            <dd class="mono mt-2 text-sm text-white/80">
-              <p>{site.coordinates.label}</p>
-              <p>{site.coordinates.lat} · {site.coordinates.lon}</p>
-              <p>{site.version}{site.build} · {site.status}</p>
-            </dd>
-          </div>
-        </dl>
+<footer class="border-t border-line bg-surface">
+  <div class="measure grid gap-10 py-12 md:grid-cols-[1.4fr_1fr]">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <img src={`${base}navia_logo.svg`} alt="" width="28" height="28" />
+        <span class="font-display text-lg font-bold">{site.name}</span>
       </div>
-
-      <div class="border-t border-white/20 pt-6 lg:border-t-0 lg:border-l lg:pl-10 lg:pt-0">
-        <p class="mono text-xs uppercase tracking-wide text-white/50">Index</p>
-        <ul class="mt-4 space-y-3 text-lg font-medium">
-          <li><a class="link-quiet" href={`${base}#overview`}>Overview</a></li>
-          <li><a class="link-quiet" href={`${base}#features`}>Features</a></li>
-          <li><a class="link-quiet" href={`${base}#open-source`}>Open Source</a></li>
-          <li><a class="link-quiet" href={`${base}#documentation`}>Documentation</a></li>
-          <li><a class="link-quiet" href={`${base}privacy/`}>Privacy</a></li>
-          <li>
-            <a class="link-quiet" href={site.github} rel="noreferrer" target="_blank">GitHub repository</a>
-          </li>
-        </ul>
-      </div>
+      <p class="mt-3 max-w-md text-sm text-muted">
+        Open-source navigation for Android. Code under {site.license}; map data © OpenStreetMap contributors (ODbL).
+      </p>
     </div>
-
-    <div
-      class="mono mt-14 flex flex-col gap-2 border-t border-white/20 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between"
-    >
-      <p>{site.copyright} · License {site.license}</p>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={site.github} rel="noreferrer" target="_blank">
+        <Icon name="github" size={18} /> Repository
+      </a>
+      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={`${base}privacy/`}>
+        <Icon name="shield" size={18} /> Privacy
+      </a>
+      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={site.contributing} rel="noreferrer" target="_blank">
+        <Icon name="code" size={18} /> Contributing
+      </a>
+      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={`${base}#documentation`}>
+        <Icon name="document" size={18} /> Documentation
+      </a>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="measure flex flex-col gap-2 py-5 text-xs text-muted sm:flex-row sm:justify-between">
+      <p class="mono">{site.copyright} · v{site.version}</p>
       <p>Map data © OpenStreetMap contributors</p>
     </div>
   </div>
