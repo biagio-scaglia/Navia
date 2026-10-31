@@ -28,7 +28,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
   static const _routeCasingLayer = 'navia-route-casing';
   static const _placesSource = 'navia-places';
   static const _placesLayer = 'navia-places';
-  static const _placeLabelsLayer = 'navia-place-labels';
+  static const _placeColumnsSource = 'navia-place-columns';
+  static const _placeColumnsLayer = 'navia-place-columns';
 
   /// Font of the place labels; every OpenFreeMap style serves it.
   static const _labelFont = 'Noto Sans Regular';
@@ -49,6 +50,10 @@ class MapLibreNaviaMapController implements NaviaMapController {
   List<GeoPoint> _route = const [];
   List<MapMarker> _markers = const [];
   List<MapPlace> _places = const [];
+  Map<String, Uint8List> _placeImages = const {};
+
+  /// Marker images already added to the current style.
+  final Set<String> _imagesInStyle = {};
   bool _stylePoisVisible = true;
   bool _overlaysReady = false;
 
@@ -103,53 +108,80 @@ class MapLibreNaviaMapController implements NaviaMapController {
     _buildingsSource = buildingsSource;
     _buildingsLayerAdded = false;
     // Places first, so that the route and markers are drawn above them.
+    _imagesInStyle.clear();
+    await _addMissingImages();
+    await _controller.addGeoJsonSource(
+      _placeColumnsSource,
+      MapOverlayGeoJson.placeColumns(_places),
+    );
+    // Small colored columns under the markers, visible when the map is
+    // tilted; seen from above they hide under the marker.
+    await _controller.addFillExtrusionLayer(
+      _placeColumnsSource,
+      _placeColumnsLayer,
+      const FillExtrusionLayerProperties(
+        fillExtrusionColor: ['get', 'color'],
+        fillExtrusionHeight: [
+          'case',
+          ['get', 'selected'],
+          36,
+          22,
+        ],
+        fillExtrusionOpacity: 0.9,
+      ),
+      minzoom: 15,
+      enableInteraction: false,
+    );
     await _controller.addGeoJsonSource(
       _placesSource,
       MapOverlayGeoJson.places(_places),
     );
-    await _controller.addCircleLayer(
-      _placesSource,
-      _placesLayer,
-      CircleLayerProperties(
-        circleRadius: [
-          'case',
-          ['get', 'selected'],
-          9,
-          [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            13,
-            4,
-            17,
-            7,
-          ],
-        ],
-        circleColor: _hex(style.place),
-        circleStrokeWidth: [
-          'case',
-          ['get', 'selected'],
-          3,
-          1.5,
-        ],
-        circleStrokeColor: _hex(style.markerStroke),
-      ),
-      enableInteraction: false,
-    );
     await _controller.addSymbolLayer(
       _placesSource,
-      _placeLabelsLayer,
+      _placesLayer,
       SymbolLayerProperties(
-        textField: ['get', 'name'],
+        iconImage: ['get', 'image'],
+        // Zoom must be the outermost input of the expression.
+        iconSize: [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          13,
+          [
+            'case',
+            ['get', 'selected'],
+            0.62,
+            0.42,
+          ],
+          17,
+          [
+            'case',
+            ['get', 'selected'],
+            0.85,
+            0.62,
+          ],
+        ],
+        // Every place keeps its marker; only colliding names are hidden,
+        // which keeps dense areas readable.
+        iconAllowOverlap: true,
+        iconIgnorePlacement: true,
+        textField: [
+          'step',
+          ['zoom'],
+          '',
+          14.5,
+          ['get', 'name'],
+        ],
         textFont: [_labelFont],
         textSize: 12,
         textAnchor: 'top',
-        textOffset: [0, 0.9],
+        textOffset: [0, 1.5],
         textMaxWidth: 8,
+        textOptional: true,
         textColor: _hex(style.placeLabel),
         textHaloColor: _hex(style.placeLabelHalo),
         textHaloWidth: 1.5,
-        // The selected place keeps its label when labels collide.
+        // The selected place is drawn on top and keeps its label.
         symbolSortKey: [
           'case',
           ['get', 'selected'],
@@ -157,9 +189,6 @@ class MapLibreNaviaMapController implements NaviaMapController {
           1,
         ],
       ),
-      // Overlapping labels are hidden by MapLibre, which keeps dense areas
-      // readable; below this zoom only the dots are drawn.
-      minzoom: 14.5,
       enableInteraction: false,
     );
     await _controller.addGeoJsonSource(
@@ -228,6 +257,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
         if (id.startsWith('poi')) id,
     ];
     _overlaysReady = true;
+    // Images may have arrived while the layers were being installed.
+    await _addMissingImages();
     await _applyBuildingsLayer();
     if (!_stylePoisVisible) await _applyStylePoisVisibility();
   }
@@ -279,7 +310,7 @@ class MapLibreNaviaMapController implements NaviaMapController {
           ['has', 'hide_3d'],
         ],
         // Keeps places, the route and markers drawn above the buildings.
-        belowLayerId: _placesLayer,
+        belowLayerId: _placeColumnsLayer,
         enableInteraction: false,
       );
       _buildingsLayerAdded = true;
@@ -313,7 +344,7 @@ class MapLibreNaviaMapController implements NaviaMapController {
         width: _tapTolerance * 2,
         height: _tapTolerance * 2,
       ),
-      [_placesLayer, _placeLabelsLayer],
+      [_placesLayer],
       null,
     );
     return MapFeatureParser.firstPlaceKey(features);
@@ -328,6 +359,22 @@ class MapLibreNaviaMapController implements NaviaMapController {
       _placesSource,
       MapOverlayGeoJson.places(places),
     );
+    await _controller.setGeoJsonSource(
+      _placeColumnsSource,
+      MapOverlayGeoJson.placeColumns(places),
+    );
+  }
+
+  @override
+  Future<void> setPlaceImages(Map<String, Uint8List> images) async {
+    _placeImages = images;
+    if (_overlaysReady) await _addMissingImages();
+  }
+
+  Future<void> _addMissingImages() async {
+    for (final MapEntry(:key, :value) in _placeImages.entries) {
+      if (_imagesInStyle.add(key)) await _controller.addImage(key, value);
+    }
   }
 
   @override

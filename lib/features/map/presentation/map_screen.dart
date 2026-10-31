@@ -22,6 +22,7 @@ import '../../navigation/presentation/navigation_controller.dart';
 import '../../navigation/presentation/navigation_overlays.dart';
 import '../../navigation/presentation/widgets/navigation_sheet.dart';
 import '../../places/presentation/place_discovery_controller.dart';
+import '../../places/presentation/place_marker_style.dart';
 import '../../places/presentation/place_overlays.dart';
 import '../../places/presentation/widgets/place_category_bar.dart';
 import '../../search/data/photon_geocoding_repository.dart';
@@ -92,12 +93,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (map == null) return;
     unawaited(map.showRoute(ref.read(routeGeometryProvider)));
     unawaited(map.showMarkers(ref.read(mapMarkersProvider)));
+    unawaited(_registerMarkerImages(map));
     unawaited(map.showPlaces(ref.read(mapPlacesProvider)));
     unawaited(
       map.setStylePoisVisible(
         ref.read(placeDiscoveryProvider).category == null,
       ),
     );
+  }
+
+  /// Gives the map the category marker images, rendered once per session.
+  Future<void> _registerMarkerImages(NaviaMapController map) async {
+    final images = await ref.read(placeMarkerImagesProvider.future);
+    if (!mounted) return;
+    await map.setPlaceImages(images);
   }
 
   /// Tells place discovery which area is shown, once the camera is idle.

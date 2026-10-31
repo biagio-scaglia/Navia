@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/painting.dart';
 
 import '../../../shared/models/geo_bounds.dart';
@@ -38,6 +40,10 @@ abstract interface class NaviaMapController {
 
   /// Replaces the discovered places drawn by Navia.
   Future<void> showPlaces(List<MapPlace> places);
+
+  /// Registers the marker images referenced by [MapPlace.imageId], as PNG
+  /// bytes; they are added again to every new style.
+  Future<void> setPlaceImages(Map<String, Uint8List> images);
 
   /// The [MapPlace.key] of the discovered place under [screenPoint].
   Future<String?> placeKeyAt(Offset screenPoint);

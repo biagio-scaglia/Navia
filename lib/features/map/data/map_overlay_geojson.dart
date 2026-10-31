@@ -1,3 +1,7 @@
+import 'dart:math' as math;
+
+import 'package:flutter/painting.dart';
+
 import '../../../shared/models/geo_point.dart';
 import '../domain/map_overlays.dart';
 
@@ -31,11 +35,49 @@ abstract final class MapOverlayGeoJson {
         'properties': {
           'key': place.key,
           'name': place.name ?? '',
+          'image': place.imageId,
           'selected': place.selected,
         },
         'geometry': {'type': 'Point', 'coordinates': place.point.toLngLat()},
       },
   ]);
+
+  /// Small squares under each place, extruded into colored columns.
+  static Map<String, dynamic> placeColumns(List<MapPlace> places) =>
+      _collection([
+        for (final place in places)
+          {
+            'type': 'Feature',
+            'properties': {
+              'color': _hex(place.color),
+              'selected': place.selected,
+            },
+            'geometry': {
+              'type': 'Polygon',
+              'coordinates': [_square(place.point, _columnHalfSide)],
+            },
+          },
+      ]);
+
+  /// Half side of a column, in meters.
+  static const _columnHalfSide = 4.0;
+
+  static List<List<double>> _square(GeoPoint center, double halfMeters) {
+    final dLat = halfMeters / 111320;
+    final dLng =
+        halfMeters / (111320 * math.cos(center.latitude * math.pi / 180));
+    final (lat, lng) = (center.latitude, center.longitude);
+    return [
+      [lng - dLng, lat - dLat],
+      [lng + dLng, lat - dLat],
+      [lng + dLng, lat + dLat],
+      [lng - dLng, lat + dLat],
+      [lng - dLng, lat - dLat],
+    ];
+  }
+
+  static String _hex(Color color) =>
+      '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 
   static Map<String, dynamic> _collection(
     List<Map<String, dynamic>> features,

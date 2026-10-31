@@ -59,12 +59,20 @@ class MapPlace {
   const MapPlace({
     required this.key,
     required this.point,
+    required this.imageId,
+    required this.color,
     this.name,
     this.selected = false,
   });
 
   final String key;
   final GeoPoint point;
+
+  /// Marker image registered with [NaviaMapController.setPlaceImages].
+  final String imageId;
+
+  /// Category color, used by the 3D column under the marker.
+  final Color color;
 
   /// Label drawn next to the place; unnamed places get no label.
   final String? name;
@@ -75,11 +83,13 @@ class MapPlace {
       other is MapPlace &&
       other.key == key &&
       other.point == point &&
+      other.imageId == imageId &&
+      other.color == color &&
       other.name == name &&
       other.selected == selected;
 
   @override
-  int get hashCode => Object.hash(key, point, name, selected);
+  int get hashCode => Object.hash(key, point, imageId, color, name, selected);
 }
 
 /// A named point of interest rendered by the map style.
