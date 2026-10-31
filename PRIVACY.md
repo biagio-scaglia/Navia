@@ -5,7 +5,7 @@ the Navia Android app actually handles data, as implemented in this
 repository. It has not been reviewed by a lawyer, and it does not claim
 certified compliance with the GDPR or any other law.
 
-Last updated: 2026-10-31. Applies to Navia 0.7.0 and later.
+Last updated: 2026-10-31. Applies to Navia 0.8.0 and later.
 
 The app shows the same policy in Italian under *Impostazioni → Privacy*.
 
@@ -78,6 +78,9 @@ it contains no user or device identifier.
 | **Photon by komoot** (`photon.komoot.io`) | When you search | The text you type; an approximate position rounded to about 1 km (your position if you located yourself, otherwise the default area of Bari) to rank nearby results first | Find places and addresses |
 | **Photon by komoot** | When you long-press a point on the map | The exact coordinates of that point | Show its address |
 | **Wikipedia and Wikidata** (`wikipedia.org`, `wikidata.org`, images from `wikimedia.org`) | Only when you open the card of a place linked to Wikipedia or Wikidata | The article title or Wikidata id of that place; then the request for its image | Show the place's description |
+| **Wikipedia** (`it.wikipedia.org`) | Only when you tap *Scopri qui intorno* | The coordinates of the map center | List articles about nearby places |
+| **Valhalla on FOSSGIS servers** (`valhalla1.openstreetmap.de`) | Only when you tap *Mostra sulla mappa* in the *15 min* tab | The starting point (your position if available, otherwise the map center) and the travel mode | Compute the areas reachable in 5, 10 and 15 minutes |
+| **Open-Meteo** (`api.open-meteo.com`) | When a place card or a route summary is shown | The coordinates rounded to two decimals (about 1 km) | Show the weather |
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Luoghi offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download place data for offline use |
 | **Ministero delle Imprese e del Made in Italy** (`mimit.gov.it`) | Only when you confirm the download or update of fuel prices | The request for the national files of fuel stations and prices | Show fuel prices |
 | **Overpass API** (`overpass-api.de`) | When you select a place category, such as "Farmacie", and move the map while it is selected, outside the regions you downloaded | The category and the area you are viewing, enlarged and rounded outwards to a grid of about 1 km | List real places of that category |
@@ -97,6 +100,7 @@ control:
   <https://www.fossgis.de/datenschutzerklaerung/>
 - GitHub: <https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement>
 - MIMIT: <https://www.mimit.gov.it/it/privacy>
+- Open-Meteo: <https://open-meteo.com/en/terms>
 - Wikimedia Foundation: <https://foundation.wikimedia.org/wiki/Policy:Privacy_policy>
 - Overpass API main instance: <https://overpass-api.de>
   (`[TO BE VERIFIED: operator and privacy notice of the instance]`)

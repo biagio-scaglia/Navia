@@ -66,6 +66,12 @@ abstract final class PrivacyPolicy {
           'fuori dalle zone scaricate, riceve la categoria e la zona '
           'visualizzata, allargata e arrotondata a circa 1 km. Il server '
           'predefinito è overpass-api.de.',
+      'Wikipedia (Scopri): solo quando tocchi “Scopri qui intorno”, riceve '
+          'le coordinate del centro della mappa.',
+      'Valhalla sui server FOSSGIS (15 min): solo quando tocchi “Mostra '
+          'sulla mappa”, riceve il punto di partenza e il mezzo.',
+      'Open-Meteo (meteo): quando vedi la scheda di un luogo o il riepilogo '
+          'di un percorso, riceve la posizione arrotondata a circa 1 km.',
       'Wikipedia e Wikidata: solo quando apri la scheda di un luogo collegato '
           'a Wikipedia, ricevono il titolo della voce o il codice Wikidata e '
           'la richiesta della sua immagine.',
