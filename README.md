@@ -15,8 +15,9 @@ ads, no analytics and no Navia backend: the app talks directly to open,
 OpenStreetMap-based services, and only when you use the feature that needs
 them.
 
-> **Status: early development (v0.4.1).** Navia shows routes but does not yet
-> provide turn-by-turn guidance. See [Current limitations](#current-limitations).
+> **Status: early development (v0.7).** Navia offers turn-by-turn guidance
+> with Italian voice instructions while the app is open. See
+> [Current limitations](#current-limitations).
 
 ## Features
 
@@ -24,8 +25,11 @@ them.
   building footprints, street names, neighborhoods, parks, water and points
   of interest), centered on Bari at zoom 14 and explorable worldwide.
 - **Map appearance:** choose Automatico (follows the app theme), Standard,
-  Vivace, Essenziale or Scuro. The camera position, zoom, bearing and pitch,
-  your route and your markers are all kept when you switch.
+  Vivace, Essenziale or Scuro. Essenziale and Scuro ("Navia Notte") are
+  Navia's own styles, generated from OpenFreeMap Liberty: a muted day style
+  and a readable night style, both with points of interest and 3D
+  buildings. The camera, your route and your markers are kept when you
+  switch.
 - **3D buildings:** an optional tilted view that extrudes buildings from the
   real height data in OpenStreetMap. Buildings without height data stay
   flat; nothing is invented.
@@ -42,6 +46,11 @@ them.
   size, with a progress bar and the option to cancel. Downloaded regions
   answer instantly and without a connection; you can update or delete them
   at any time. Sud is 3 MB (126,088 places), all of Italy about 22 MB.
+- **Category markers:** each category has its own colored marker with its
+  icon, and small colored columns rise under the markers when the map is
+  tilted.
+- **Wikipedia:** places linked to Wikipedia or Wikidata show the summary of
+  the Italian article (English as fallback) with its image and a link.
 - **Place cards:** name, category, address, opening hours (with an "Aperto
   ora" / "Chiuso ora" badge only when it can be computed reliably), cuisine,
   wheelchair access, phone and website, each shown only when OpenStreetMap
@@ -61,6 +70,12 @@ them.
   distance, estimated duration, arrival time and the route geometry on the
   map, and lets you swap and clear points. Without location permission,
   choose the origin by search, on the map or from favorites.
+- **Turn-by-turn guidance:** "Avvia" starts guidance from your position:
+  the next maneuver with its arrow and distance, Italian voice instructions
+  through Android's text-to-speech (works offline, can be muted), the camera
+  following you, automatic recalculation when you leave the route, arrival
+  time and remaining distance. The full instruction list is also shown in
+  the route summary.
 - **Errors:** handles offline mode, service failures, timeouts, denied
   permissions and disabled GPS with Italian messages that tell you what to do.
 - **Privacy:** an in-app privacy policy with a plain-language summary
@@ -233,17 +248,20 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
 
 ## Current limitations
 
-- There is no turn-by-turn guidance, voice instructions or automatic
-  rerouting. Routes are shown as an overview.
+- Guidance runs only while the app is open and in the foreground: Navia
+  keeps the screen on but never uses background location. Voice
+  instructions need an Italian text-to-speech voice installed on the
+  device.
+- Instructions come from OSRM maneuvers; lane guidance, speed limits and
+  traffic are not available.
 - Travel times are estimates without live traffic.
-- Search, routing and the map need an internet connection. There are no
-  offline maps or offline routing yet.
+- Search, routing and the map need an internet connection. Only places can
+  be downloaded for offline use; offline maps and routing are planned.
 - The default services are public community instances with fair-use limits.
   They are suitable for development and small-scale use, not for a large
   public release.
-- The Essenziale and Scuro styles do not draw points of interest, so tapping
-  the style's own places only works with Standard and Vivace. Category
-  filters work with every style.
+- Open or closed badges use Italian national holidays; local patron saint
+  days and school holidays are not computed.
 - Outside downloaded regions, place discovery depends on public Overpass
   instances, which are often overloaded: answers can take about 40 seconds
   or be refused, and Navia then offers to retry or to download the area.
@@ -251,8 +269,8 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
   monthly. A region "covers" the view when its bounding box contains the
   view's center, so near borders a neighboring region may also be needed.
 - The open or closed status is computed only for the common `opening_hours`
-  syntax and only in the Central European Time area around Italy; public
-  holidays and other cases show the original hours without a status.
+  syntax and only in the Central European Time area around Italy; other
+  cases show the original hours without a status.
 - Details of places drawn by the map style itself (not by the category
   filters) are limited to name and category.
 - 3D heights come from OpenStreetMap, where many buildings have no height
