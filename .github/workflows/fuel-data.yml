@@ -1,0 +1,47 @@
+name: Fuel data
+
+# Publishes the daily fuel prices of the Italian Ministry (MIMIT open data,
+# IODL 2.0) as an asset of the "fuel-data" release, which the app downloads
+# on request. The prices valid at 8:00 are published later in the morning.
+
+on:
+  schedule:
+    - cron: '30 9 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'tool/fuel/**'
+      - '.github/workflows/fuel-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fuel-data
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Build the dataset
+        run: python tool/fuel/build_fuel_prices.py out
+
+      - name: Publish the release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view fuel-data > /dev/null 2>&1; then
+            gh release create fuel-data \
+              --title 'Navia fuel price data' \
+              --latest=false \
+              --notes-file tool/fuel/RELEASE_NOTES.md
+          fi
+          gh release upload fuel-data out/fuel-prices.json.gz --clobber
