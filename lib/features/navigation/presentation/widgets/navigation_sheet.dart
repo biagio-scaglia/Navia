@@ -19,6 +19,7 @@ import '../../../places/presentation/widgets/place_article.dart';
 import '../../../places/presentation/widgets/place_details.dart';
 import '../../../search/data/photon_geocoding_repository.dart';
 import '../../../search/presentation/search_screen.dart';
+import '../../../weather/weather.dart';
 import '../../data/osrm_routing_repository.dart';
 import '../../domain/navigation_models.dart';
 import '../guidance_controller.dart';
@@ -445,6 +446,7 @@ class _SelectionCard extends ConsumerWidget {
             const SizedBox(height: NaviaSpacing.sm),
             PlaceDetailsList(place: place),
           ],
+          WeatherLine(point: selection.point),
           const SizedBox(height: NaviaSpacing.md),
           PlaceQuickActions(
             point: selection.point,
@@ -1030,6 +1032,11 @@ class _RouteSummary extends ConsumerWidget {
           AppStrings.arrivalAt(formatClockTime(arrival)),
           style: theme.textTheme.titleSmall,
         ),
+        if (route.geometry.isNotEmpty)
+          WeatherLine(
+            point: route.geometry.last,
+            prefix: AppStrings.atDestination,
+          ),
         const SizedBox(height: NaviaSpacing.sm),
         if (route.steps.isNotEmpty) ...[
           const SizedBox(height: NaviaSpacing.md),

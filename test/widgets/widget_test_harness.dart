@@ -9,6 +9,7 @@ import 'package:navia/app/theme/navia_theme.dart';
 import 'package:navia/features/location/data/geolocator_location_repository.dart';
 import 'package:navia/features/location/domain/location_models.dart';
 import 'package:navia/features/places/data/offline_places_store.dart';
+import 'package:navia/features/weather/weather.dart';
 import 'package:navia/shared/models/geo_point.dart';
 import 'package:navia/shared/providers/package_info_provider.dart';
 import 'package:navia/shared/providers/shared_preferences_provider.dart';
@@ -49,6 +50,8 @@ Future<ProviderContainer> pumpNaviaWidget(
           ),
         ),
         locationRepositoryProvider.overrideWithValue(location),
+        // No network in widget tests.
+        weatherRepositoryProvider.overrideWithValue(null),
         placesDataDirectoryProvider.overrideWithValue(placesDirectory),
         ...overrides,
       ],

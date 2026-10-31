@@ -114,6 +114,13 @@ abstract final class AppStrings {
   static String remaining(String distance) => '$distance rimanenti';
   static String routeSteps(int count) => 'Istruzioni ($count)';
 
+  // Weather.
+  static const atDestination = 'A destinazione';
+  static const serviceWeather = 'Meteo: Open-Meteo';
+  static const serviceWeatherDetail =
+      'Quando apri la scheda di un luogo o calcoli un percorso: riceve la '
+      'posizione arrotondata a circa 1 km.';
+
   // Fuel prices.
   static const fuelPrices = 'PREZZI CARBURANTI';
   static const fuelSelf = 'Self';

@@ -101,6 +101,13 @@ abstract final class AppConfig {
     defaultValue: 'https://www.mimit.gov.it/images/exportCSV/',
   );
 
+  /// Open-Meteo forecast endpoint (free, no key, CC BY 4.0 data). An empty
+  /// value hides the weather.
+  static const weatherUrl = String.fromEnvironment(
+    'NAVIA_WEATHER_URL',
+    defaultValue: 'https://api.open-meteo.com/v1/forecast',
+  );
+
   /// Minimum interval between place requests.
   static const placesMinInterval = Duration(seconds: 2);
 
