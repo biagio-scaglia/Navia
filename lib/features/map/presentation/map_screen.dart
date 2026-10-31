@@ -18,8 +18,10 @@ import '../../location/presentation/location_controller.dart';
 import '../../location/presentation/location_failure_messages.dart';
 import '../../location/presentation/widgets/location_button.dart';
 import '../../navigation/domain/navigation_models.dart';
+import '../../navigation/presentation/guidance_controller.dart';
 import '../../navigation/presentation/navigation_controller.dart';
 import '../../navigation/presentation/navigation_overlays.dart';
+import '../../navigation/presentation/widgets/guidance_widgets.dart';
 import '../../navigation/presentation/widgets/navigation_sheet.dart';
 import '../../places/presentation/place_discovery_controller.dart';
 import '../../places/presentation/place_marker_style.dart';
@@ -244,8 +246,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   void _listenToState() {
     ref.listen(locationControllerProvider, (previous, next) {
-      if (next.position != previous?.position) {
-        _showUserLocation(next.position);
+      final position = next.position;
+      if (position != previous?.position) {
+        _showUserLocation(position);
+        // During guidance the camera follows the user, heading up.
+        if (position != null && ref.read(guidanceProvider).active) {
+          unawaited(
+            _map?.follow(
+              position.point,
+              zoom: AppConfig.guidanceZoom,
+              bearing: position.headingDegrees,
+            ),
+          );
+        }
       }
       // Route failures are reported in the sheet instead.
       final failure = next.failure;
@@ -270,6 +283,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     });
     ref.listen(routeGeometryProvider, (_, geometry) {
       unawaited(_map?.showRoute(geometry));
+      // During guidance the camera follows the user instead.
+      if (ref.read(guidanceProvider).active) return;
       // Wait for the sheet to lay out its summary before measuring it.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _fitRoute(geometry);
@@ -482,6 +497,7 @@ class _MapOverlays extends ConsumerWidget {
       geocodingRepositoryProvider.select((r) => r != null),
     );
     final source = ref.watch(mapStyleSourceProvider);
+    final guiding = ref.watch(guidanceProvider.select((s) => s.active));
 
     final safe = MediaQuery.paddingOf(context);
     const edge = NaviaSpacing.lg;
@@ -501,16 +517,20 @@ class _MapOverlays extends ConsumerWidget {
                 constraints: const BoxConstraints(
                   maxWidth: NaviaSizes.panelMaxWidth,
                 ),
-                child: MapTopBar(
-                  onOpenSettings: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.settings),
-                  onOpenFavorites: onOpenFavorites,
-                  onSearch: searchAvailable && mapReady ? onOpenSearch : null,
-                ),
+                child: guiding
+                    ? const GuidanceBanner()
+                    : MapTopBar(
+                        onOpenSettings: () =>
+                            Navigator.of(context).pushNamed(AppRoutes.settings),
+                        onOpenFavorites: onOpenFavorites,
+                        onSearch: searchAvailable && mapReady
+                            ? onOpenSearch
+                            : null,
+                      ),
               ),
             ),
           ),
-          if (mapReady) ...[
+          if (mapReady && !guiding) ...[
             Padding(
               padding: const EdgeInsets.only(top: NaviaSpacing.md),
               child: PlaceCategoryBar(
@@ -548,9 +568,15 @@ class _MapOverlays extends ConsumerWidget {
                     edge + safe.right,
                     NaviaSpacing.md,
                   ),
-                  child: _MapControls(
-                    onLocationPressed: onLocationPressed,
-                    onShowRoute: onShowRoute,
+                  // Scrolls instead of overflowing when a tall panel leaves
+                  // little room above it.
+                  child: SingleChildScrollView(
+                    reverse: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: _MapControls(
+                      onLocationPressed: onLocationPressed,
+                      onShowRoute: onShowRoute,
+                    ),
                   ),
                 ),
               ),

@@ -14,6 +14,10 @@ abstract interface class NaviaMapController {
   /// Moves the camera to [target], optionally changing the [zoom] level.
   Future<void> moveTo(GeoPoint target, {double? zoom, bool animated = true});
 
+  /// Centers the camera on [target] for guidance, rotated to [bearing]
+  /// (degrees clockwise from north) when known.
+  Future<void> follow(GeoPoint target, {required double zoom, double? bearing});
+
   /// Moves the camera so that all [points] are visible inside [padding].
   Future<void> fitBounds(List<GeoPoint> points, {EdgeInsets padding});
 

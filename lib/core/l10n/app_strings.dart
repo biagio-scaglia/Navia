@@ -102,6 +102,18 @@ abstract final class AppStrings {
   static const close = 'Chiudi';
   static const back = 'Indietro';
 
+  // Guidance.
+  static const startGuidance = 'Avvia';
+  static const stopGuidance = 'Termina';
+  static const followRoute = 'Segui il percorso';
+  static const reroutingNow = 'Ricalcolo del percorso…';
+  static const muteVoice = 'Disattiva la voce';
+  static const unmuteVoice = 'Attiva la voce';
+  static const guidanceForegroundNote =
+      'La guida funziona con l’app aperta: lo schermo resta acceso.';
+  static String remaining(String distance) => '$distance rimanenti';
+  static String routeSteps(int count) => 'Istruzioni ($count)';
+
   // Wikipedia.
   static const fromWikipedia = 'DA WIKIPEDIA';
   static const readOnWikipedia = 'Leggi su Wikipedia';

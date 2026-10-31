@@ -20,8 +20,10 @@ import '../../../search/data/photon_geocoding_repository.dart';
 import '../../../search/presentation/search_screen.dart';
 import '../../data/osrm_routing_repository.dart';
 import '../../domain/navigation_models.dart';
+import '../guidance_controller.dart';
 import '../navigation_controller.dart';
 import '../navigation_labels.dart';
+import 'guidance_widgets.dart';
 
 /// Panel docked to the bottom of the map: where-to entry, the selected
 /// place, and route planning.
@@ -112,9 +114,12 @@ class _NavigationSheetState extends ConsumerState<NavigationSheet> {
         .watch(routingRepositoryProvider)
         .supportedModes
         .isNotEmpty;
+    final guiding = ref.watch(guidanceProvider.select((s) => s.active));
 
     final Widget? content;
-    if (selection != null) {
+    if (guiding) {
+      content = const GuidancePanel();
+    } else if (selection != null) {
       content = _SelectionCard(
         selection: selection,
         routingAvailable: routingAvailable,
@@ -981,13 +986,13 @@ class _RouteStatusArea extends ConsumerWidget {
   }
 }
 
-class _RouteSummary extends StatelessWidget {
+class _RouteSummary extends ConsumerWidget {
   const _RouteSummary({required this.route});
 
   final NavRoute route;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final muted = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
@@ -1023,6 +1028,21 @@ class _RouteSummary extends StatelessWidget {
           style: theme.textTheme.titleSmall,
         ),
         const SizedBox(height: NaviaSpacing.sm),
+        if (route.steps.isNotEmpty) ...[
+          const SizedBox(height: NaviaSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () =>
+                  unawaited(ref.read(guidanceProvider.notifier).start()),
+              icon: const Icon(Icons.navigation_rounded, size: 20),
+              label: const Text(AppStrings.startGuidance),
+            ),
+          ),
+          const SizedBox(height: NaviaSpacing.xs),
+          Text(AppStrings.guidanceForegroundNote, style: muted),
+          RouteStepList(route: route),
+        ],
         Text(AppStrings.routeEstimateNote, style: muted),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,

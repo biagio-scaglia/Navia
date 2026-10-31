@@ -20,6 +20,9 @@ abstract final class AppConfig {
   /// Zoom used when centering the map on the user.
   static const userLocationZoom = 16.0;
 
+  /// Zoom of the camera following the user during guidance.
+  static const guidanceZoom = 17.0;
+
   static const minZoom = 2.0;
   static const maxZoom = 19.0;
 

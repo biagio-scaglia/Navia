@@ -422,6 +422,26 @@ class MapLibreNaviaMapController implements NaviaMapController {
   }
 
   @override
+  Future<void> follow(
+    GeoPoint target, {
+    required double zoom,
+    double? bearing,
+  }) async {
+    final current = await _controller.queryCameraPosition();
+    await _controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: toLatLng(target),
+          zoom: zoom,
+          bearing: bearing ?? current?.bearing ?? 0,
+          tilt: current?.tilt ?? 0,
+        ),
+      ),
+      duration: const Duration(milliseconds: 600),
+    );
+  }
+
+  @override
   Future<void> fitBounds(
     List<GeoPoint> points, {
     EdgeInsets padding = EdgeInsets.zero,
