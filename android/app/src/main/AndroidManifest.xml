@@ -69,6 +69,10 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="tel" />
         </intent>
+        <!-- Lets the voice guidance find the device's text-to-speech engine. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
         <!-- Lets url_launcher open attribution and project links. -->
         <intent>
             <action android:name="android.intent.action.VIEW" />

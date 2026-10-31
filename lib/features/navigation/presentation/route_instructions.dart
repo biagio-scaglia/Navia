@@ -5,6 +5,8 @@ import '../domain/navigation_models.dart';
 /// OSRM sends maneuver types and directions, not text; the phrasing here
 /// follows common Italian navigation wording.
 abstract final class RouteInstructions {
+  static const rerouting = 'Ricalcolo del percorso';
+
   static String text(RouteStep step) {
     final street = step.streetName;
     final onto = street == null ? '' : ' in $street';

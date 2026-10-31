@@ -1,6 +1,7 @@
 package io.github.biagioscaglia.navia
 
 import android.content.Intent
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -30,6 +31,20 @@ class MainActivity : FlutterActivity() {
                 }
                 startActivity(Intent.createChooser(send, null))
                 result.success(true)
+            }
+        // Keeps the screen on during turn-by-turn guidance only.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "navia/screen")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "keepOn") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                if (call.argument<Boolean>("enabled") == true) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+                result.success(null)
             }
     }
 }
