@@ -78,6 +78,24 @@ Apache-2.0). The app lists all of them, generated from the build, under
 Notable native dependencies: MapLibre Native (BSD-2-Clause) and the Google
 Play Services location libraries pulled in by `maplibre_gl`.
 
+## Fuel prices (MIMIT)
+
+The daily station registry and prices of the Ministero delle Imprese e del
+Made in Italy ("Osservaprezzi carburanti") are published under the Italian
+Open Data License 2.0, which requires attribution. The `Fuel data` workflow
+publishes them, joined but unchanged, in the `fuel-data` release, kept
+separate from the ODbL place datasets; the place card and the release
+credit the source and license.
+
+## Italian open data checked but not used
+
+- **Ministry of Culture (dati.cultura.gov.it):** the domain did not resolve
+  in October 2026.
+- **AMTAB GTFS (opendata.comune.bari.it, CC BY 4.0):** the feed is valid only
+  until 31 December 2023.
+- **Patron saints (Wikidata):** many saints have several feast days, so a
+  local holiday cannot be computed reliably.
+
 ## Wikipedia and Wikimedia Commons
 
 Article summaries are licensed under CC BY-SA 4.0; the place card names the

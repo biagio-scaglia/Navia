@@ -49,6 +49,10 @@ them.
 - **Category markers:** each category has its own colored marker with its
   icon, and small colored columns rise under the markers when the map is
   tilted.
+- **Fuel prices:** download the daily prices of all Italian fuel stations
+  (about 1.5 MB, *Impostazioni → Luoghi offline*) from the Ministry's open
+  data (MIMIT, IODL 2.0); fuel station cards then show self service and
+  served prices for each fuel, with the report date.
 - **Wikipedia:** places linked to Wikipedia or Wikidata show the summary of
   the Italian article (English as fallback) with its image and a link.
 - **Place cards:** name, category, address, opening hours (with an "Aperto
@@ -184,6 +188,7 @@ ever embedded in the APK:
 | `NAVIA_OSRM_BIKE_URL` | `https://routing.openstreetmap.de/routed-bike` | Bike mode is hidden |
 | `NAVIA_OSRM_FOOT_URL` | `https://routing.openstreetmap.de/routed-foot` | Walking mode is hidden |
 | `NAVIA_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | Places come only from downloaded regions |
+| `NAVIA_FUEL_DATA_URL` | `https://github.com/biagio-scaglia/Navia/releases/download/fuel-data/fuel-prices.json.gz` | Fuel prices are hidden |
 | `NAVIA_PLACES_DATA_URL` | `https://github.com/biagio-scaglia/Navia/releases/download/places-data` | Offline places are hidden |
 
 For example, to use a self-hosted Photon instance:
@@ -261,7 +266,14 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and
   They are suitable for development and small-scale use, not for a large
   public release.
 - Open or closed badges use Italian national holidays; local patron saint
-  days and school holidays are not computed.
+  days and school holidays are not computed (Wikidata patron data is too
+  ambiguous, and school calendars are not published as data).
+- Fuel prices are the ones operators report to the Ministry and may differ
+  at the pump; they are matched to OpenStreetMap stations within 80 m, so a
+  station missing from OpenStreetMap shows no prices.
+- Speed limits and lane guidance are not shown: the public OSRM server does
+  not provide them. Bari's AMTAB timetable feed is expired (valid until the
+  end of 2023), so public transport waits for current data.
 - Outside downloaded regions, place discovery depends on public Overpass
   instances, which are often overloaded: answers can take about 40 seconds
   or be refused, and Navia then offers to retry or to download the area.
