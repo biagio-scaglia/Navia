@@ -1,0 +1,78 @@
+---
+/**
+ * Honest interface composition from shipped Italian UI strings.
+ * Not a device photograph and not a claim of pixel-perfect capture.
+ */
+---
+
+<div class="interface-study border border-rule bg-sheet" data-ui>
+  <div class="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
+    <div class="relative min-h-[28rem] overflow-hidden border-b border-rule bg-land lg:border-b-0 lg:border-r">
+      <svg class="absolute inset-0 h-full w-full" viewBox="0 0 420 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect width="420" height="560" fill="#E8E4D8"></rect>
+        <path d="M0 340 C80 300 140 380 210 350 S330 280 420 320 L420 560 L0 560 Z" fill="#B7C9C0"></path>
+        <g fill="none" stroke="#F7F5EF" stroke-width="10" stroke-linecap="round">
+          <path d="M30 120 H390"></path>
+          <path d="M40 210 H380"></path>
+          <path d="M20 300 H400"></path>
+          <path d="M110 40 V480"></path>
+          <path d="M220 20 V520"></path>
+          <path d="M320 60 V450"></path>
+        </g>
+        <path d="M90 430 C150 330 200 270 250 190" fill="none" stroke="#315C49" stroke-width="7" stroke-linecap="round"></path>
+        <path d="M90 430 C150 330 200 270 250 190" fill="none" stroke="#E56B35" stroke-width="3.5" stroke-linecap="round"></path>
+        <circle cx="90" cy="430" r="7" fill="#315C49" stroke="#fff" stroke-width="2"></circle>
+        <circle cx="250" cy="190" r="7" fill="#E56B35" stroke="#fff" stroke-width="2"></circle>
+        <circle cx="170" cy="330" r="8" fill="#1677FF" stroke="#fff" stroke-width="2"></circle>
+      </svg>
+
+      <div class="absolute left-4 top-4 border border-rule bg-sheet/95 px-3 py-2 text-xs font-medium text-muted">
+        © OpenStreetMap
+      </div>
+      <div class="absolute right-4 top-4 max-w-[14rem] border border-rule bg-sheet px-3 py-2 text-sm text-muted">
+        Cerca un luogo o un indirizzo
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-between p-6 sm:p-8">
+      <div>
+        <p class="mono text-xs tracking-wide text-muted uppercase">Interface study · v0.8</p>
+        <div class="mt-6 grid grid-cols-3 gap-2 text-center text-sm font-semibold">
+          <span class="bg-forest px-2 py-2 text-sheet">Vai</span>
+          <span class="border border-rule px-2 py-2 text-muted">Scopri</span>
+          <span class="border border-rule px-2 py-2 text-muted">15 min</span>
+        </div>
+        <h3 class="mt-6 font-display text-3xl font-semibold tracking-tight">Dove vuoi andare?</h3>
+        <ul class="mt-6 space-y-3">
+          <li class="flex items-center gap-3 border border-rule bg-paper px-4 py-3 text-sm font-medium">
+            <span class="h-2.5 w-2.5 rounded-full bg-forest" aria-hidden="true"></span>
+            La tua posizione
+          </li>
+          <li class="flex items-center gap-3 border border-rule bg-paper px-4 py-3 text-sm font-medium">
+            <span class="h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true"></span>
+            Destinazione scelta sulla mappa
+          </li>
+        </ul>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="bg-accent px-4 py-2 text-sm font-semibold text-sheet">Avvia</span>
+          <span class="border border-ink px-4 py-2 text-sm font-semibold">Indicazioni</span>
+        </div>
+      </div>
+
+      <dl class="mt-10 space-y-4 border-t border-rule pt-6">
+        <div>
+          <dt class="mono text-xs text-muted">A1 · Explore panel</dt>
+          <dd class="mt-1 text-sm text-ink">Three tabs keep going, discovering and reachability on separate surfaces.</dd>
+        </div>
+        <div>
+          <dt class="mono text-xs text-muted">A2 · Guidance</dt>
+          <dd class="mt-1 text-sm text-ink">Avvia starts foreground turn-by-turn with on-device Italian TTS.</dd>
+        </div>
+        <div>
+          <dt class="mono text-xs text-muted">A3 · Attribution</dt>
+          <dd class="mt-1 text-sm text-ink">OpenStreetMap credit stays visible on the map surface.</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</div>

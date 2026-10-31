@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { privacyMeta, privacySections, privacySummary } from '../data/privacy'
+import { site } from '../data/site'
+
+const base = import.meta.env.BASE_URL
+---
+
+<BaseLayout
+  title="Privacy policy — Navia"
+  description="How the Navia Android app handles data. Draft prepared for legal review."
+  path="/privacy/"
+>
+  <article class="section-pad">
+    <div class="measure-narrow">
+      <p class="mono text-xs tracking-[0.14em] text-muted uppercase">Legal</p>
+      <h1 class="mt-3 font-display text-[clamp(2.5rem,6vw,4rem)] font-semibold tracking-tight">
+        {privacyMeta.title}
+      </h1>
+      <div class="mono mt-6 flex flex-wrap gap-3 text-xs text-muted">
+        <span class="border border-rule bg-sheet px-3 py-2">Updated {privacyMeta.lastUpdated}</span>
+        <span class="border border-rule bg-sheet px-3 py-2">{privacyMeta.appliesTo}</span>
+      </div>
+      <p class="mt-6 border border-[#d8c28a] bg-[#fff7e5] px-4 py-3 text-sm text-[#6a4b12]">
+        {privacyMeta.draftNotice}
+      </p>
+
+      <section class="mt-12" aria-labelledby="summary-title">
+        <h2 id="summary-title" class="font-display text-3xl font-semibold">In short</h2>
+        <ol class="mt-6 space-y-4">
+          {
+            privacySummary.map((item, i) => (
+              <li class="grid grid-cols-[3rem_1fr] gap-4 border-t border-rule pt-4">
+                <span class="mono text-sm text-accent">{String(i + 1).padStart(2, '0')}</span>
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+
+      <div class="mt-14 space-y-12">
+        {
+          privacySections.map((section) => (
+            <section>
+              <h2 class="border-b border-rule pb-3 font-display text-2xl font-semibold">{section.title}</h2>
+              <div class="mt-4 space-y-4 text-muted">
+                {section.paragraphs.map((p) => (
+                  <p>{p}</p>
+                ))}
+              </div>
+            </section>
+          ))
+        }
+      </div>
+
+      <p class="mt-14 border-t border-rule pt-6 text-sm text-muted">
+        Canonical source:{' '}
+        <a class="link-quiet font-medium text-ink" href={site.privacyMd} rel="noreferrer" target="_blank">
+          PRIVACY.md
+        </a>
+        . <a class="link-quiet font-medium text-ink" href={base}>Back to Navia</a>.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

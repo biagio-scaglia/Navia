@@ -1,0 +1,57 @@
+---
+import { site } from '../data/site'
+const base = import.meta.env.BASE_URL
+---
+
+<footer class="border-t border-ink bg-ink text-sheet">
+  <div class="measure section-pad">
+    <div class="grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
+      <div>
+        <p class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{site.name}</p>
+        <p class="mt-4 max-w-md text-base text-white/70">
+          Independent navigation software on OpenStreetMap. MIT-licensed code; map data remains under ODbL.
+        </p>
+
+        <dl class="mt-10 grid gap-4 border-t border-white/20 pt-6 sm:grid-cols-2">
+          <div>
+            <dt class="mono text-xs uppercase tracking-wide text-white/50">Legend</dt>
+            <dd class="mt-2 space-y-1 text-sm text-white/80">
+              <p><span class="inline-block h-2 w-2 bg-accent align-middle"></span> Destination / accent</p>
+              <p><span class="inline-block h-2 w-2 bg-[#7d9b8c] align-middle"></span> Origin / forest</p>
+              <p><span class="inline-block h-2 w-6 bg-water align-middle"></span> Water hatch</p>
+            </dd>
+          </div>
+          <div>
+            <dt class="mono text-xs uppercase tracking-wide text-white/50">Sheet</dt>
+            <dd class="mono mt-2 text-sm text-white/80">
+              <p>{site.coordinates.label}</p>
+              <p>{site.coordinates.lat} · {site.coordinates.lon}</p>
+              <p>{site.version}{site.build} · {site.status}</p>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="border-t border-white/20 pt-6 lg:border-t-0 lg:border-l lg:pl-10 lg:pt-0">
+        <p class="mono text-xs uppercase tracking-wide text-white/50">Index</p>
+        <ul class="mt-4 space-y-3 text-lg font-medium">
+          <li><a class="link-quiet" href={`${base}#overview`}>Overview</a></li>
+          <li><a class="link-quiet" href={`${base}#features`}>Features</a></li>
+          <li><a class="link-quiet" href={`${base}#open-source`}>Open Source</a></li>
+          <li><a class="link-quiet" href={`${base}#documentation`}>Documentation</a></li>
+          <li><a class="link-quiet" href={`${base}privacy/`}>Privacy</a></li>
+          <li>
+            <a class="link-quiet" href={site.github} rel="noreferrer" target="_blank">GitHub repository</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="mono mt-14 flex flex-col gap-2 border-t border-white/20 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>{site.copyright} · License {site.license}</p>
+      <p>Map data © OpenStreetMap contributors</p>
+    </div>
+  </div>
+</footer>

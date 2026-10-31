@@ -1,0 +1,65 @@
+---
+import { nav, site } from '../data/site'
+const base = import.meta.env.BASE_URL
+---
+
+<header class="sticky top-0 z-40 border-b border-rule bg-paper">
+  <div class="measure flex h-16 items-center justify-between gap-4">
+    <a href={base} class="flex items-center gap-3 no-underline" aria-label="Navia home">
+      <img src={`${base}navia_logo.svg`} alt="" width="28" height="28" />
+      <span class="font-display text-lg font-semibold tracking-tight">{site.name}</span>
+    </a>
+
+    <nav class="hidden items-center gap-6 md:flex" aria-label="Primary">
+      {
+        nav.map((item) => (
+          <a class="link-quiet text-[0.9375rem] font-medium text-muted" href={`${base}${item.href}`}>
+            {item.label}
+          </a>
+        ))
+      }
+      <a
+        class="link-quiet text-[0.9375rem] font-medium text-muted"
+        href={site.github}
+        rel="noreferrer"
+        target="_blank"
+      >
+        GitHub
+      </a>
+    </nav>
+
+    <details class="relative md:hidden">
+      <summary
+        class="list-none cursor-pointer rounded-none border border-ink px-3 py-2 text-sm font-semibold"
+      >
+        Menu
+      </summary>
+      <div
+        class="absolute right-0 mt-2 w-52 border border-rule bg-sheet p-3 shadow-none"
+      >
+        <ul class="flex flex-col gap-2">
+          {
+            nav.map((item) => (
+              <li>
+                <a class="block py-2 text-sm font-medium" href={`${base}${item.href}`}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a class="block py-2 text-sm font-medium" href={site.github} rel="noreferrer" target="_blank">
+              GitHub
+            </a>
+          </li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</header>
+
+<style>
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>
