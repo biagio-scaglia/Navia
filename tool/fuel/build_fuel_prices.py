@@ -117,4 +117,8 @@ def main(out_dir):
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         sys.exit('usage: build_fuel_prices.py OUT_DIR')
-    main(sys.argv[1])
+    try:
+        main(sys.argv[1])
+    except Exception as error:  # Reported as a GitHub annotation, then fails.
+        print(f'::error title=Fuel data::{type(error).__name__}: {error}')
+        raise
