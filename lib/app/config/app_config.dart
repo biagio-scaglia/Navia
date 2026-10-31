@@ -108,6 +108,19 @@ abstract final class AppConfig {
     defaultValue: 'https://api.open-meteo.com/v1/forecast',
   );
 
+  /// Italian Wikipedia API, for "Scopri qui intorno". Empty disables it.
+  static const wikipediaApiUrl = String.fromEnvironment(
+    'NAVIA_WIKIPEDIA_API_URL',
+    defaultValue: 'https://it.wikipedia.org/w/api.php',
+  );
+
+  /// Valhalla isochrone service of FOSSGIS (fair use, like the routing
+  /// servers), for "Dove arrivo in 15 minuti". Empty disables it.
+  static const isochroneUrl = String.fromEnvironment(
+    'NAVIA_ISOCHRONE_URL',
+    defaultValue: 'https://valhalla1.openstreetmap.de/isochrone',
+  );
+
   /// Minimum interval between place requests.
   static const placesMinInterval = Duration(seconds: 2);
 
