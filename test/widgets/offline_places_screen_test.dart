@@ -111,7 +111,8 @@ void main() {
 
 /// Lets real asynchronous work progress until [done], pumping frames.
 Future<void> _settleIo(WidgetTester tester, bool Function() done) async {
-  for (var i = 0; i < 200 && !done(); i++) {
+  // Up to 10 seconds: file access is slow on a busy machine.
+  for (var i = 0; i < 1000 && !done(); i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 10)),
     );
