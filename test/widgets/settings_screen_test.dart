@@ -33,7 +33,7 @@ void main() {
 
     expect(find.text('Consentito'), findsOneWidget);
 
-    await tester.scrollUntilVisible(find.text('0.7.0 (6)'), 300);
+    await tester.scrollUntilVisible(find.text('0.8.0 (7)'), 300);
     expect(find.text('Ricerca: Photon (komoot)'), findsOneWidget);
     expect(find.text('Percorsi: OSRM (FOSSGIS)'), findsOneWidget);
     expect(find.byType(ListTile), findsWidgets);
