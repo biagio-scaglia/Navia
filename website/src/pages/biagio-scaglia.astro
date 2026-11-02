@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Icon from '../components/Icon.astro'
+import Iconify from '../components/Iconify.astro'
+import { author, projects, site } from '../data/site'
+
+const base = import.meta.env.BASE_URL
+const home = new URL(base, Astro.site).href
+const page = new URL(`${base}biagio-scaglia/`, Astro.site).href
+
+// La Person completa vive nel layout (#autore): qui la pagina profilo la indica come soggetto.
+const schema = [
+  {
+    '@type': 'ProfilePage',
+    '@id': page,
+    url: page,
+    name: `${author.name}, sviluppatore a ${author.city}`,
+    inLanguage: 'it-IT',
+    isPartOf: { '@id': `${home}#sito` },
+    mainEntity: { '@id': `${home}#autore` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Navia', item: home },
+      { '@type': 'ListItem', position: 2, name: author.name, item: page },
+    ],
+  },
+  {
+    '@type': 'ItemList',
+    name: `Progetti di ${author.name}`,
+    itemListElement: projects.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.name,
+      url: p.href || home,
+    })),
+  },
+]
+---
+
+<BaseLayout
+  title={`${author.name} – sviluppatore software e UI/UX designer a Bari`}
+  description={`${author.name} è uno sviluppatore software e UI/UX designer di Bari. Crea app Flutter per Android, framework web in TypeScript e strumenti open source, tra cui il navigatore Navia.`}
+  path="/biagio-scaglia/"
+  schema={schema}
+>
+  <header class="night profile-head">
+    <div class="wrap">
+      <nav aria-label="Percorso" class="crumbs">
+        <a href={base}>Navia</a> <span aria-hidden="true">/</span> <span aria-current="page">{author.name}</span>
+      </nav>
+      <h1 class="profile-name">{author.name}</h1>
+      <p class="profile-role">{author.jobTitle} a {author.city}</p>
+      <p class="lead">
+        Sviluppo applicazioni, framework e strumenti tra frontend, mobile, backend e videogiochi. Mi interessa lo
+        spazio tra ingegneria e design: il software non deve solo funzionare, deve sembrare pensato.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href={author.github} rel="me noopener" target="_blank">
+          <Iconify name="si:github" size={20} /> Profilo GitHub
+        </a>
+        <a class="btn btn-ghost" href={author.linkedin} rel="me noopener" target="_blank">
+          <Iconify name="si:linkedin" size={20} /> LinkedIn
+        </a>
+        <a class="btn btn-ghost" href={author.blog} rel="me noopener" target="_blank">
+          <Icon name="globe" size={20} /> biagiocyberspace.it
+        </a>
+        <a class="btn btn-ghost" href={`mailto:${author.email}`}>
+          <Icon name="document" size={20} /> Scrivimi
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <section class="block" aria-labelledby="chi-titolo">
+    <div class="wrap split">
+      <div class="split-head">
+        <h2 id="chi-titolo" class="h2">Uno sviluppatore di Bari</h2>
+      </div>
+      <div class="prose">
+        <p>
+          Sono {author.name}, sviluppatore software e UI/UX designer, lavoro in proprio a {author.city}. Non resto
+          dentro un solo ecosistema: se una cosa mi interessa la imparo, se non esiste provo a costruirla.
+        </p>
+        <p>
+          Navia è nato così: volevo un navigatore per le strade di Bari che non chiedesse un account e non
+          raccogliesse dati. L’ho costruito con Flutter, MapLibre e OpenStreetMap, e il codice è pubblico con licenza
+          MIT.
+        </p>
+        <p>
+          Lavoro su app mobile Android con Flutter e Dart, siti e framework web in TypeScript e Astro, API e
+          backend, strumenti desktop in C# e prototipi in Python.
+        </p>
+        <ul class="tags" aria-label="Competenze">
+          {author.skills.map((k) => <li><Iconify name={k.icon} size={16} />{k.label}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block block-tint" aria-labelledby="progetti-titolo">
+    <div class="wrap">
+      <h2 id="progetti-titolo" class="h2">Progetti</h2>
+      <p class="sub">
+        Una selezione dei progetti open source. Gli altri sono su{' '}
+        <a href={author.github} rel="me noopener" target="_blank">GitHub</a>.
+      </p>
+      <ul class="projects">
+        {
+          projects.map((p) => (
+            <li>
+              <a href={p.href || base} {...(p.href ? { rel: 'noopener', target: '_blank' } : {})}>
+                <h3>{p.name}</h3>
+                <p>{p.body}</p>
+                <span class="projects-tech">{p.tech}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="contatti-titolo">
+    <div class="wrap">
+      <h2 id="contatti-titolo" class="h2">Contatti</h2>
+      <p class="sub">
+        Per lavoro, collaborazioni o domande su {site.name}, scrivi a{' '}
+        <a href={`mailto:${author.email}`}>{author.email}</a>. Il portfolio è su{' '}
+        <a href={author.portfolio} rel="me noopener" target="_blank">biagio-scaglia.github.io</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

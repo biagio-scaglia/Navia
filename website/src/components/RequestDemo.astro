@@ -1,0 +1,147 @@
+---
+/**
+ * Mostra le richieste che l'app costruisce davvero (photon_geocoding_repository.dart,
+ * osrm_routing_repository.dart). La pagina non invia niente: compone solo il testo.
+ */
+import Iconify from './Iconify.astro'
+import { site } from '../data/site'
+
+const userAgent = `Navia/${site.version} (+${site.github})`
+---
+
+<div class="demo" data-demo>
+  <div class="demo-controls">
+    <div class="demo-tabs" role="tablist" aria-label="Funzione">
+      <button type="button" role="tab" aria-selected="true" aria-controls="demo-panel" data-tab="search">
+        <Iconify name="lucide:search" size={18} /> Ricerca
+      </button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="demo-panel" data-tab="route">
+        <Iconify name="lucide:route" size={18} /> Percorso
+      </button>
+    </div>
+
+    <div data-pane="search">
+      <label class="demo-label" for="demo-q">Cosa cerchi?</label>
+      <input id="demo-q" class="demo-input" type="text" value="Teatro Petruzzelli" autocomplete="off" spellcheck="false" />
+      <p class="demo-note">
+        Esempio: sei in Piazza del Ferrarese, a 41.127563, 16.872684. Per ordinare i risultati Navia manda
+        solo due decimali: un riquadro di circa un chilometro.
+      </p>
+      <svg class="demo-grid" viewBox="0 0 200 120" role="img" aria-label="La posizione esatta resta sul telefono; parte solo il riquadro di circa un chilometro">
+        <defs>
+          <pattern id="demo-cells" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity="0.18" />
+          </pattern>
+        </defs>
+        <rect width="200" height="120" fill="url(#demo-cells)" />
+        <rect class="demo-cell" x="80" y="40" width="40" height="40" rx="2" />
+        <circle class="demo-dot" cx="93" cy="62" r="4" />
+        <text x="126" y="50">circa 1 km</text>
+        <text x="126" y="64" class="demo-small">parte questo</text>
+        <text x="20" y="102" class="demo-small">il punto rosso resta sul telefono</text>
+      </svg>
+    </div>
+
+    <div data-pane="route" hidden>
+      <p class="demo-label">Con quale mezzo?</p>
+      <div class="demo-modes" role="radiogroup" aria-label="Mezzo">
+        <button type="button" role="radio" aria-checked="true" data-mode="car"><Iconify name="lucide:car" size={18} /> Auto</button>
+        <button type="button" role="radio" aria-checked="false" data-mode="bike"><Iconify name="lucide:bike" size={18} /> Bici</button>
+        <button type="button" role="radio" aria-checked="false" data-mode="foot"><Iconify name="lucide:footprints" size={18} /> A piedi</button>
+      </div>
+      <p class="demo-note">
+        Esempio: da Piazza del Ferrarese al Teatro Petruzzelli. Per calcolare un percorso servono partenza e
+        arrivo esatti: partono solo quando tocchi “Percorso”, al massimo una volta al secondo.
+      </p>
+    </div>
+  </div>
+
+  <figure class="demo-wire" id="demo-panel" role="tabpanel">
+    <figcaption>
+      <span class="demo-live" aria-hidden="true"></span>
+      <span data-status>Cosa partirebbe dal telefono</span>
+    </figcaption>
+    <pre aria-live="polite"><code data-request></code></pre>
+    <ul class="demo-never">
+      <li><Iconify name="lucide:user-x" size={18} /> Nessun account né identificativo</li>
+      <li><Iconify name="lucide:history" size={18} /> Nessuna cronologia salvata</li>
+      <li><Iconify name="lucide:wifi-off" size={18} /> Questa pagina non invia nulla</li>
+    </ul>
+  </figure>
+</div>
+
+<script define:vars={{ userAgent }}>
+  const root = document.querySelector('[data-demo]')
+  if (root) {
+    const here = [41.127563, 16.872684]
+    const theatre = [41.122648, 16.870653]
+    const out = root.querySelector('[data-request]')
+    const status = root.querySelector('[data-status]')
+    const input = root.querySelector('#demo-q')
+    let tab = 'search'
+    let mode = 'car'
+    let timer = 0
+
+    const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
+    const line = (url) => {
+      const [path, query = ''] = url.split('?')
+      const params = query
+        .split('&')
+        .filter(Boolean)
+        .map((p) => {
+          const [k, v] = p.split('=')
+          return `\n    <span class="k">${esc(k)}</span>=<span class="v">${esc(v)}</span>`
+        })
+        .join('<span class="k">&amp;</span>')
+      return `<span class="m">GET</span> ${esc(path)}${query ? '?' : ''}${params}\n\n<span class="h">User-Agent:</span> ${esc(userAgent)}`
+    }
+
+    const render = () => {
+      clearTimeout(timer)
+      if (tab === 'route') {
+        const coords = [here, theatre].map(([lat, lon]) => `${lon},${lat}`).join(';')
+        const qs = new URLSearchParams({ overview: 'full', geometries: 'geojson', alternatives: 'false', steps: 'true' })
+        status.textContent = 'Cosa parte quando chiedi il percorso'
+        out.innerHTML = line(`https://routing.openstreetmap.de/routed-${mode}/route/v1/${mode}/${coords}?${qs}`)
+        return
+      }
+      const q = input.value.trim()
+      if (q.length < 3) {
+        status.textContent = 'Nessuna richiesta'
+        out.innerHTML = '<span class="c">// Servono almeno 3 caratteri: finché non ci sono, non parte niente.</span>'
+        return
+      }
+      status.textContent = 'Navia aspetta che smetti di scrivere…'
+      out.innerHTML = '<span class="c">// Pausa di 450 ms: una richiesta per ricerca, non una per lettera.</span>'
+      timer = setTimeout(() => {
+        const qs = new URLSearchParams({
+          q,
+          limit: '8',
+          lang: 'default',
+          lat: here[0].toFixed(2),
+          lon: here[1].toFixed(2),
+        })
+        status.textContent = 'Cosa parte dal telefono'
+        out.innerHTML = line(`https://photon.komoot.io/api/?${qs}`)
+      }, 450)
+    }
+
+    root.querySelectorAll('[data-tab]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        tab = btn.dataset.tab
+        root.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b === btn)))
+        root.querySelectorAll('[data-pane]').forEach((p) => (p.hidden = p.dataset.pane !== tab))
+        render()
+      }),
+    )
+    root.querySelectorAll('[data-mode]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        mode = btn.dataset.mode
+        root.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-checked', String(b === btn)))
+        render()
+      }),
+    )
+    input.addEventListener('input', render)
+    render()
+  }
+</script>

@@ -1,0 +1,156 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Iconify from '../components/Iconify.astro'
+import { apps, compareMeta, rows, verdicts } from '../data/compare'
+import { site } from '../data/site'
+
+const base = import.meta.env.BASE_URL
+const home = new URL(base, Astro.site).href
+const page = new URL(`${base}confronto/`, Astro.site).href
+
+const mark = { yes: 'lucide:circle-check', no: 'lucide:circle-x', partial: 'lucide:circle-dot' } as const
+const word = { yes: 'Sì', no: 'No', partial: 'In parte' } as const
+
+const faq = [
+  {
+    q: 'Qual è la migliore alternativa open source a Google Maps?',
+    a: 'Dipende da cosa ti serve. Organic Maps e OsmAnd funzionano offline e anche su iPhone; Navia è pensata per l’Italia, senza account né statistiche, con prezzi dei carburanti e guida vocale in italiano. Tutte e tre usano OpenStreetMap.',
+  },
+  {
+    q: 'Navia funziona offline come Organic Maps?',
+    a: 'Non ancora: offline ci sono i luoghi delle regioni italiane scaricate e i prezzi dei carburanti, ma la mappa e il calcolo dei percorsi richiedono la rete.',
+  },
+  {
+    q: 'Perché Navia non ha il traffico in tempo reale?',
+    a: 'Il traffico in tempo reale si ricava dalle posizioni di milioni di telefoni. Navia non raccoglie posizioni, quindi non può calcolarlo.',
+  },
+]
+
+const schema = [
+  {
+    '@type': 'WebPage',
+    '@id': page,
+    url: page,
+    name: 'Navia, Google Maps, Organic Maps e OsmAnd a confronto',
+    inLanguage: 'it-IT',
+    dateModified: compareMeta.checkedIso,
+    isPartOf: { '@id': `${home}#sito` },
+    about: { '@id': `${home}#app` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Navia', item: home },
+      { '@type': 'ListItem', position: 2, name: 'Confronto', item: page },
+    ],
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+]
+---
+
+<BaseLayout
+  title="Navia, Google Maps, Organic Maps e OsmAnd: confronto tra navigatori"
+  description="Confronto onesto tra navigatori per Android: open source, privacy, account, mappe offline, traffico, guida vocale e prezzi dei carburanti. Navia, Google Maps, Organic Maps e OsmAnd."
+  path="/confronto/"
+  schema={schema}
+>
+  <header class="night profile-head">
+    <div class="wrap">
+      <nav aria-label="Percorso" class="crumbs">
+        <a href={base}>Navia</a> <span aria-hidden="true">/</span> <span aria-current="page">Confronto</span>
+      </nav>
+      <h1 class="compare-title">Quale navigatore fa per te?</h1>
+      <p class="lead">
+        Navia, Google Maps, Organic Maps e OsmAnd a confronto, senza nascondere cosa manca a Navia. Dati
+        verificati a {compareMeta.checked}: le app cambiano, controlla sempre i siti ufficiali.
+      </p>
+    </div>
+  </header>
+
+  <section class="block" aria-labelledby="tabella-titolo">
+    <div class="wrap">
+      <h2 id="tabella-titolo" class="sr-only">Tabella di confronto</h2>
+      <div class="table-scroll compare-scroll" tabindex="0" role="region" aria-label="Confronto tra navigatori">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Caratteristica</span></th>
+              {
+                apps.map((app) => (
+                  <th scope="col" class={app.id === 'navia' ? 'is-navia' : undefined}>
+                    <span class="compare-app">
+                      {app.icon ? (
+                        <Iconify name={app.icon} size={22} />
+                      ) : (
+                        <img src={`${base}navia_logo.svg`} alt="" width="22" height="22" />
+                      )}
+                      {app.url ? <a href={app.url} rel="noopener nofollow" target="_blank">{app.name}</a> : app.name}
+                    </span>
+                  </th>
+                ))
+              }
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((row) => (
+                <tr>
+                  <th scope="row">{row.label}</th>
+                  {apps.map((app) => {
+                    const cell = row.cells[app.id]
+                    return (
+                      <td class:list={[`is-${cell.v}`, app.id === 'navia' && 'is-navia']}>
+                        <Iconify name={mark[cell.v]} size={20} label={word[cell.v]} />
+                        <span>{cell.note}</span>
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block block-tint" aria-labelledby="scelta-titolo">
+    <div class="wrap">
+      <h2 id="scelta-titolo" class="h2">Come scegliere</h2>
+      <div class="verdicts">
+        {
+          verdicts.map((v) => (
+            <article>
+              <h3>{v.title}</h3>
+              <p>{v.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="confronto-domande">
+    <div class="wrap split">
+      <div class="split-head">
+        <h2 id="confronto-domande" class="h2">Domande sul confronto</h2>
+        <p class="sub">
+          Hai trovato un dato sbagliato? Segnalalo su <a href={`${site.github}/issues`} rel="noopener" target="_blank">GitHub</a>.
+        </p>
+      </div>
+      <div class="faq">
+        {
+          faq.map((item, i) => (
+            <details open={i === 0}>
+              <summary><h3>{item.q}</h3></summary>
+              <p>{item.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>

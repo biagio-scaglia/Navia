@@ -1,14 +1,15 @@
 ---
 /**
  * Globo WebGL (cobe): nessuna richiesta di rete, la mappa della Terra è nel pacchetto.
- * Parte da ovest, si ferma su Bari e da lì oscilla piano; si può trascinare.
+ * Da Bari partono percorsi a puntini che scorrono, come il tracciato del logo.
+ * Si carica dopo la pagina e adatta qualità e fotogrammi al dispositivo.
  */
 ---
 
 <div class="globe" data-globe-wrap>
   <canvas data-globe aria-hidden="true"></canvas>
 </div>
-<!-- Dopo il globo: l'ancora di Bari deve precedere l'etichetta nel DOM -->
+<!-- Dopo il globo: l'ancora di Bari deve precedere pin ed etichetta nel DOM -->
 <span class="globe-pin" aria-hidden="true"></span>
 <p class="globe-label" aria-hidden="true">
   <strong>Bari</strong>
@@ -16,100 +17,175 @@
 </p>
 
 <script>
-  import createGlobe from 'cobe'
+  type LatLon = [number, number]
 
-  const BARI: [number, number] = [41.1258, 16.8667]
-  // Lontane abbastanza da non ammassarsi su Bari a questo zoom
-  const CITIES: [number, number][] = [
+  const BARI: LatLon = [41.1258, 16.8667]
+  const CITIES: LatLon[] = [
     [51.5074, -0.1278], // Londra
     [48.8566, 2.3522], // Parigi
     [52.52, 13.405], // Berlino
     [40.4168, -3.7038], // Madrid
     [41.0082, 28.9784], // Istanbul
     [30.0444, 31.2357], // Il Cairo
+    [59.3293, 18.0686], // Stoccolma
   ]
+  const DOTS = 7 // puntini per percorso
+  const RAD = Math.PI / 180
 
   const wrap = document.querySelector<HTMLElement>('[data-globe-wrap]')
   const canvas = document.querySelector<HTMLCanvasElement>('[data-globe]')
 
-  if (wrap && canvas) {
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const targetPhi = Math.PI - ((BARI[1] * Math.PI) / 180 - Math.PI / 2)
-    const targetTheta = ((BARI[0] * Math.PI) / 180) * 0.85
+  // Punto a frazione f del cerchio massimo tra a e b
+  const toVec = ([lat, lon]: LatLon) => [
+    Math.cos(lat * RAD) * Math.cos(lon * RAD),
+    Math.cos(lat * RAD) * Math.sin(lon * RAD),
+    Math.sin(lat * RAD),
+  ]
+  const routes = CITIES.map((city) => {
+    const a = toVec(BARI)
+    const b = toVec(city)
+    const omega = Math.acos(Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))
+    return (f: number): LatLon => {
+      const s = Math.sin(omega)
+      const ka = Math.sin((1 - f) * omega) / s
+      const kb = Math.sin(f * omega) / s
+      const [x, y, z] = [0, 1, 2].map((i) => ka * a[i] + kb * b[i])
+      return [Math.atan2(z, Math.hypot(x, y)) / RAD, Math.atan2(y, x) / RAD]
+    }
+  })
 
+  const start = async () => {
+    if (!wrap || !canvas) return
+    const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } }
+    if (nav.connection?.saveData) return wrap.classList.add('no-webgl')
+
+    const low = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4
+    const small = window.innerWidth < 760
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const dpr = Math.min(window.devicePixelRatio || 1, low ? 1.25 : small ? 1.5 : 2)
+    const frameGap = low ? 1000 / 30 : 0
+
+    const { default: createGlobe } = await import('cobe')
+
+    const targetPhi = Math.PI - (BARI[1] * RAD - Math.PI / 2)
+    const targetTheta = BARI[0] * RAD * 0.85
     let size = canvas.offsetWidth
-    let phi = still ? targetPhi : targetPhi - 2.4
-    let drag = 0
-    let dragFrom: number | null = null
+    let dragX = 0
+    let dragY = 0
+    let velX = 0
+    let pointer: { x: number; y: number } | null = null
     let visible = true
     let frame = 0
-    const start = performance.now()
+    let last = 0
+    const t0 = performance.now()
 
+    const markersAt = (t: number) => {
+      // I percorsi crescono durante l'apertura, poi i puntini scorrono verso l'esterno
+      const grow = still ? 1 : Math.min(Math.max((t - 1.6) / 1.4, 0), 1)
+      const flow = still ? 0 : (t * 0.06) % (1 / DOTS)
+      const dots = routes.flatMap((route) =>
+        Array.from({ length: DOTS }, (_, i) => (i + 0.5) / DOTS + flow)
+          .filter((f) => f < grow)
+          .map((f) => ({ location: route(f), size: 0.011 + 0.008 * f })),
+      )
+      return [
+        { location: BARI, size: 0.03, color: [0.9, 0.28, 0.23] as [number, number, number], id: 'bari' },
+        ...CITIES.map((location) => ({ location, size: 0.026 * grow })),
+        ...dots,
+      ]
+    }
+
+    let globe: ReturnType<typeof createGlobe>
     try {
-      const globe = createGlobe(canvas, {
+      globe = createGlobe(canvas, {
         devicePixelRatio: dpr,
         width: size * dpr,
         height: size * dpr,
-        phi,
+        phi: still ? targetPhi : targetPhi - 2.4,
         theta: targetTheta,
         dark: 1,
-        diffuse: 1.4,
-        mapSamples: 22000,
+        diffuse: 1.6,
+        mapSamples: low ? 9000 : small ? 14000 : 22000,
         mapBrightness: 5.5,
-        mapBaseBrightness: 0.02,
+        mapBaseBrightness: 0.03,
         baseColor: [0.16, 0.28, 0.52],
-        markerColor: [0, 0.75, 0.65],
-        glowColor: [0.05, 0.3, 0.75],
-        markers: [
-          { location: BARI, size: 0.025, color: [0.9, 0.28, 0.23], id: 'bari' },
-          ...CITIES.map((location) => ({ location, size: 0.018 })),
-        ],
-        arcs: CITIES.map((to) => ({ from: BARI, to })),
-        arcColor: [0.42, 0.66, 1],
-        arcWidth: 0.45,
-        arcHeight: 0.3,
-        markerElevation: 0.01,
+        markerColor: [0.42, 0.85, 0.95],
+        glowColor: [0.06, 0.32, 0.8],
+        markers: markersAt(still ? 10 : 0),
+        markerElevation: 0.006,
       })
-
-      const tick = (now: number) => {
-        const t = (now - start) / 1000
-        if (!still) {
-          // 2,6 s di avvicinamento, poi un'oscillazione lenta intorno a Bari
-          const intro = Math.min(t / 2.6, 1)
-          const ease = 1 - Math.pow(1 - intro, 4)
-          phi = targetPhi - 2.4 * (1 - ease) + Math.sin(Math.max(t - 2.6, 0) * 0.18) * 0.35 * ease
-        }
-        if (dragFrom === null) drag *= 0.94
-        globe.update({ phi: phi + drag, theta: targetTheta, width: size * dpr, height: size * dpr })
-        frame = visible ? requestAnimationFrame(tick) : 0
-      }
-
-      new ResizeObserver(() => (size = canvas.offsetWidth)).observe(canvas)
-      new IntersectionObserver(([entry]) => {
-        visible = entry.isIntersecting
-        if (visible && !frame) frame = requestAnimationFrame(tick)
-      }).observe(canvas)
-
-      canvas.addEventListener('pointerdown', (e) => {
-        dragFrom = e.clientX - drag * 220
-        canvas.setPointerCapture(e.pointerId)
-        wrap.classList.add('is-dragging')
-      })
-      canvas.addEventListener('pointermove', (e) => {
-        if (dragFrom !== null) drag = (e.clientX - dragFrom) / 220
-      })
-      const release = () => {
-        dragFrom = null
-        wrap.classList.remove('is-dragging')
-      }
-      canvas.addEventListener('pointerup', release)
-      canvas.addEventListener('pointercancel', release)
-
-      frame = requestAnimationFrame(tick)
-      requestAnimationFrame(() => wrap.classList.add('is-ready'))
     } catch {
-      wrap.classList.add('no-webgl')
+      return wrap.classList.add('no-webgl')
     }
+
+    const tick = (now: number) => {
+      frame = visible ? requestAnimationFrame(tick) : 0
+      if (frameGap && now - last < frameGap) return
+      last = now
+      const t = (now - t0) / 1000
+
+      let phi = targetPhi
+      if (!still) {
+        // 2,6 s di avvicinamento, poi un'oscillazione lenta intorno a Bari
+        const ease = 1 - Math.pow(1 - Math.min(t / 2.6, 1), 4)
+        phi = targetPhi - 2.4 * (1 - ease) + Math.sin(Math.max(t - 2.6, 0) * 0.18) * 0.3 * ease
+      }
+      if (!pointer) {
+        dragX += velX
+        velX *= 0.92
+        dragX *= 0.965
+        dragY *= 0.9
+      }
+      globe.update({
+        phi: phi + dragX,
+        theta: targetTheta + dragY,
+        width: size * dpr,
+        height: size * dpr,
+        markers: markersAt(t),
+      })
+    }
+
+    const resume = () => {
+      if (visible && !frame) frame = requestAnimationFrame(tick)
+    }
+    new ResizeObserver(() => (size = canvas.offsetWidth)).observe(canvas)
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting && !document.hidden
+      resume()
+    }).observe(canvas)
+    document.addEventListener('visibilitychange', () => {
+      visible = !document.hidden
+      resume()
+    })
+
+    canvas.addEventListener('pointerdown', (e) => {
+      pointer = { x: e.clientX, y: e.clientY }
+      velX = 0
+      canvas.setPointerCapture(e.pointerId)
+      wrap.classList.add('is-dragging')
+    })
+    canvas.addEventListener('pointermove', (e) => {
+      if (!pointer) return
+      const dx = (e.clientX - pointer.x) / 240
+      dragX += dx
+      velX = dx
+      dragY = Math.max(-0.45, Math.min(0.45, dragY + (e.clientY - pointer.y) / 320))
+      pointer = { x: e.clientX, y: e.clientY }
+    })
+    const release = () => {
+      pointer = null
+      wrap.classList.remove('is-dragging')
+    }
+    canvas.addEventListener('pointerup', release)
+    canvas.addEventListener('pointercancel', release)
+
+    frame = requestAnimationFrame(tick)
+    requestAnimationFrame(() => wrap.classList.add('is-ready'))
   }
+
+  // Dopo il caricamento, quando il browser è libero: il titolo resta il primo a comparire
+  const idle = (cb: () => void) =>
+    'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 1200 }) : setTimeout(cb, 200)
+  if (document.readyState === 'complete') idle(start)
+  else addEventListener('load', () => idle(start), { once: true })
 </script>

@@ -1,0 +1,32 @@
+---
+/**
+ * Icone esterne da Iconify, inserite come SVG alla build: nessuno script e nessuna richiesta nel browser.
+ * Lucide (lucide:*) ha lo stesso tratto da 2 px delle icone di Navia; Simple Icons (si:*) dà i loghi.
+ */
+import { getIconData, iconToSVG, replaceIDs } from '@iconify/utils'
+import lucide from '@iconify-json/lucide/icons.json'
+import simpleIcons from '@iconify-json/simple-icons/icons.json'
+
+interface Props {
+  name: `lucide:${string}` | `si:${string}`
+  size?: number
+  class?: string
+  label?: string
+}
+
+const { name, size = 24, class: className, label } = Astro.props
+const [prefix, icon] = name.split(':')
+const set = prefix === 'si' ? simpleIcons : lucide
+const data = getIconData(set as Parameters<typeof getIconData>[0], icon)
+if (!data) throw new Error(`Icona sconosciuta: ${name}`)
+const { attributes, body } = iconToSVG(data, { height: size, width: size })
+---
+
+<svg
+  {...attributes}
+  class={className}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  set:html={replaceIDs(body)}
+/>

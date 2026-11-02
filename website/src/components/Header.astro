@@ -1,5 +1,5 @@
 ---
-import Icon from './Icon.astro'
+import Iconify from './Iconify.astro'
 import { nav, site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
@@ -17,9 +17,31 @@ const base = import.meta.env.BASE_URL
       </ul>
     </nav>
 
-    <a class="btn btn-dark btn-small" href={site.github} rel="noopener" target="_blank">
-      <Icon name="github" size={18} />
+    <a class="btn btn-dark btn-small masthead-gh" href={site.github} rel="noopener" target="_blank">
+      <Iconify name="si:github" size={18} />
       <span>GitHub</span>
     </a>
+
+    <details class="menu">
+      <summary aria-label="Menu">
+        <Iconify name="lucide:menu" size={24} class="menu-open" />
+        <Iconify name="lucide:x" size={24} class="menu-close" />
+      </summary>
+      <nav aria-label="Menu mobile" class="menu-panel">
+        <ul>
+          {nav.map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
+          <li><a href={`${base}privacy/`}>Informativa sulla privacy</a></li>
+        </ul>
+      </nav>
+    </details>
   </div>
+  <span class="masthead-progress" aria-hidden="true"></span>
 </header>
+
+<script>
+  // Chiude il menu mobile quando si sceglie una voce
+  const menu = document.querySelector<HTMLDetailsElement>('.menu')
+  menu?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) menu.open = false
+  })
+</script>

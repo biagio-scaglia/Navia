@@ -2,7 +2,9 @@
 import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Icon from '../components/Icon.astro'
+import Iconify from '../components/Iconify.astro'
 import HeroGlobe from '../components/HeroGlobe.astro'
+import RequestDemo from '../components/RequestDemo.astro'
 import { docs, faq, features, limitations, refusals, services, site, stack } from '../data/site'
 import torreAMare from '../assets/media/porto-di-torre-a-mare-bari-1.jpg'
 import petruzzelli from '../assets/media/bari-teatro-petruzzelli.jpg'
@@ -82,7 +84,7 @@ const steps = [
         </p>
         <div class="actions">
           <a class="btn btn-primary" href={site.github} rel="noopener" target="_blank">
-            <Icon name="github" size={20} /> Vedi il codice su GitHub
+            <Iconify name="si:github" size={20} /> Vedi il codice su GitHub
           </a>
           <a class="btn btn-ghost" href={`${base}privacy/`}>
             <Icon name="shield" size={20} /> Leggi l’informativa
@@ -104,7 +106,7 @@ const steps = [
       loop
       playsinline
       preload="none"
-      poster={`${base}media/approaching-bari-114021-poster.jpg`}
+      poster={`${base}media/approaching-bari-114021-poster.webp`}
       width="1920"
       height="1080"
       aria-label="Si arriva a Bari in auto"
@@ -172,6 +174,18 @@ const steps = [
     </div>
   </section>
 
+  <!-- Demo: cosa esce dal telefono -->
+  <section class="block night demo-block" id="prova" aria-labelledby="prova-titolo">
+    <div class="wrap">
+      <h2 id="prova-titolo" class="h2">Guarda cosa esce dal telefono</h2>
+      <p class="sub">
+        Scrivi una ricerca o scegli un mezzo: qui sotto compare la richiesta esatta che Navia invierebbe, costruita
+        come nel codice dell’app.
+      </p>
+      <RequestDemo />
+    </div>
+  </section>
+
   <!-- Funzioni -->
   <section class="block block-tint" id="funzioni" aria-labelledby="funzioni-titolo">
     <div class="wrap">
@@ -198,6 +212,10 @@ const steps = [
         <ul>
           {limitations.map((l) => <li><Icon name="close" size={18} /><span>{l}</span></li>)}
         </ul>
+        <p class="limits-more">
+          Come se la cava contro Google Maps, Organic Maps e OsmAnd? Leggi il{' '}
+          <a href={`${base}confronto/`}>confronto tra navigatori</a>.
+        </p>
       </aside>
     </div>
   </section>
@@ -215,6 +233,10 @@ const steps = [
         <p>
           L’interfaccia è in italiano, le categorie parlano la lingua di chi le usa (fontanelle, spiagge,
           farmacie) e i luoghi offline si scaricano per macroregione italiana.
+        </p>
+        <p>
+          Dietro Navia c’è <a href={`${base}biagio-scaglia/`}>Biagio Scaglia</a>, sviluppatore software e UI/UX
+          designer di Bari, che l’ha progettata e la sviluppa in open source.
         </p>
       </div>
       <div class="mosaic">
@@ -252,7 +274,7 @@ const steps = [
       <div class="split-head">
         <h2 id="domande-titolo" class="h2">Domande frequenti</h2>
         <p class="sub">
-          Non trovi la risposta? Apri una discussione su
+          Non trovi la risposta? Apri una discussione su{' '}
           <a href={`${site.github}/issues`} rel="noopener" target="_blank">GitHub</a>.
         </p>
       </div>
@@ -297,7 +319,7 @@ const steps = [
         <div>
           <h3 class="h3">Tecnologie</h3>
           <dl class="stack">
-            {stack.map((row) => <div><dt>{row.area}</dt><dd>{row.value}</dd></div>)}
+            {stack.map((row) => <div><dt><Iconify name={row.icon} size={18} />{row.area}</dt><dd>{row.value}</dd></div>)}
           </dl>
 
           <h3 class="h3 dev-docs-title">Documentazione</h3>
@@ -334,7 +356,7 @@ const steps = [
       <p>Metti una stella al repository o guarda le release: l’APK arriverà lì.</p>
       <div class="actions">
         <a class="btn btn-light" href={site.github} rel="noopener" target="_blank">
-          <Icon name="github" size={20} /> Apri il repository
+          <Iconify name="si:github" size={20} /> Apri il repository
         </a>
         <a class="btn btn-ghost-light" href={site.contributing} rel="noopener" target="_blank">
           <Icon name="code" size={20} /> Contribuisci
@@ -345,10 +367,13 @@ const steps = [
 </BaseLayout>
 
 <script>
-  // Il video parte solo quando è visibile e se non è richiesto movimento ridotto.
+  // Il video (3 MB) parte solo quando è visibile, senza movimento ridotto e su una connessione decente:
+  // con risparmio dati o rete lenta resta il poster.
   const video = document.querySelector<HTMLVideoElement>('video[data-autoplay]')
   const still = window.matchMedia('(prefers-reduced-motion: reduce)')
-  if (video && 'IntersectionObserver' in window) {
+  const net = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+  const slow = !!net && (net.saveData || /(^|-)(2g|3g)$/.test(net.effectiveType ?? ''))
+  if (video && !slow && 'IntersectionObserver' in window) {
     new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !still.matches) video.play().catch(() => {})
       else video.pause()

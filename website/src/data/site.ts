@@ -33,7 +33,91 @@ export const nav = [
   { href: '#funzioni', label: 'Funzioni' },
   { href: '#privacy', label: 'Privacy' },
   { href: '#domande', label: 'Domande' },
+  { href: 'confronto/', label: 'Confronto' },
   { href: '#sviluppatori', label: 'Sviluppatori' },
+  { href: 'biagio-scaglia/', label: 'Autore' },
+] as const
+
+/** L'autore: solo fatti pubblici dal profilo GitHub. */
+export const author = {
+  name: 'Biagio Scaglia',
+  jobTitle: 'Sviluppatore software e UI/UX designer',
+  city: 'Bari',
+  region: 'Puglia',
+  email: 'biagio.scaglia01@gmail.com',
+  github: 'https://github.com/biagio-scaglia',
+  linkedin: 'https://www.linkedin.com/in/biagio-scaglia/',
+  blog: 'https://biagiocyberspace.it/',
+  portfolio: 'https://biagio-scaglia.github.io/',
+  skills: [
+    { label: 'Flutter', icon: 'si:flutter' },
+    { label: 'Dart', icon: 'si:dart' },
+    { label: 'TypeScript', icon: 'si:typescript' },
+    { label: 'JavaScript', icon: 'si:javascript' },
+    { label: 'Astro', icon: 'si:astro' },
+    { label: 'C#', icon: 'si:csharp' },
+    { label: 'Python', icon: 'si:python' },
+    { label: 'Android', icon: 'si:android' },
+    { label: 'OpenStreetMap', icon: 'si:openstreetmap' },
+    { label: 'MapLibre', icon: 'si:maplibre' },
+    { label: 'UI/UX design', icon: 'lucide:pen-tool' },
+    { label: 'Sviluppo web', icon: 'lucide:globe' },
+  ],
+  knowsAbout: [
+    'Flutter', 'Dart', 'TypeScript', 'JavaScript', 'Astro', 'C#', 'Python',
+    'UI/UX design', 'Sviluppo di app Android', 'Sviluppo web', 'OpenStreetMap', 'MapLibre',
+  ],
+} as const
+
+export const projects = [
+  {
+    name: 'Navia',
+    href: '',
+    tech: 'Flutter, MapLibre',
+    body: 'Navigatore open source per Android su OpenStreetMap: percorsi, guida vocale in italiano e nessun tracciamento.',
+  },
+  {
+    name: 'Vellum',
+    href: 'https://play.google.com/store/apps/details?id=com.biagioscaglia.vellum',
+    tech: 'Flutter, su Google Play',
+    body: 'Compagno offline per Dungeons & Dragons: ricerca rapida di mostri e incantesimi, sessioni da pianificare e note locali.',
+  },
+  {
+    name: 'frutiger-js',
+    href: 'https://biagio-scaglia.github.io/frutiger-js/',
+    tech: 'CSS, TypeScript',
+    body: 'Framework CSS ispirato all’estetica Frutiger Aero, per dare ai siti un’aria nostalgica.',
+  },
+  {
+    name: 'KawaiJS',
+    href: 'https://biagio-scaglia.github.io/KawaiJS/',
+    tech: 'TypeScript',
+    body: 'Motore web per visual novel ispirato a Ren’Py, con un linguaggio di scripting dedicato e interfaccia HTML/CSS personalizzabile.',
+  },
+  {
+    name: 'HomuraJS',
+    href: 'https://biagio-scaglia.github.io/homura-js/',
+    tech: 'TypeScript',
+    body: 'Gestione dello stato con cronologia e viaggio nel tempo per applicazioni JavaScript e TypeScript.',
+  },
+  {
+    name: 'Moon-Inferno',
+    href: 'https://biagio-scaglia.github.io/moon-inferno/',
+    tech: 'TypeScript',
+    body: 'Framework UI che mette l’accessibilità al primo posto, senza rinunciare a espressività e prestazioni.',
+  },
+  {
+    name: 'Yumia-MD',
+    href: 'https://biagio-scaglia.github.io/Yumia-MD/',
+    tech: 'TypeScript',
+    body: 'Presentazioni scritte come codice e progettate come componenti, esportabili ovunque.',
+  },
+  {
+    name: 'MangaFlow',
+    href: 'https://biagio-scaglia.github.io/manga-flow/',
+    tech: 'Flutter',
+    body: 'Tracker mobile per le proprie letture manga, con salvataggi che resistono ai crash.',
+  },
 ] as const
 
 /** Cosa Navia non fa: è la promessa del prodotto. */
@@ -162,13 +246,14 @@ export const faq = [
 ] as const
 
 export const stack = [
-  { area: 'Interfaccia', value: 'Flutter, Material 3' },
-  { area: 'Stato', value: 'Riverpod 3' },
-  { area: 'Mappa', value: 'MapLibre Native, OpenFreeMap' },
-  { area: 'Ricerca', value: 'Photon' },
-  { area: 'Percorsi', value: 'OSRM sui server FOSSGIS' },
-  { area: 'Luoghi', value: 'Overpass API e regioni offline' },
-  { area: 'Licenza', value: 'MIT, dati mappa ODbL' },
+  { area: 'Interfaccia', value: 'Flutter, Material 3', icon: 'si:flutter' },
+  { area: 'Linguaggio', value: 'Dart, stato con Riverpod 3', icon: 'si:dart' },
+  { area: 'Mappa', value: 'MapLibre Native, OpenFreeMap', icon: 'si:maplibre' },
+  { area: 'Ricerca', value: 'Photon di komoot', icon: 'si:komoot' },
+  { area: 'Percorsi', value: 'OSRM sui server FOSSGIS', icon: 'lucide:route' },
+  { area: 'Luoghi', value: 'Overpass API e regioni offline', icon: 'si:openstreetmap' },
+  { area: 'Piattaforma', value: 'Android 7.0 o successivo', icon: 'si:android' },
+  { area: 'Licenza', value: 'MIT, dati mappa ODbL', icon: 'lucide:scale' },
 ] as const
 
 export const docs = [

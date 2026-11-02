@@ -1,8 +1,11 @@
 import type { APIRoute } from 'astro'
+import { compareMeta } from '../data/compare'
 import { privacyMeta } from '../data/privacy'
 
 const pages = [
   { path: '', priority: '1.0', changefreq: 'weekly' },
+  { path: 'confronto/', priority: '0.8', changefreq: 'monthly', lastmod: compareMeta.checkedIso },
+  { path: 'biagio-scaglia/', priority: '0.8', changefreq: 'monthly' },
   { path: 'privacy/', priority: '0.6', changefreq: 'monthly', lastmod: privacyMeta.lastUpdatedIso },
 ]
 

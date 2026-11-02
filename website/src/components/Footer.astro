@@ -1,5 +1,6 @@
 ---
-import { mediaCredits, nav, site } from '../data/site'
+import Iconify from './Iconify.astro'
+import { author, mediaCredits, nav, site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
 
@@ -13,6 +14,15 @@ const base = import.meta.env.BASE_URL
       <p class="colophon-note">
         Navigatore open source per Android, nato a Bari. Versione {site.version}, licenza {site.license}.
       </p>
+      <p class="colophon-note">
+        Progettato e sviluppato da <a href={`${base}biagio-scaglia/`}>Biagio Scaglia</a>, sviluppatore software di Bari.
+      </p>
+      <ul class="socials">
+        <li><a href={site.github} rel="noopener" target="_blank" aria-label="Navia su GitHub"><Iconify name="si:github" size={20} /></a></li>
+        <li><a href={author.linkedin} rel="me noopener" target="_blank" aria-label="Biagio Scaglia su LinkedIn"><Iconify name="si:linkedin" size={20} /></a></li>
+        <li><a href={author.blog} rel="me noopener" target="_blank" aria-label="Il blog biagiocyberspace.it"><Iconify name="lucide:globe" size={20} /></a></li>
+        <li><a href={`mailto:${author.email}`} aria-label="Scrivi a Biagio Scaglia"><Iconify name="lucide:mail" size={20} /></a></li>
+      </ul>
     </div>
 
     <nav aria-label="Pagine">
@@ -35,7 +45,7 @@ const base = import.meta.env.BASE_URL
 
   <div class="wrap colophon-legal">
     <p>
-      © {site.year} {site.author}. Dati della mappa ©
+      © {site.year} {site.author}. Dati della mappa ©{' '}
       <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">contributori di OpenStreetMap</a> (ODbL).
     </p>
     <p>
