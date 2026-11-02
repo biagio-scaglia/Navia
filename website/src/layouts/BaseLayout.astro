@@ -2,67 +2,105 @@
 import '../styles/global.css'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
+import { site } from '../data/site'
 
 interface Props {
   title?: string
   description?: string
   path?: string
+  /** Dati strutturati schema.org aggiuntivi per la pagina. */
+  schema?: Record<string, unknown>[]
+  noindex?: boolean
 }
 
 const {
-  title = 'Navia — open-source navigation',
-  description =
-    'Navia is an open-source, privacy-friendly navigation app for Android, built with Flutter, MapLibre and OpenStreetMap.',
+  title = site.title,
+  description = site.description,
   path = '/',
+  schema = [],
+  noindex = false,
 } = Astro.props
 
-const basePath = import.meta.env.BASE_URL
-const canonical = new URL(`${basePath}${path.replace(/^\//, '')}`.replace(/\/{2,}/g, '/'), Astro.site)
-const ogImage = new URL(`${basePath}navia_logo_512.png`.replace(/\/{2,}/g, '/'), Astro.site)
+const base = import.meta.env.BASE_URL
+const abs = (p: string) => new URL(`${base}${p.replace(/^\//, '')}`.replace(/\/{2,}/g, '/'), Astro.site).href
+const canonical = abs(path)
+const ogImage = abs('og-navia.jpg')
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${abs('/')}#sito`,
+      url: abs('/'),
+      name: site.name,
+      inLanguage: 'it-IT',
+      description: site.description,
+      publisher: { '@id': `${abs('/')}#autore` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${abs('/')}#autore`,
+      name: site.author,
+      url: 'https://github.com/biagio-scaglia',
+    },
+    ...schema,
+  ],
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="it">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#1677FF" />
+    <meta name="author" content={site.author} />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
-    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
+    <link rel="alternate" hreflang="it" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+    <link rel="sitemap" href={`${base}sitemap.xml`} />
+    <meta name="geo.region" content="IT-BA" />
+    <meta name="geo.placename" content="Bari" />
+    <meta name="geo.position" content={`${site.bari.lat};${site.bari.lon}`} />
+
+    <meta name="theme-color" content="#0B63E5" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="icon" href={`${base}favicon.ico`} sizes="32x32" />
+    <link rel="apple-touch-icon" href={`${base}navia_logo_512.png`} />
+    <link rel="manifest" href={`${base}manifest.webmanifest`} />
+
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Il porticciolo di Torre a Mare, a Bari, sull’Adriatico" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <link rel="preconnect" href="https://api.fontshare.com" />
-    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,600;0,800;0,900;1,400&display=swap"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <title>{title}</title>
+    <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+    <meta name="generator" content={Astro.generator} />
   </head>
-  <body class="antialiased">
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2"
-    >
-      Skip to content
-    </a>
+  <body>
+    <a href="#contenuto" class="skip">Vai al contenuto</a>
     <Header />
-    <main id="main">
+    <main id="contenuto">
       <slot />
     </main>
     <Footer />

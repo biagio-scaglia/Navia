@@ -1,220 +1,357 @@
 ---
+import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import Cartograph from '../components/Cartograph.astro'
 import Icon from '../components/Icon.astro'
-import InterfaceStudy from '../components/InterfaceStudy.astro'
-import {
-  docs,
-  features,
-  limitations,
-  privacyPoints,
-  site,
-  stack,
-} from '../data/site'
+import HeroGlobe from '../components/HeroGlobe.astro'
+import { docs, faq, features, limitations, refusals, services, site, stack } from '../data/site'
+import torreAMare from '../assets/media/porto-di-torre-a-mare-bari-1.jpg'
+import petruzzelli from '../assets/media/bari-teatro-petruzzelli.jpg'
+import stradaCarmine from '../assets/media/bari-bw-2016-10-19-11-55.jpg'
+import panchina from '../assets/media/panchina-mar-adriatico-puglia.jpg'
 
 const base = import.meta.env.BASE_URL
+const home = new URL(base, Astro.site).href
+
+const schema = [
+  {
+    '@type': 'MobileApplication',
+    '@id': `${home}#app`,
+    name: site.name,
+    url: home,
+    description: site.description,
+    applicationCategory: 'TravelApplication',
+    applicationSubCategory: 'Navigazione',
+    operatingSystem: `${site.minAndroid} o successivo`,
+    softwareVersion: site.version,
+    inLanguage: 'it-IT',
+    isAccessibleForFree: true,
+    license: 'https://opensource.org/license/mit',
+    image: new URL(`${base}navia_logo_512.png`, Astro.site).href,
+    screenshot: new URL(`${base}og-navia.jpg`, Astro.site).href,
+    author: { '@id': `${home}#autore` },
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+    keywords: site.keywords.join(', '),
+    featureList: features.map((f) => f.title),
+    countriesSupported: 'IT',
+  },
+  {
+    '@type': 'SoftwareSourceCode',
+    name: `${site.name} (codice sorgente)`,
+    codeRepository: site.github,
+    programmingLanguage: ['Dart', 'Flutter'],
+    runtimePlatform: 'Android',
+    license: 'https://opensource.org/license/mit',
+    author: { '@id': `${home}#autore` },
+    targetProduct: { '@id': `${home}#app` },
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  },
+]
+
+const steps = [
+  { label: 'Clona il repository', code: 'git clone https://github.com/biagio-scaglia/Navia.git\ncd Navia' },
+  { label: 'Installa le dipendenze', code: 'flutter pub get' },
+  { label: 'Avvia su un telefono o un emulatore Android', code: 'flutter run' },
+]
 ---
 
-<BaseLayout>
-  <!-- Hero — product-first, like Organic Maps: clear promise + visual -->
-  <section class="section border-b border-line" id="overview" aria-labelledby="hero-title">
-    <div class="measure grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-      <div>
-        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold text-muted">
-          <Icon name="shield" size={16} class="text-brand-deep" />
-          {site.status} · v{site.version}
-        </div>
-        <p class="font-display text-5xl font-bold tracking-tight sm:text-6xl">{site.name}</p>
-        <h1 id="hero-title" class="mt-4 max-w-[18ch] font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-          {site.headline}
-        </h1>
-        <p class="mt-5 max-w-[42ch] text-lg text-muted">{site.description}</p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a class="btn btn-primary" href={site.github} rel="noreferrer" target="_blank">
-            <Icon name="github" size={18} />
-            View on GitHub
-          </a>
-          <a class="btn btn-secondary" href={`${base}privacy/`}>
-            <Icon name="shield" size={18} />
-            Privacy policy
-          </a>
-        </div>
-        <p class="mono mt-6 text-xs text-muted">
-          {site.coordinates.label} · {site.coordinates.lat} · {site.coordinates.lon}
+<BaseLayout schema={schema}>
+  <!-- Apertura: il titolo è il percorso -->
+  <section class="hero" aria-labelledby="titolo">
+    <HeroGlobe />
+    <div class="wrap hero-body">
+      <h1 id="titolo" class="hero-title">
+        <span class="hero-kicker">Navia, il navigatore open source per Android</span>
+        <span class="hero-line">La tua strada.</span>
+        <span class="hero-route" aria-hidden="true">
+          <i class="hero-origin"></i><i class="hero-track"></i><i class="hero-turn"></i>
+        </span>
+        <span class="hero-line hero-line-end">Non i tuoi dati.<i class="hero-dest" aria-hidden="true"></i></span>
+      </h1>
+
+      <div class="hero-foot">
+        <p class="lead">
+          Mappe OpenStreetMap, percorsi in auto, bici e a piedi e guida vocale in italiano.
+          Senza account, senza pubblicità, senza tracciamento. Gratis e con licenza MIT.
         </p>
-        <p class="mt-2 max-w-[40ch] text-sm text-muted">
-          No public APK yet—build from source with Flutter, or watch the repository for releases.
+        <div class="actions">
+          <a class="btn btn-primary" href={site.github} rel="noopener" target="_blank">
+            <Icon name="github" size={20} /> Vedi il codice su GitHub
+          </a>
+          <a class="btn btn-ghost" href={`${base}privacy/`}>
+            <Icon name="shield" size={20} /> Leggi l’informativa
+          </a>
+        </div>
+        <p class="status">
+          <span class="status-dot" aria-hidden="true"></span>
+          In sviluppo, versione {site.version}. Per ora si compila dal codice: l’APK pubblico non c’è ancora.
         </p>
       </div>
-      <Cartograph />
     </div>
   </section>
 
-  <!-- Privacy promise — Organic Maps style checklist -->
-  <section class="section border-b border-line bg-surface" id="privacy-promise" aria-labelledby="privacy-title">
-    <div class="measure">
-      <div class="mb-8 max-w-2xl">
-        <h2 id="privacy-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Built to leave you alone
-        </h2>
-        <p class="mt-3 text-lg text-muted">
-          Same idea as privacy-first map apps you already trust: the product should work without harvesting you.
+  <!-- Bari dalla strada -->
+  <figure class="roadband">
+    <video
+      class="roadband-video"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster={`${base}media/approaching-bari-114021-poster.jpg`}
+      width="1920"
+      height="1080"
+      aria-label="Si arriva a Bari in auto"
+      data-autoplay
+    >
+      <source src={`${base}media/approaching-bari-114021.webm`} type="video/webm" />
+    </video>
+    <figcaption class="sign" aria-label={`Bari, ${site.bari.lat}° nord, ${site.bari.lon}° est`}>
+      <span class="sign-arrow" aria-hidden="true"><Icon name="directions" size={28} /></span>
+      <span class="sign-text">
+        <strong>Bari</strong>
+        <span class="nums">{site.bari.lat}° N, {site.bari.lon}° E</span>
+      </span>
+    </figcaption>
+  </figure>
+
+  <!-- Privacy -->
+  <section class="block" id="privacy" aria-labelledby="privacy-titolo">
+    <div class="wrap split">
+      <div class="split-head">
+        <h2 id="privacy-titolo" class="h2">Un navigatore che non ti segue</h2>
+        <p class="sub">
+          La privacy non è un’opzione da attivare: è come l’app è costruita. Ecco cosa Navia non fa.
         </p>
       </div>
-      <ul class="grid gap-3 sm:grid-cols-2">
+      <ul class="refusals">
         {
-          privacyPoints.map((item) => (
-            <li class="privacy-item">
-              <span class="icon-badge">
-                <Icon name={item.icon} size={20} />
-              </span>
-              <div>
-                <h3 class="font-display text-lg font-bold">{item.title}</h3>
-                <p class="mt-1 text-sm text-muted">{item.body}</p>
-              </div>
+          refusals.map((r) => (
+            <li>
+              <span class="refusal-icon"><Icon name={r.icon} size={22} /></span>
+              <h3>{r.title}</h3>
+              <p>{r.body}</p>
             </li>
           ))
         }
       </ul>
     </div>
+
+    <div class="wrap">
+      <div class="ledger">
+        <h3 class="h3">Chi riceve cosa</h3>
+        <p class="sub">
+          Navia non ha un server suo. Quando una funzione ha bisogno di un servizio esterno, la richiesta parte
+          dal tuo telefono e contiene solo il minimo necessario.
+        </p>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Servizi esterni e dati ricevuti">
+          <table>
+            <thead>
+              <tr><th scope="col">Servizio</th><th scope="col">Quando</th><th scope="col">Cosa riceve</th></tr>
+            </thead>
+            <tbody>
+              {
+                services.map((s) => (
+                  <tr><th scope="row">{s.name}</th><td>{s.when}</td><td>{s.what}</td></tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="ledger-more">
+          I dettagli, compresi prezzi dei carburanti e luoghi offline, sono
+          nell’<a href={`${base}privacy/#servizi-esterni`}>informativa sulla privacy</a>.
+        </p>
+      </div>
+    </div>
   </section>
 
-  <!-- Features with icons -->
-  <section class="section border-b border-line" id="features" aria-labelledby="features-title">
-    <div class="measure grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
-      <div>
-        <h2 id="features-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          What you get in {site.version}
-        </h2>
-        <p class="mt-3 text-lg text-muted">
-          Only features that already ship. Roadmap items stay on the roadmap.
+  <!-- Funzioni -->
+  <section class="block block-tint" id="funzioni" aria-labelledby="funzioni-titolo">
+    <div class="wrap">
+      <h2 id="funzioni-titolo" class="h2">Cosa fa Navia {site.version}</h2>
+      <p class="sub">Solo funzioni già presenti nell’app. Il resto sta nella roadmap.</p>
+
+      <div class="features">
+        {
+          features.map((f) => (
+            <article class="feature" id={f.id}>
+              <span class="feature-icon"><Icon name={f.icon} size={26} /></span>
+              <h3>{f.title}</h3>
+              <p class="feature-lead">{f.lead}</p>
+              <ul>
+                {f.points.map((p) => <li>{p}</li>)}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+
+      <aside class="limits" aria-labelledby="limiti-titolo">
+        <h3 id="limiti-titolo">Cosa manca ancora</h3>
+        <ul>
+          {limitations.map((l) => <li><Icon name="close" size={18} /><span>{l}</span></li>)}
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Bari -->
+  <section class="block" id="bari" aria-labelledby="bari-titolo">
+    <div class="wrap bari">
+      <div class="bari-copy">
+        <h2 id="bari-titolo" class="h2">Nato a Bari, funziona ovunque</h2>
+        <p>
+          Navia è progettato e provato prima di tutto per le strade di Bari: dal Murattiano al borgo antico,
+          fino al porticciolo di Torre a Mare. La mappa copre tutto il mondo; le altre città sono state
+          testate meno, e le segnalazioni sono benvenute.
         </p>
-        <div class="mt-8 rounded-[1rem] border border-line bg-tint p-5">
-          <h3 class="flex items-center gap-2 font-display text-lg font-bold">
-            <Icon name="cloud_off" size={20} class="text-brand-deep" />
-            Honest limits
-          </h3>
-          <ul class="mt-3 space-y-2">
+        <p>
+          L’interfaccia è in italiano, le categorie parlano la lingua di chi le usa (fontanelle, spiagge,
+          farmacie) e i luoghi offline si scaricano per macroregione italiana.
+        </p>
+      </div>
+      <div class="mosaic">
+        <Image
+          class="mosaic-a"
+          src={petruzzelli}
+          widths={[480, 800, 1200]}
+          sizes="(min-width: 960px) 34rem, 100vw"
+          alt="Corso Cavour a Bari vista da una finestra del Teatro Petruzzelli"
+          loading="lazy"
+        />
+        <Image
+          class="mosaic-b"
+          src={stradaCarmine}
+          widths={[360, 600, 900]}
+          sizes="(min-width: 960px) 16rem, 50vw"
+          alt="Strada del Carmine, un vicolo di pietra nel borgo antico di Bari"
+          loading="lazy"
+        />
+        <Image
+          class="mosaic-c"
+          src={panchina}
+          widths={[360, 600, 900]}
+          sizes="(min-width: 960px) 16rem, 50vw"
+          alt="Una panchina di pietra affacciata sul mare Adriatico in Puglia"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Domande -->
+  <section class="block block-tint" id="domande" aria-labelledby="domande-titolo">
+    <div class="wrap split">
+      <div class="split-head">
+        <h2 id="domande-titolo" class="h2">Domande frequenti</h2>
+        <p class="sub">
+          Non trovi la risposta? Apri una discussione su
+          <a href={`${site.github}/issues`} rel="noopener" target="_blank">GitHub</a>.
+        </p>
+      </div>
+      <div class="faq">
+        {
+          faq.map((item, i) => (
+            <details open={i === 0}>
+              <summary><h3>{item.q}</h3></summary>
+              <p>{item.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Sviluppatori -->
+  <section class="block" id="sviluppatori" aria-labelledby="dev-titolo">
+    <div class="wrap">
+      <h2 id="dev-titolo" class="h2">Per chi sviluppa</h2>
+      <p class="sub">
+        Codice Flutter e MapLibre con licenza MIT. Gli endpoint si impostano con
+        <code>--dart-define</code>: nell’APK non c’è nessun segreto.
+      </p>
+
+      <div class="dev">
+        <div>
+          <h3 class="h3">Compila Navia</h3>
+          <p class="dev-req">Servono Flutter 3.41, JDK 21 e l’Android SDK 36.</p>
+          <ol class="steps">
             {
-              limitations.map((item) => (
-                <li class="flex gap-2 text-sm text-muted">
-                  <Icon name="close" size={16} class="mt-0.5 shrink-0 text-destination" />
-                  <span>{item}</span>
+              steps.map((s) => (
+                <li>
+                  <span>{s.label}</span>
+                  <pre><code>{s.code}</code></pre>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <div>
+          <h3 class="h3">Tecnologie</h3>
+          <dl class="stack">
+            {stack.map((row) => <div><dt>{row.area}</dt><dd>{row.value}</dd></div>)}
+          </dl>
+
+          <h3 class="h3 dev-docs-title">Documentazione</h3>
+          <ul class="docs">
+            {
+              docs.map((d) => (
+                <li>
+                  <a href={d.href} rel="noopener" target="_blank">
+                    <strong>{d.title}</strong>
+                    <span>{d.body}</span>
+                    <Icon name="external_link" size={18} />
+                  </a>
                 </li>
               ))
             }
           </ul>
         </div>
       </div>
-      <ul>
-        {
-          features.map((feature) => (
-            <li class="feature-row">
-              <span class="icon-badge">
-                <Icon name={feature.icon} size={20} />
-              </span>
-              <div>
-                <h3 class="font-display text-xl font-bold">{feature.title}</h3>
-                <p class="mt-1 text-muted">{feature.body}</p>
-              </div>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </section>
 
-  <!-- Product UI -->
-  <section class="section border-b border-line bg-surface" aria-labelledby="showcase-title">
-    <div class="measure">
-      <div class="mb-8 max-w-2xl">
-        <h2 id="showcase-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Inside the app
-        </h2>
-        <p class="mt-3 text-lg text-muted">
-          No store screenshots in the repo yet. This panel mirrors the real Italian UI: explore tabs, route sheet, attribution.
-        </p>
+  <!-- Chiusura -->
+  <section class="finale" aria-labelledby="finale-titolo">
+    <Image
+      class="finale-photo"
+      src={torreAMare}
+      widths={[800, 1280, 1920]}
+      sizes="100vw"
+      alt=""
+      loading="lazy"
+    />
+    <div class="wrap finale-body">
+      <h2 id="finale-titolo">Segui Navia fino alla prima release</h2>
+      <p>Metti una stella al repository o guarda le release: l’APK arriverà lì.</p>
+      <div class="actions">
+        <a class="btn btn-light" href={site.github} rel="noopener" target="_blank">
+          <Icon name="github" size={20} /> Apri il repository
+        </a>
+        <a class="btn btn-ghost-light" href={site.contributing} rel="noopener" target="_blank">
+          <Icon name="code" size={20} /> Contribuisci
+        </a>
       </div>
-      <InterfaceStudy />
-    </div>
-  </section>
-
-  <!-- Open source -->
-  <section class="section border-b border-line" id="open-source" aria-labelledby="oss-title">
-    <div class="measure grid gap-10 lg:grid-cols-2">
-      <div>
-        <h2 id="oss-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Open source, readable code
-        </h2>
-        <p class="mt-3 text-lg text-muted">
-          MIT license. Flutter + MapLibre. Endpoints via <span class="mono text-sm">--dart-define</span>—no secrets in the APK.
-        </p>
-        <div class="mt-7 flex flex-wrap gap-3">
-          <a class="btn btn-primary" href={site.github} rel="noreferrer" target="_blank">
-            <Icon name="github" size={18} /> Repository
-          </a>
-          <a class="btn btn-secondary" href={site.contributing} rel="noreferrer" target="_blank">
-            <Icon name="code" size={18} /> Contributing
-          </a>
-        </div>
-      </div>
-      <div class="overflow-hidden rounded-[1rem] border border-line bg-surface">
-        <div class="flex items-center gap-2 border-b border-line px-4 py-3 text-sm font-semibold text-muted">
-          <Icon name="layers" size={18} />
-          Stack
-        </div>
-        <table class="w-full text-left text-sm">
-          <tbody>
-            {
-              stack.map((row) => (
-                <tr class="border-b border-line last:border-0">
-                  <th class="w-28 px-4 py-3 align-top font-semibold text-muted" scope="row">
-                    {row.area}
-                  </th>
-                  <td class="px-4 py-3">{row.value}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- Docs -->
-  <section class="section" id="documentation" aria-labelledby="docs-title">
-    <div class="measure">
-      <h2 id="docs-title" class="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-        Documentation
-      </h2>
-      <p class="mt-3 max-w-2xl text-lg text-muted">
-        The docs live next to the code on GitHub.
-      </p>
-      <ul class="mt-8 grid gap-3 sm:grid-cols-2">
-        {
-          docs.map((doc) => (
-            <li>
-              <a
-                class="privacy-item h-full no-underline transition-colors hover:border-brand"
-                href={doc.href}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <span class="icon-badge">
-                  <Icon name={doc.icon} size={20} />
-                </span>
-                <div>
-                  <h3 class="flex items-center gap-2 font-display text-lg font-bold">
-                    {doc.title}
-                    <Icon name="external_link" size={16} class="text-muted" />
-                  </h3>
-                  <p class="mt-1 text-sm text-muted">{doc.body}</p>
-                </div>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // Il video parte solo quando è visibile e se non è richiesto movimento ridotto.
+  const video = document.querySelector<HTMLVideoElement>('video[data-autoplay]')
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)')
+  if (video && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !still.matches) video.play().catch(() => {})
+      else video.pause()
+    }, { threshold: 0.25 }).observe(video)
+  }
+</script>

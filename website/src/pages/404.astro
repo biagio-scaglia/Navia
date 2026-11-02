@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+const base = import.meta.env.BASE_URL
+---
+
+<BaseLayout
+  title="Pagina non trovata – Navia"
+  description="Questa pagina del sito di Navia non esiste."
+  path="/404/"
+  noindex
+>
+  <section class="lost">
+    <div class="wrap">
+      <h1 class="h1">Hai sbagliato strada.</h1>
+      <p class="sub">Questa pagina non esiste o è stata spostata. Ricalcolo il percorso dalla pagina iniziale.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href={base}>Vai alla pagina iniziale</a>
+        <a class="btn btn-ghost" href={`${base}privacy/`}>Informativa sulla privacy</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -4,69 +4,22 @@ import { nav, site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
 
-<header class="sticky top-0 z-40 border-b border-line bg-bg/95 backdrop-blur-sm">
-  <div class="measure flex h-16 items-center justify-between gap-4">
-    <a href={base} class="flex items-center gap-2.5 no-underline" aria-label="Navia home">
-      <img src={`${base}navia_logo.svg`} alt="" width="32" height="32" />
-      <span class="font-display text-xl font-bold tracking-tight">{site.name}</span>
+<header class="masthead">
+  <div class="wrap masthead-row">
+    <a href={base} class="brand" aria-label="Navia, pagina iniziale">
+      <img src={`${base}navia_logo.svg`} alt="" width="34" height="34" />
+      <span>{site.name}</span>
     </a>
 
-    <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
-      {
-        nav.map((item) => (
-          <a
-            class="rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold text-muted no-underline transition-colors hover:bg-surface hover:text-ink"
-            href={`${base}${item.href}`}
-          >
-            {item.label}
-          </a>
-        ))
-      }
-      <a
-        class="btn btn-secondary ml-2 !min-h-10 !px-3"
-        href={site.github}
-        rel="noreferrer"
-        target="_blank"
-      >
-        <Icon name="github" size={18} />
-        GitHub
-      </a>
+    <nav aria-label="Principale" class="masthead-nav">
+      <ul>
+        {nav.map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
+      </ul>
     </nav>
 
-    <details class="relative lg:hidden">
-      <summary class="list-none cursor-pointer rounded-[var(--radius-control)] border border-line bg-surface px-3 py-2 text-sm font-semibold">
-        Menu
-      </summary>
-      <div class="absolute right-0 mt-2 w-56 rounded-[var(--radius-control)] border border-line bg-surface p-2">
-        <ul class="flex flex-col">
-          {
-            nav.map((item) => (
-              <li>
-                <a class="block rounded-md px-3 py-2.5 text-sm font-semibold no-underline" href={`${base}${item.href}`}>
-                  {item.label}
-                </a>
-              </li>
-            ))
-          }
-          <li>
-            <a
-              class="flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-semibold no-underline"
-              href={site.github}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <Icon name="github" size={18} />
-              GitHub
-            </a>
-          </li>
-        </ul>
-      </div>
-    </details>
+    <a class="btn btn-dark btn-small" href={site.github} rel="noopener" target="_blank">
+      <Icon name="github" size={18} />
+      <span>GitHub</span>
+    </a>
   </div>
 </header>
-
-<style>
-  summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

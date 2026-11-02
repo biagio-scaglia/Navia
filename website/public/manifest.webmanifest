@@ -1,0 +1,13 @@
+{
+  "name": "Navia – navigatore open source",
+  "short_name": "Navia",
+  "lang": "it",
+  "start_url": "/Navia/",
+  "display": "browser",
+  "background_color": "#F5F8FC",
+  "theme_color": "#0B63E5",
+  "icons": [
+    { "src": "/Navia/navia_logo.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/Navia/navia_logo_512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

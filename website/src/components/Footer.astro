@@ -1,39 +1,50 @@
 ---
-import Icon from './Icon.astro'
-import { site } from '../data/site'
+import { mediaCredits, nav, site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
 
-<footer class="border-t border-line bg-surface">
-  <div class="measure grid gap-10 py-12 md:grid-cols-[1.4fr_1fr]">
+<footer class="colophon">
+  <div class="wrap colophon-grid">
     <div>
-      <div class="flex items-center gap-2.5">
-        <img src={`${base}navia_logo.svg`} alt="" width="28" height="28" />
-        <span class="font-display text-lg font-bold">{site.name}</span>
-      </div>
-      <p class="mt-3 max-w-md text-sm text-muted">
-        Open-source navigation for Android. Code under {site.license}; map data © OpenStreetMap contributors (ODbL).
+      <a href={base} class="brand brand-light">
+        <img src={`${base}navia_logo.svg`} alt="" width="30" height="30" loading="lazy" />
+        <span>{site.name}</span>
+      </a>
+      <p class="colophon-note">
+        Navigatore open source per Android, nato a Bari. Versione {site.version}, licenza {site.license}.
       </p>
     </div>
-    <div class="grid gap-3 sm:grid-cols-2">
-      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={site.github} rel="noreferrer" target="_blank">
-        <Icon name="github" size={18} /> Repository
-      </a>
-      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={`${base}privacy/`}>
-        <Icon name="shield" size={18} /> Privacy
-      </a>
-      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={site.contributing} rel="noreferrer" target="_blank">
-        <Icon name="code" size={18} /> Contributing
-      </a>
-      <a class="flex items-center gap-2 text-sm font-semibold no-underline hover:text-brand-deep" href={`${base}#documentation`}>
-        <Icon name="document" size={18} /> Documentation
-      </a>
-    </div>
+
+    <nav aria-label="Pagine">
+      <h2>Il sito</h2>
+      <ul>
+        {nav.map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
+        <li><a href={`${base}privacy/`}>Informativa sulla privacy</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-label="Progetto">
+      <h2>Il progetto</h2>
+      <ul>
+        <li><a href={site.github} rel="noopener" target="_blank">Codice sorgente</a></li>
+        <li><a href={site.releases} rel="noopener" target="_blank">Release</a></li>
+        <li><a href={site.contributing} rel="noopener" target="_blank">Come contribuire</a></li>
+      </ul>
+    </nav>
   </div>
-  <div class="border-t border-line">
-    <div class="measure flex flex-col gap-2 py-5 text-xs text-muted sm:flex-row sm:justify-between">
-      <p class="mono">{site.copyright} · v{site.version}</p>
-      <p>Map data © OpenStreetMap contributors</p>
-    </div>
+
+  <div class="wrap colophon-legal">
+    <p>
+      © {site.year} {site.author}. Dati della mappa ©
+      <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">contributori di OpenStreetMap</a> (ODbL).
+    </p>
+    <p>
+      Foto e video mostrano Bari e la Puglia, non schermate dell’app:
+      {mediaCredits.map((c, i) => (
+        <>
+          <a href={c.page} rel="noopener" target="_blank">{c.title}</a> di {c.creator} ({c.licence}){i < mediaCredits.length - 1 ? '; ' : '.'}
+        </>
+      ))}
+    </p>
   </div>
 </footer>

@@ -5,67 +5,82 @@ import { privacyMeta, privacySections, privacySummary } from '../data/privacy'
 import { site } from '../data/site'
 
 const base = import.meta.env.BASE_URL
+const home = new URL(base, Astro.site).href
+const page = new URL(`${base}privacy/`, Astro.site).href
+
+const schema = [
+  {
+    '@type': 'WebPage',
+    '@id': page,
+    url: page,
+    name: `${privacyMeta.title} di Navia`,
+    inLanguage: 'it-IT',
+    dateModified: privacyMeta.lastUpdatedIso,
+    isPartOf: { '@id': `${home}#sito` },
+    about: { '@id': `${home}#app` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Navia', item: home },
+      { '@type': 'ListItem', position: 2, name: privacyMeta.title, item: page },
+    ],
+  },
+]
 ---
 
 <BaseLayout
-  title="Privacy policy — Navia"
-  description="How the Navia Android app handles data. Draft prepared for legal review."
+  title="Informativa sulla privacy – Navia, navigatore senza tracciamento"
+  description="Come l’app Navia per Android tratta i tuoi dati: nessun account, nessun tracciamento, posizione solo su richiesta. Ecco quali servizi OpenStreetMap ricevono cosa."
   path="/privacy/"
+  schema={schema}
 >
-  <article class="section">
-    <div class="measure-narrow">
-      <p class="flex items-center gap-2 text-sm font-semibold text-muted">
-        <Icon name="shield" size={18} class="text-brand-deep" />
-        Legal
-      </p>
-      <h1 class="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-        {privacyMeta.title}
-      </h1>
-      <div class="mono mt-6 flex flex-wrap gap-3 text-xs text-muted">
-        <span class="rounded-lg border border-line bg-surface px-3 py-2">Updated {privacyMeta.lastUpdated}</span>
-        <span class="rounded-lg border border-line bg-surface px-3 py-2">{privacyMeta.appliesTo}</span>
-      </div>
-      <p class="mt-6 rounded-xl border border-[#d8c28a] bg-[#fff7e5] px-4 py-3 text-sm text-[#6a4b12]">
-        {privacyMeta.draftNotice}
-      </p>
+  <article class="policy">
+    <div class="wrap policy-grid">
+      <header class="policy-head">
+        <nav aria-label="Percorso" class="crumbs">
+          <a href={base}>Navia</a> <span aria-hidden="true">/</span> <span aria-current="page">Privacy</span>
+        </nav>
+        <h1 class="h1">{privacyMeta.title}</h1>
+        <p class="sub">
+          Aggiornata il <time datetime={privacyMeta.lastUpdatedIso}>{privacyMeta.lastUpdated}</time>.
+          Vale per {privacyMeta.appliesTo}.
+        </p>
+        <p class="notice">{privacyMeta.draftNotice}</p>
+      </header>
 
-      <section class="mt-12" aria-labelledby="summary-title">
-        <h2 id="summary-title" class="font-display text-3xl font-bold">In short</h2>
-        <ol class="mt-6 space-y-4">
-          {
-            privacySummary.map((item, i) => (
-              <li class="grid grid-cols-[2.5rem_1fr] gap-3 border-t border-line pt-4">
-                <span class="mono text-sm font-semibold text-brand-deep">{String(i + 1).padStart(2, '0')}</span>
-                <span>{item}</span>
-              </li>
-            ))
-          }
+      <nav class="toc" aria-labelledby="indice">
+        <h2 id="indice">In questa pagina</h2>
+        <ol>
+          <li><a href="#in-breve">In breve</a></li>
+          {privacySections.map((s) => <li><a href={`#${s.id}`}>{s.title}</a></li>)}
         </ol>
-      </section>
+      </nav>
 
-      <div class="mt-14 space-y-12">
+      <div class="policy-body">
+        <section id="in-breve" aria-labelledby="in-breve-titolo" class="policy-summary">
+          <h2 id="in-breve-titolo">In breve</h2>
+          <ul>
+            {privacySummary.map((item) => <li><Icon name="check" size={20} /><span>{item}</span></li>)}
+          </ul>
+        </section>
+
         {
-          privacySections.map((section) => (
-            <section>
-              <h2 class="border-b border-line pb-3 font-display text-2xl font-bold">{section.title}</h2>
-              <div class="mt-4 space-y-4 text-muted">
-                {section.paragraphs.map((p) => (
-                  <p>{p}</p>
-                ))}
-              </div>
+          privacySections.map((s) => (
+            <section id={s.id} aria-labelledby={`${s.id}-titolo`}>
+              <h2 id={`${s.id}-titolo`}>{s.title}</h2>
+              {s.paragraphs.map((p) => <p>{p}</p>)}
             </section>
           ))
         }
-      </div>
 
-      <p class="mt-14 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-6 text-sm text-muted">
-        <a class="inline-flex items-center gap-2 font-semibold text-ink link-quiet" href={site.privacyMd} rel="noreferrer" target="_blank">
-          <Icon name="document" size={16} /> PRIVACY.md
-        </a>
-        <a class="inline-flex items-center gap-2 font-semibold text-ink link-quiet" href={base}>
-          Back to Navia
-        </a>
-      </p>
+        <p class="policy-links">
+          <a href={base}>Torna a Navia</a>
+          <a href={site.privacyMd} rel="noopener" target="_blank">
+            <Icon name="external_link" size={16} /> Testo sorgente su GitHub
+          </a>
+        </p>
+      </div>
     </div>
   </article>
 </BaseLayout>
