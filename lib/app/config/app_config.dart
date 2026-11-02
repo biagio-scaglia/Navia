@@ -94,6 +94,16 @@ abstract final class AppConfig {
     defaultValue: '$sourceCodeUrl/releases/download/places-data',
   );
 
+  /// The daily fuel price dataset rebuilt from the Ministry's data by the
+  /// `Fuel data` workflow, as a release asset of this repository. It comes
+  /// first because the Ministry does not answer every network; an empty
+  /// value downloads from the Ministry only.
+  static const publishedFuelDataUrl = String.fromEnvironment(
+    'NAVIA_PUBLISHED_FUEL_DATA_URL',
+    defaultValue:
+        '$sourceCodeUrl/releases/download/fuel-data/fuel-prices.json.gz',
+  );
+
   /// Folder of the Ministry's daily fuel open data (MIMIT, IODL 2.0), with
   /// a trailing slash. An empty value disables fuel prices.
   static const fuelDataUrl = String.fromEnvironment(

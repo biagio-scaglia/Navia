@@ -162,16 +162,17 @@ abstract final class AppStrings {
   static const fuelPricesDetail =
       'Prezzi dei distributori pubblicati ogni giorno dal Ministero.';
   static const fuelNotDownloaded =
-      'Circa 7,5 MB dal sito del Ministero per tutta Italia.';
+      'Pochi MB con i prezzi del Ministero per tutta Italia.';
   static String fuelInstalled(String date, String size) =>
       'Prezzi del $date · $size';
   static const fuelDownloadTitle = 'Scaricare i prezzi dei carburanti?';
   static const fuelDownloadBody =
-      'Verranno scaricati circa 7,5 MB dal sito del Ministero delle Imprese '
-      'e del Made in Italy (mimit.gov.it) con i prezzi di tutti i '
-      'distributori italiani. Il Ministero vedrà il tuo indirizzo IP, come '
-      'per ogni download. I dati restano sul dispositivo: tocca “Aggiorna” '
-      'per i prezzi del giorno.';
+      'Verranno scaricati pochi MB con i prezzi di tutti i distributori '
+      'italiani pubblicati dal Ministero delle Imprese e del Made in Italy: '
+      'dall’archivio di Navia su GitHub o, se non è aggiornato, dal sito del '
+      'Ministero (mimit.gov.it). Chi li fornisce vedrà il tuo indirizzo IP, '
+      'come per ogni download. I dati restano sul dispositivo: tocca '
+      '“Aggiorna” per i prezzi del giorno.';
 
   // Wikipedia.
   static const fromWikipedia = 'DA WIKIPEDIA';
@@ -180,8 +181,9 @@ abstract final class AppStrings {
   static const wikipediaLicense = 'Testo CC BY-SA 4.0';
   static const serviceWikipedia = 'Descrizioni: Wikipedia e Wikidata';
   static const serviceWikipediaDetail =
-      'Solo quando apri la scheda di un luogo collegato a Wikipedia: riceve '
-      'il titolo della voce e scarica la sua immagine.';
+      'Solo quando apri la scheda di un luogo: riceve il titolo della voce '
+      'collegata o, per i luoghi senza collegamento, la posizione arrotondata '
+      'a circa 100 m per cercare una voce con lo stesso nome.';
 
   // Place details.
   static const openingHours = 'Orari';
@@ -285,10 +287,11 @@ abstract final class AppStrings {
   static const serviceOfflinePlacesDetail =
       'Solo quando apri “Luoghi offline” o scarichi una zona: riceve la '
       'richiesta dell’elenco o del file della zona scelta.';
-  static const serviceFuel = 'Prezzi carburanti: MIMIT';
+  static const serviceFuel = 'Prezzi carburanti: GitHub e MIMIT';
   static const serviceFuelDetail =
-      'Solo quando scarichi o aggiorni i prezzi: riceve la richiesta dei '
-      'file nazionali dei distributori e dei prezzi.';
+      'Solo quando scarichi o aggiorni i prezzi: ricevono la richiesta del '
+      'file nazionale dei prezzi; il Ministero solo se quello su GitHub non '
+      'è aggiornato.';
   static const servicePlaces = 'Luoghi: Overpass API';
   static const servicePlacesDetail =
       'Quando scegli una categoria, riceve la categoria e la zona '

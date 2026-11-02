@@ -17,8 +17,8 @@ Navia is an open-source navigation app published at
 | Role | Details |
 | --- | --- |
 | Maintainer | Biagio Scaglia (GitHub: `biagio-scaglia`) |
-| Data controller | `[TO BE CONFIRMED: legal name and address of the data controller]` |
-| Privacy contact | `[TO BE PROVIDED: privacy contact e-mail]`; until then, open an issue at <https://github.com/biagio-scaglia/Navia/issues> (issues are public, so do not post personal data there) |
+| Data controller | Biagio Scaglia |
+| Privacy contact | <biagio.scaglia01@gmail.com> (use e-mail for privacy requests: GitHub issues are public, so do not post personal data there) |
 
 Navia has **no backend of its own**. The maintainer does not run any server
 that receives data from the app, and does not receive your location, your
@@ -78,11 +78,13 @@ it contains no user or device identifier.
 | **Photon by komoot** (`photon.komoot.io`) | When you search | The text you type; an approximate position rounded to about 1 km (your position if you located yourself, otherwise the default area of Bari) to rank nearby results first | Find places and addresses |
 | **Photon by komoot** | When you long-press a point on the map | The exact coordinates of that point | Show its address |
 | **Wikipedia and Wikidata** (`wikipedia.org`, `wikidata.org`, images from `wikimedia.org`) | Only when you open the card of a place linked to Wikipedia or Wikidata | The article title or Wikidata id of that place; then the request for its image | Show the place's description |
+| **Wikipedia** (`it.wikipedia.org`) | When you open the card of a named place that is not linked to Wikipedia | The coordinates of the place rounded to three decimals (about 100 m); then, if an article with the same name is nearby, its title and the request for its image | Show the place's description |
 | **Wikipedia** (`it.wikipedia.org`) | Only when you tap *Scopri qui intorno* | The coordinates of the map center | List articles about nearby places |
 | **Valhalla on FOSSGIS servers** (`valhalla1.openstreetmap.de`) | Only when you tap *Mostra sulla mappa* in the *15 min* tab | The starting point (your position if available, otherwise the map center) and the travel mode | Compute the areas reachable in 5, 10 and 15 minutes |
 | **Open-Meteo** (`api.open-meteo.com`) | When a place card or a route summary is shown | The coordinates rounded to two decimals (about 1 km) | Show the weather |
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Luoghi offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download place data for offline use |
-| **Ministero delle Imprese e del Made in Italy** (`mimit.gov.it`) | Only when you confirm the download or update of fuel prices | The request for the national files of fuel stations and prices | Show fuel prices |
+| **GitHub** (`github.com`, release assets of the Navia repository) | Only when you confirm the download or update of fuel prices | The request for the national fuel price file | Show fuel prices |
+| **Ministero delle Imprese e del Made in Italy** (`mimit.gov.it`) | Only when you confirm the download or update of fuel prices, if the file on GitHub is unavailable or older than two days | The request for the national files of fuel stations and prices | Show fuel prices |
 | **Overpass API** (`overpass-api.de`) | When you select a place category, such as "Farmacie", and move the map while it is selected, outside the regions you downloaded | The category and the area you are viewing, enlarged and rounded outwards to a grid of about 1 km | List real places of that category |
 | **OSRM on FOSSGIS servers** (`routing.openstreetmap.de`) | When a route is calculated | Origin and destination coordinates, and the travel mode. If the origin is "La tua posizione", this is your current device location | Calculate the route |
 

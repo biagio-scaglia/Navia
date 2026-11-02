@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -73,6 +74,8 @@ void main() {
       'Comune|Provincia|Latitudine|Longitudine\n'
       '59183|ENI SPA|Agip Eni|Stradale|Bari Centro|Via  Sparano 1|BARI|BA|'
       '41.12|16.87\n'
+      '60000|ROSSI | FIGLI|Q8|Stradale|Bari Sud|Via Napoli 2|BARI|BA|'
+      '41.10|16.85\n'
       '1|X|Y|Stradale|Fuori|Via|LONDRA|XX|51.5|-0.1\n';
   const pricesCsv =
       'Estrazione del 2026-10-30\n'
@@ -80,6 +83,7 @@ void main() {
       '59183|Benzina|1.99|1|28/10/2026 12:58:00\n'
       '59183|Gasolio|2.4|0|28/10/2026 15:07:00\n'
       '59183|Gasolio|99|1|28/10/2026 15:07:00\n'
+      '60000|GPL|0.8|0|29/10/2026 09:00:00\n'
       '1|Benzina|1.8|1|28/10/2026 10:00:00\n';
 
   FuelPricesStore store(MockClientHandler handler) => FuelPricesStore(
@@ -113,7 +117,10 @@ void main() {
     expect(info.extracted, DateTime(2026, 10, 30));
     expect(progress.last, 2000);
 
-    final station = (await fuel.load()).single;
+    final [station, shifted] = await fuel.load();
+    // A "|" in the operator's name does not move the coordinates.
+    expect(shifted.point, const GeoPoint(latitude: 41.10, longitude: 16.85));
+    expect(shifted.town, 'BARI');
     expect(station.name, 'Bari Centro');
     expect(station.address, 'Via Sparano 1');
     // The implausible 99 EUR price is dropped.
@@ -122,6 +129,66 @@ void main() {
 
     await fuel.delete();
     expect(fuel.info(), isNull);
+  });
+
+  group('published dataset', () {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    List<int> dataset(String extracted) => gzip.encode(
+      utf8.encode(
+        jsonEncode({
+          'version': 1,
+          'extracted': extracted,
+          'stations': [_entry],
+        }),
+      ),
+    );
+
+    FuelPricesStore published(MockClientHandler handler) => FuelPricesStore(
+      _tempDir(),
+      MockClient(handler),
+      url: Uri.parse('https://data.example/exportCSV/'),
+      published: Uri.parse('https://github.example/fuel-prices.json.gz'),
+    );
+
+    test('comes first and skips the Ministry when recent', () async {
+      final requested = <String>[];
+      final fuel = published((request) async {
+        requested.add(request.url.host);
+        return http.Response.bytes(dataset(today), 200);
+      });
+      final info = await fuel.download(userAgent: 'Navia/test');
+      expect(requested, ['github.example']);
+      expect(info.extracted, DateTime.parse(today));
+      expect((await fuel.load()).single.id, 59183);
+    });
+
+    test('falls back to the Ministry when unavailable', () async {
+      final fuel = published((request) async {
+        if (request.url.host == 'github.example') {
+          return http.Response('', 404);
+        }
+        return http.Response(
+          request.url.path.endsWith('prezzo_alle_8.csv')
+              ? pricesCsv
+              : stationsCsv,
+          200,
+        );
+      });
+      final info = await fuel.download(userAgent: 'Navia/test');
+      expect(info.extracted, DateTime(2026, 10, 30));
+    });
+
+    test('is kept when old and the Ministry does not answer', () async {
+      final fuel = published((request) async {
+        if (request.url.host == 'github.example') {
+          return http.Response.bytes(dataset('2026-01-02'), 200);
+        }
+        throw http.ClientException('unreachable');
+      });
+      final info = await fuel.download(userAgent: 'Navia/test');
+      expect(info.extracted, DateTime(2026, 1, 2));
+      expect(fuel.info()?.extracted, DateTime(2026, 1, 2));
+    });
   });
 
   test('rejects files that are not the Ministry datasets', () async {

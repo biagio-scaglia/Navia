@@ -82,10 +82,16 @@ Play Services location libraries pulled in by `maplibre_gl`.
 
 The daily station registry and prices of the Ministero delle Imprese e del
 Made in Italy ("Osservaprezzi carburanti") are published under the Italian
-Open Data License 2.0, which requires attribution. The Ministry's server
-does not answer GitHub's machines (requests time out from outside Italy), so
-the app downloads the two files directly when the user asks, joins them on
-the device, and keeps them separate from the ODbL place datasets; the place
+Open Data License 2.0, which requires attribution. The Ministry's servers
+do not answer every network: since October 2026 www.mimit.gov.it refuses
+GitHub's machines, and some networks reach neither it nor the Osservaprezzi
+API. The `Fuel data` workflow therefore rebuilds the dataset twice a day,
+from the open data files or, when those time out, from the Osservaprezzi
+API of carburanti.mise.gov.it (the same Ministry data, one request per
+region), and publishes it as the `fuel-data` release asset under the same
+license. The app downloads that file when the user asks, and the Ministry's
+own files, joined on the device, only when it is unavailable or older than
+two days. The data is kept separate from the ODbL place datasets; the place
 card credits the source and license.
 
 ## Italian open data checked but not used

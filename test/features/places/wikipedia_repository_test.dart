@@ -109,4 +109,70 @@ void main() {
     final missing = _repository((_) async => _json({'type': 'not_found'}, 404));
     expect(await missing.article(_place(wikipedia: 'it:Nessuna')), isNull);
   });
+
+  group('places without tags', () {
+    Map<String, dynamic> nearby(List<(String, double, double)> pages) => {
+      'query': {
+        'geosearch': [
+          for (final (title, lat, lon) in pages)
+            {'title': title, 'lat': lat, 'lon': lon},
+        ],
+      },
+    };
+
+    test('match names by their significant words', () {
+      bool same(String a, String b) => WikipediaRepository.sameName(
+        WikipediaRepository.words(a),
+        WikipediaRepository.words(b),
+      );
+      expect(same('Teatro Petruzzelli', 'Teatro Petruzzelli'), isTrue);
+      expect(
+        same('Castello Normanno-Svevo', 'Castello normanno-svevo (Bari)'),
+        isTrue,
+      );
+      expect(same('Basilica San Nicola', 'Basilica di San Nicola'), isTrue);
+      expect(same('Città Vecchia', 'Citta vecchia'), isTrue);
+      expect(same('Petruzzelli', 'Farmacia Petruzzelli'), isFalse);
+      expect(same('Bar', 'Bari'), isFalse);
+    });
+
+    test('pick the nearest matching article within the radius', () {
+      final body = nearby([
+        ('Bari', 41.1236, 16.8732),
+        ('Teatro Petruzzelli (edificio)', 41.13, 16.88), // about 900 m away
+        ('Teatro Petruzzelli', 41.1240, 16.8735),
+      ]);
+      expect(
+        WikipediaRepository.matchingTitle(body, 'Teatro Petruzzelli', _point),
+        'Teatro Petruzzelli',
+      );
+      expect(
+        WikipediaRepository.matchingTitle(body, 'Farmacia Centrale', _point),
+        isNull,
+      );
+    });
+
+    test('look up a named place nearby, rounding its position', () async {
+      final requests = <Uri>[];
+      final repository = _repository((request) async {
+        requests.add(request.url);
+        if (request.url.path == '/w/api.php') {
+          return _json(nearby([('Teatro Petruzzelli', 41.1240, 16.8735)]));
+        }
+        return _json(_summary('Teatro_Petruzzelli'));
+      });
+
+      final article = await repository.articleFor(
+        name: 'Teatro Petruzzelli',
+        point: _point,
+      );
+      expect(article?.title, 'Teatro_Petruzzelli');
+      expect(requests.first.queryParameters['gscoord'], '41.124|16.873');
+    });
+
+    test('skip the search for unnamed points', () async {
+      final repository = _repository((_) async => fail('no request'));
+      expect(await repository.articleFor(point: _point), isNull);
+    });
+  });
 }

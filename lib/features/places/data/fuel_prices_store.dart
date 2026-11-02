@@ -25,14 +25,24 @@ class FuelDataInfo {
   final int bytes;
 }
 
-/// Downloads and stores the daily fuel prices (MIMIT open data, published
-/// by the Navia repository) in private app storage.
+/// Downloads and stores the daily fuel prices (MIMIT open data) in private
+/// app storage.
 class FuelPricesStore {
-  FuelPricesStore(this.root, this._http, {required this.url});
+  FuelPricesStore(this.root, this._http, {required this.url, this.published});
 
   final Directory root;
   final http.Client _http;
+
+  /// The Ministry's folder of daily files.
   final Uri url;
+
+  /// The dataset rebuilt daily by the `Fuel data` workflow, already in
+  /// Navia's format; null to use the Ministry only.
+  final Uri? published;
+
+  /// A published dataset older than this is refreshed from the Ministry,
+  /// when it answers.
+  static const _maxPublishedAge = Duration(days: 2);
 
   /// No progress for this long aborts the download.
   static const _stallTimeout = Duration(seconds: 30);
@@ -59,11 +69,12 @@ class FuelPricesStore {
   /// Ministry next to each other at [url].
   static const _files = ['anagrafica_impianti_attivi.csv', 'prezzo_alle_8.csv'];
 
-  /// Downloads today's files from the Ministry, joins them on the device
-  /// and installs the result.
+  /// Downloads today's prices, only when the user asks, and installs them.
   ///
-  /// The Ministry's server does not answer GitHub's machines, so the app
-  /// downloads the open data directly, only when the user asks.
+  /// The Ministry's servers do not answer every network, GitHub's and some
+  /// mobile ones included, so the dataset published by the repository comes
+  /// first; the Ministry's own files are joined on the device when that
+  /// fails or is old.
   Future<FuelDataInfo> download({
     void Function(int received, int? total)? onProgress,
     void Function()? onProcessing,
@@ -71,6 +82,105 @@ class FuelPricesStore {
     required String userAgent,
   }) async {
     await _directory.create(recursive: true);
+    FuelDataInfo? installed;
+    if (published case final published?) {
+      try {
+        installed = await _downloadPublished(
+          published,
+          userAgent: userAgent,
+          isCancelled: isCancelled,
+          onProgress: onProgress,
+          onProcessing: onProcessing,
+        );
+        final age = DateTime.now().difference(installed.extracted);
+        if (age <= _maxPublishedAge) return installed;
+      } on DownloadCancelled {
+        rethrow;
+      } on Object catch (error) {
+        logServiceError('published fuel prices', error);
+      }
+    }
+    try {
+      return await _downloadMinistry(
+        userAgent: userAgent,
+        isCancelled: isCancelled,
+        onProgress: onProgress,
+        onProcessing: onProcessing,
+      );
+    } on DownloadCancelled {
+      if (installed != null) return installed;
+      rethrow;
+    } on Object {
+      // Old prices, with their date shown, beat none.
+      if (installed != null) return installed;
+      rethrow;
+    }
+  }
+
+  Future<FuelDataInfo> _downloadPublished(
+    Uri uri, {
+    required String userAgent,
+    bool Function()? isCancelled,
+    void Function(int received, int? total)? onProgress,
+    void Function()? onProcessing,
+  }) async {
+    final dataPath = '${_data.path}.download';
+    try {
+      await _fetch(
+        uri,
+        File(dataPath),
+        userAgent: userAgent,
+        isCancelled: isCancelled,
+        onProgress: onProgress,
+      );
+      onProcessing?.call();
+      final extracted = await Isolate.run(() => _extracted(dataPath));
+      if (extracted == null) {
+        throw const ServiceException(ServiceFailure.malformedResponse);
+      }
+      return await _install(dataPath, extracted);
+    } finally {
+      final leftover = File(dataPath);
+      if (leftover.existsSync()) await leftover.delete();
+    }
+  }
+
+  /// The extraction day of the dataset at [path], or null when it is not
+  /// a Navia fuel dataset with stations.
+  static DateTime? _extracted(String path) {
+    try {
+      final json = jsonDecode(
+        utf8.decode(gzip.decode(File(path).readAsBytesSync())),
+      );
+      if (json is! Map || json['version'] != 1) return null;
+      final stations = json['stations'];
+      if (stations is! List || stations.isEmpty) return null;
+      return DateTime.tryParse('${json['extracted']}');
+    } on FormatException {
+      return null;
+    }
+  }
+
+  Future<FuelDataInfo> _install(String path, DateTime extracted) async {
+    final joined = File(path);
+    final bytes = joined.lengthSync();
+    if (_data.existsSync()) await _data.delete();
+    await joined.rename(_data.path);
+    await _info.writeAsString(
+      jsonEncode({'extracted': extracted.toIso8601String(), 'bytes': bytes}),
+      flush: true,
+    );
+    return FuelDataInfo(extracted: extracted, bytes: bytes);
+  }
+
+  /// Downloads today's files from the Ministry, joins them on the device
+  /// and installs the result.
+  Future<FuelDataInfo> _downloadMinistry({
+    void Function(int received, int? total)? onProgress,
+    void Function()? onProcessing,
+    bool Function()? isCancelled,
+    required String userAgent,
+  }) async {
     final parts = <File>[];
     try {
       for (final (index, name) in _files.indexed) {
@@ -101,15 +211,7 @@ class FuelPricesStore {
       if (extracted == null) {
         throw const ServiceException(ServiceFailure.malformedResponse);
       }
-      final joined = File(dataPath);
-      final bytes = joined.lengthSync();
-      if (_data.existsSync()) await _data.delete();
-      await joined.rename(_data.path);
-      await _info.writeAsString(
-        jsonEncode({'extracted': extracted.toIso8601String(), 'bytes': bytes}),
-        flush: true,
-      );
-      return FuelDataInfo(extracted: extracted, bytes: bytes);
+      return await _install(dataPath, extracted);
     } finally {
       for (final part in parts) {
         if (part.existsSync()) await part.delete();
@@ -222,10 +324,17 @@ class FuelPricesStore {
       ]);
     }
 
-    String field(List<String> fields, int index) =>
-        index < 0 || index >= fields.length
-        ? ''
-        : fields[index].trim().replaceAll(RegExp(' +'), ' ');
+    // A "|" inside a name shifts the columns after it: those are read from
+    // the end of the line.
+    int shifted(List<String> fields, int index) =>
+        index > sName ? fields.length - (stationHeader.length - index) : index;
+
+    String field(List<String> fields, int index) {
+      final at = shifted(fields, index);
+      return at < 0 || at >= fields.length
+          ? ''
+          : fields[at].trim().replaceAll(RegExp(' +'), ' ');
+    }
 
     final stations = <List<Object>>[];
     for (final line in stationLines.skip(2)) {
@@ -233,8 +342,8 @@ class FuelPricesStore {
       if (fields.length < stationHeader.length) continue;
       final entries = prices[fields[sId]];
       final id = int.tryParse(fields[sId]);
-      final lat = double.tryParse(fields[sLat]);
-      final lon = double.tryParse(fields[sLon]);
+      final lat = double.tryParse(field(fields, sLat));
+      final lon = double.tryParse(field(fields, sLon));
       if (entries == null || id == null || lat == null || lon == null) {
         continue;
       }
@@ -351,9 +460,11 @@ abstract final class FuelPriceMatcher {
 final fuelPricesStoreProvider = Provider<FuelPricesStore?>((ref) {
   const url = AppConfig.fuelDataUrl;
   if (url.isEmpty) return null;
+  const published = AppConfig.publishedFuelDataUrl;
   return FuelPricesStore(
     ref.watch(placesDataDirectoryProvider),
     ref.watch(httpClientProvider),
     url: Uri.parse(url),
+    published: published.isEmpty ? null : Uri.parse(published),
   );
 });

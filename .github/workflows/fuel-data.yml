@@ -1,0 +1,63 @@
+name: Fuel data
+
+# Builds the daily fuel price dataset from the Ministry's data (MIMIT,
+# IODL 2.0) and publishes it as an asset of the "fuel-data" release, which
+# the app downloads on request. The Ministry publishes the prices of 8:00
+# during the morning, so this runs twice a day, when the generator
+# changes, or on demand.
+
+on:
+  schedule:
+    - cron: '30 10 * * *'
+    - cron: '30 16 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'tool/fuel/**'
+      - '.github/workflows/fuel-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fuel-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Download the published dataset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p previous out
+          gh release download fuel-data --pattern fuel-prices.json.gz \
+            --dir previous || echo 'No previous dataset.'
+
+      - name: Build the dataset
+        run: |
+          previous=''
+          if [ -f previous/fuel-prices.json.gz ]; then
+            previous=previous/fuel-prices.json.gz
+          fi
+          python tool/fuel/build_fuel_prices.py out/fuel-prices.json.gz $previous
+
+      - name: Publish the release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view fuel-data > /dev/null 2>&1; then
+            gh release create fuel-data \
+              --title 'Navia fuel data' \
+              --latest=false \
+              --notes-file tool/fuel/RELEASE_NOTES.md
+          fi
+          gh release upload fuel-data out/fuel-prices.json.gz --clobber

@@ -100,7 +100,8 @@ done only when it works, has tests, and is documented.
 - Fuel category from the Ministry registry when prices are downloaded:
   all official stations with brand, address and prices, instead of the
   OpenStreetMap match
-- Verify the direct fuel price download on real phones
+- Verify the fuel price download on real phones, from the published
+  dataset and from the Ministry
 
 ### 0.10: Offline maps
 

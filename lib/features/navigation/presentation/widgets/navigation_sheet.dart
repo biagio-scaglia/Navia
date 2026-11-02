@@ -456,8 +456,12 @@ class _SelectionCard extends ConsumerWidget {
               ),
             ],
           ),
+          PlaceArticleSection(
+            place: place,
+            name: selection.label,
+            point: selection.point,
+          ),
           if (place != null) ...[
-            PlaceArticleSection(place: place),
             if (place.fuel case final station?)
               FuelPricesSection(station: station),
             const SizedBox(height: NaviaSpacing.sm),

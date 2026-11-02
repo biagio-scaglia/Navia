@@ -27,9 +27,10 @@ abstract final class PrivacyPolicy {
       'Navia è un’app open source pubblicata su '
           'github.com/biagio-scaglia/Navia con licenza MIT. Manutentore: '
           'Biagio Scaglia.',
-      'Titolare del trattamento: [DA CONFERMARE]. Contatto privacy: '
-          '[DA FORNIRE]. Nel frattempo puoi aprire una segnalazione su '
-          'GitHub, che però è pubblica: non scrivere lì dati personali.',
+      'Titolare del trattamento: Biagio Scaglia. Contatto privacy: '
+          'biagio.scaglia01@gmail.com. Per le richieste sulla privacy '
+          'scrivi a questo indirizzo, non nelle segnalazioni su GitHub, che '
+          'sono pubbliche.',
       'Navia non ha un server proprio: il manutentore non riceve la tua '
           'posizione, le tue ricerche o i tuoi luoghi salvati.',
     ]),
@@ -75,9 +76,15 @@ abstract final class PrivacyPolicy {
       'Wikipedia e Wikidata: solo quando apri la scheda di un luogo collegato '
           'a Wikipedia, ricevono il titolo della voce o il codice Wikidata e '
           'la richiesta della sua immagine.',
-      'Ministero delle Imprese e del Made in Italy (prezzi carburanti): solo '
-          'quando confermi il download o l’aggiornamento dei prezzi, riceve la '
-          'richiesta dei file nazionali di distributori e prezzi.',
+      'Wikipedia (schede dei luoghi): quando apri la scheda di un luogo con '
+          'un nome ma senza collegamento a Wikipedia, riceve la posizione '
+          'arrotondata a circa 100 m e, se vicino c’è una voce con lo stesso '
+          'nome, il suo titolo e la richiesta della sua immagine.',
+      'GitHub e Ministero delle Imprese e del Made in Italy (prezzi '
+          'carburanti): solo quando confermi il download o l’aggiornamento '
+          'dei prezzi, GitHub riceve la richiesta del file nazionale dei '
+          'prezzi; il Ministero riceve la richiesta dei suoi file solo se '
+          'quello su GitHub non è disponibile o ha più di due giorni.',
       'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta.',
