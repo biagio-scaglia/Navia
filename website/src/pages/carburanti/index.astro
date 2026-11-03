@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import FuelTiles from '../../components/FuelTiles.astro'
+import FuelSource from '../../components/FuelSource.astro'
+import { fmtDay, fmtPrice, FUEL_SOURCE, getFuelReport, WINDOW_DAYS, type ProvinceReport } from '../../data/fuel'
+import { inProvince } from '../../data/provinces'
+
+const report = await getFuelReport()
+const base = import.meta.env.BASE_URL
+const home = new URL(base, Astro.site).href
+const page = new URL(`${base}carburanti/`, Astro.site).href
+
+// Classifiche solo per province con abbastanza prezzi da essere stabili
+const ranked = (report?.provinces ?? [])
+  .filter((r) => (r.summary.stats['Benzina|self']?.count ?? 0) >= 20)
+  .sort((a, b) => a.summary.stats['Benzina|self']!.avg - b.summary.stats['Benzina|self']!.avg)
+const cheapest = ranked.slice(0, 5)
+const dearest = ranked.slice(-5).reverse()
+const day = report ? fmtDay(report.extracted) : ''
+const nat = report?.national.stats
+
+const cell = (r: ProvinceReport, k: 'Benzina|self' | 'Gasolio|self' | 'GPL|any') =>
+  r.summary.stats[k] ? fmtPrice(r.summary.stats[k]!.avg) : '–'
+
+const faq = report && nat
+  ? [
+      {
+        q: 'Quanto costa la benzina oggi in Italia?',
+        a: `Secondo i dati MIMIT del ${day}, la benzina self costa in media ${fmtPrice(nat['Benzina|self']!.avg)} €/l e il gasolio self ${fmtPrice(nat['Gasolio|self']!.avg)} €/l. Il GPL costa in media ${fmtPrice(nat['GPL|any']!.avg)} €/l e il metano ${fmtPrice(nat['Metano|any']!.avg)} €/kg.`,
+      },
+      {
+        q: 'In quale provincia la benzina costa meno?',
+        a: `Oggi la benzina self costa meno ${cheapest
+          .slice(0, 3)
+          .map((r) => `${inProvince(r.province)} (${fmtPrice(r.summary.stats['Benzina|self']!.avg)} €/l)`)
+          .join(', ')}, mentre costa di più ${inProvince(dearest[0].province)} (${fmtPrice(dearest[0].summary.stats['Benzina|self']!.avg)} €/l).`,
+      },
+      {
+        q: 'Ogni quanto si aggiornano i prezzi?',
+        a: `Il dataset di Navia si ricostruisce due volte al giorno dai dati del Ministero e questa pagina si aggiorna con esso. Contano i prezzi comunicati dai gestori negli ultimi ${WINDOW_DAYS} giorni.`,
+      },
+    ]
+  : []
+
+const schema = report
+  ? [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Navia', item: home },
+          { '@type': 'ListItem', position: 2, name: 'Prezzi carburanti', item: page },
+        ],
+      },
+      {
+        '@type': 'Dataset',
+        name: 'Prezzi dei carburanti in Italia per provincia',
+        description: `Prezzi medi di benzina, gasolio, GPL e metano in Italia e nelle 107 province, dai prezzi comunicati al MIMIT negli ultimi ${WINDOW_DAYS} giorni.`,
+        url: page,
+        inLanguage: 'it-IT',
+        dateModified: report.extracted,
+        temporalCoverage: `${report.windowFrom}/${report.extracted}`,
+        spatialCoverage: { '@type': 'Place', name: 'Italia' },
+        license: 'https://www.dati.gov.it/iodl/2.0/',
+        isBasedOn: FUEL_SOURCE,
+        creator: { '@type': 'GovernmentOrganization', name: 'Ministero delle Imprese e del Made in Italy' },
+        publisher: { '@id': `${home}#autore` },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+      },
+    ]
+  : []
+---
+
+<BaseLayout
+  title="Prezzi carburanti oggi in Italia, provincia per provincia"
+  description={nat
+    ? `Benzina self a ${fmtPrice(nat['Benzina|self']!.avg)} €/l e gasolio self a ${fmtPrice(nat['Gasolio|self']!.avg)} €/l in media: i prezzi di oggi in Italia e nelle 107 province, dai dati ufficiali MIMIT del ${day}.`
+    : 'Prezzi di benzina, gasolio, GPL e metano in Italia e nelle 107 province, dai dati ufficiali MIMIT.'}
+  path="/carburanti/"
+  schema={schema}
+  noindex={!report}
+>
+  <header class="night profile-head fuel-head">
+    <div class="wrap">
+      <nav aria-label="Percorso" class="crumbs">
+        <a href={base}>Navia</a> <span aria-hidden="true">/</span> <span aria-current="page">Carburanti</span>
+      </nav>
+      <h1 class="fuel-title">Prezzi dei carburanti oggi in Italia</h1>
+      {
+        report ? (
+          <>
+            <p class="lead">
+              Benzina, gasolio, GPL e metano: le medie di {report.national.stations.toLocaleString('it-IT')} distributori e
+              le pagine di tutte le 107 province. Dati ufficiali del MIMIT aggiornati al{' '}
+              <time datetime={report.extracted}>{day}</time>.
+            </p>
+            <FuelTiles summary={report.national} />
+          </>
+        ) : (
+          <p class="lead">I prezzi non sono disponibili in questo momento. Riprova più tardi.</p>
+        )
+      }
+    </div>
+  </header>
+
+  {
+    report && (
+      <>
+        <section class="block" aria-labelledby="classifica-titolo">
+          <div class="wrap">
+            <h2 id="classifica-titolo" class="h2">Dove la benzina costa meno, e dove di più</h2>
+            <p class="sub">Media della benzina self nelle province con almeno 20 prezzi recenti.</p>
+            <div class="rank">
+              {[
+                { title: 'Le cinque più economiche', list: cheapest, tone: 'is-cheaper' },
+                { title: 'Le cinque più care', list: dearest, tone: 'is-dearer' },
+              ].map(({ title, list, tone }) => (
+                <section class="rank-card" aria-label={title}>
+                  <h3>{title}</h3>
+                  <ol>
+                    {list.map((r) => (
+                      <li>
+                        <a href={`${base}carburanti/${r.province.slug}/`}>{r.province.name}</a>
+                        <span class={`nums ${tone}`}>{fmtPrice(r.summary.stats['Benzina|self']!.avg)} €/l</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section class="block block-tint" id="province" aria-labelledby="province-titolo">
+          <div class="wrap">
+            <h2 id="province-titolo" class="h2">Tutte le province</h2>
+            <p class="sub">Prezzi medi in €/l per regione. Apri una provincia per i distributori più economici e i comuni.</p>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Prezzi medi per provincia">
+              <table class="fuel-table province-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Provincia</th>
+                    <th scope="col">Benzina self</th>
+                    <th scope="col">Gasolio self</th>
+                    <th scope="col">GPL</th>
+                    <th scope="col">Distributori</th>
+                  </tr>
+                </thead>
+                {report.regions.map((region) => (
+                  <tbody>
+                    <tr class="region-row">
+                      <th scope="rowgroup" colspan="5">{region.name}</th>
+                    </tr>
+                    {region.provinces.map((r) => (
+                      <tr>
+                        <th scope="row">
+                          {r.summary.stations > 0 ? <a href={`${base}carburanti/${r.province.slug}/`}>{r.province.name}</a> : r.province.name}
+                        </th>
+                        <td class="nums">{cell(r, 'Benzina|self')}</td>
+                        <td class="nums">{cell(r, 'Gasolio|self')}</td>
+                        <td class="nums">{cell(r, 'GPL|any')}</td>
+                        <td class="nums">{r.summary.stations}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                ))}
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="domande-titolo">
+          <div class="wrap split">
+            <div class="split-head">
+              <h2 id="domande-titolo" class="h2">Domande sui prezzi</h2>
+              <p class="sub">
+                In <a href={base}>Navia</a> gli stessi prezzi compaiono nelle schede dei distributori sulla mappa, anche
+                senza connessione.
+              </p>
+            </div>
+            <div class="faq">
+              {faq.map((item, i) => (
+                <details open={i === 0}>
+                  <summary>
+                    <h3>{item.q}</h3>
+                  </summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+          <div class="wrap">
+            <FuelSource extracted={report.extracted} />
+          </div>
+        </section>
+      </>
+    )
+  }
+</BaseLayout>

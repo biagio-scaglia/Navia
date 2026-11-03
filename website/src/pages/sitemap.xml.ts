@@ -1,15 +1,32 @@
 import type { APIRoute } from 'astro'
 import { compareMeta } from '../data/compare'
+import { getFuelReport } from '../data/fuel'
 import { privacyMeta } from '../data/privacy'
 
-const pages = [
-  { path: '', priority: '1.0', changefreq: 'weekly' },
-  { path: 'confronto/', priority: '0.8', changefreq: 'monthly', lastmod: compareMeta.checkedIso },
-  { path: 'biagio-scaglia/', priority: '0.8', changefreq: 'monthly' },
-  { path: 'privacy/', priority: '0.6', changefreq: 'monthly', lastmod: privacyMeta.lastUpdatedIso },
-]
+type Page = { path: string; priority: string; changefreq: string; lastmod?: string }
 
-export const GET: APIRoute = ({ site }) => {
+export const GET: APIRoute = async ({ site }) => {
+  const report = await getFuelReport()
+  const pages: Page[] = [
+    { path: '', priority: '1.0', changefreq: 'weekly' },
+    { path: 'confronto/', priority: '0.8', changefreq: 'monthly', lastmod: compareMeta.checkedIso },
+    { path: 'biagio-scaglia/', priority: '0.8', changefreq: 'monthly' },
+    { path: 'privacy/', priority: '0.6', changefreq: 'monthly', lastmod: privacyMeta.lastUpdatedIso },
+    ...(report
+      ? [
+          { path: 'carburanti/', priority: '0.9', changefreq: 'daily', lastmod: report.extracted },
+          ...report.provinces
+            .filter((r) => r.summary.stations > 0)
+            .map((r) => ({
+              path: `carburanti/${r.province.slug}/`,
+              priority: r.province.code === 'BA' ? '0.9' : '0.7',
+              changefreq: 'daily',
+              lastmod: report.extracted,
+            })),
+        ]
+      : []),
+  ]
+
   const root = new URL(import.meta.env.BASE_URL, site)
   const urls = pages
     .map(

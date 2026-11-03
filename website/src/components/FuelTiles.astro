@@ -1,0 +1,53 @@
+---
+/** Prezzo medio delle quattro voci principali, con la differenza dalla media italiana se data. */
+import Iconify from './Iconify.astro'
+import { fmtCents, fmtPrice, headline, type Summary } from '../data/fuel'
+
+interface Props {
+  summary: Summary
+  compare?: Summary
+}
+
+const { summary, compare } = Astro.props
+const icons = {
+  'Benzina|self': 'lucide:fuel',
+  'Gasolio|self': 'lucide:fuel',
+  'GPL|any': 'lucide:flame',
+  'Metano|any': 'lucide:wind',
+} as const
+---
+
+<dl class="fuel-tiles">
+  {
+    headline.map(({ key, label, unit }) => {
+      const stat = summary.stats[key]
+      const base = compare?.stats[key]
+      const diff = stat && base ? stat.avg - base.avg : null
+      return (
+        <div class="fuel-tile">
+          <dt>
+            <Iconify name={icons[key]} size={18} />
+            {label}
+          </dt>
+          {stat ? (
+            <>
+              <dd class="fuel-price">
+                <span class="nums">{fmtPrice(stat.avg)}</span> <small>{unit}</small>
+              </dd>
+              <dd class="fuel-meta">
+                media di {stat.count.toLocaleString('it-IT')} {stat.count === 1 ? 'distributore' : 'distributori'}
+                {diff !== null && Math.abs(diff) >= 0.0005 && (
+                  <span class={diff < 0 ? 'is-cheaper' : 'is-dearer'}>
+                    {fmtCents(diff)} cent sulla media italiana
+                  </span>
+                )}
+              </dd>
+            </>
+          ) : (
+            <dd class="fuel-meta">Nessun prezzo recente</dd>
+          )}
+        </div>
+      )
+    })
+  }
+</dl>

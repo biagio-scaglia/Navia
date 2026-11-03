@@ -11,11 +11,11 @@ const userAgent = `Navia/${site.version} (+${site.github})`
 
 <div class="demo" data-demo>
   <div class="demo-controls">
-    <div class="demo-tabs" role="tablist" aria-label="Funzione">
-      <button type="button" role="tab" aria-selected="true" aria-controls="demo-panel" data-tab="search">
+    <div class="demo-tabs" role="group" aria-label="Cosa vuoi provare">
+      <button type="button" aria-pressed="true" data-tab="search">
         <Iconify name="lucide:search" size={18} /> Ricerca
       </button>
-      <button type="button" role="tab" aria-selected="false" aria-controls="demo-panel" data-tab="route">
+      <button type="button" aria-pressed="false" data-tab="route">
         <Iconify name="lucide:route" size={18} /> Percorso
       </button>
     </div>
@@ -43,11 +43,11 @@ const userAgent = `Navia/${site.version} (+${site.github})`
     </div>
 
     <div data-pane="route" hidden>
-      <p class="demo-label">Con quale mezzo?</p>
-      <div class="demo-modes" role="radiogroup" aria-label="Mezzo">
-        <button type="button" role="radio" aria-checked="true" data-mode="car"><Iconify name="lucide:car" size={18} /> Auto</button>
-        <button type="button" role="radio" aria-checked="false" data-mode="bike"><Iconify name="lucide:bike" size={18} /> Bici</button>
-        <button type="button" role="radio" aria-checked="false" data-mode="foot"><Iconify name="lucide:footprints" size={18} /> A piedi</button>
+      <p class="demo-label" id="demo-mode-label">Con quale mezzo?</p>
+      <div class="demo-modes" role="group" aria-labelledby="demo-mode-label">
+        <button type="button" aria-pressed="true" data-mode="car"><Iconify name="lucide:car" size={18} /> Auto</button>
+        <button type="button" aria-pressed="false" data-mode="bike"><Iconify name="lucide:bike" size={18} /> Bici</button>
+        <button type="button" aria-pressed="false" data-mode="foot"><Iconify name="lucide:footprints" size={18} /> A piedi</button>
       </div>
       <p class="demo-note">
         Esempio: da Piazza del Ferrarese al Teatro Petruzzelli. Per calcolare un percorso servono partenza e
@@ -56,12 +56,12 @@ const userAgent = `Navia/${site.version} (+${site.github})`
     </div>
   </div>
 
-  <figure class="demo-wire" id="demo-panel" role="tabpanel">
+  <figure class="demo-wire">
     <figcaption>
       <span class="demo-live" aria-hidden="true"></span>
-      <span data-status>Cosa partirebbe dal telefono</span>
+      <span data-status aria-live="polite">Cosa partirebbe dal telefono</span>
     </figcaption>
-    <pre aria-live="polite"><code data-request></code></pre>
+    <pre><code data-request></code></pre>
     <ul class="demo-never">
       <li><Iconify name="lucide:user-x" size={18} /> Nessun account né identificativo</li>
       <li><Iconify name="lucide:history" size={18} /> Nessuna cronologia salvata</li>
@@ -129,7 +129,7 @@ const userAgent = `Navia/${site.version} (+${site.github})`
     root.querySelectorAll('[data-tab]').forEach((btn) =>
       btn.addEventListener('click', () => {
         tab = btn.dataset.tab
-        root.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b === btn)))
+        root.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)))
         root.querySelectorAll('[data-pane]').forEach((p) => (p.hidden = p.dataset.pane !== tab))
         render()
       }),
@@ -137,7 +137,7 @@ const userAgent = `Navia/${site.version} (+${site.github})`
     root.querySelectorAll('[data-mode]').forEach((btn) =>
       btn.addEventListener('click', () => {
         mode = btn.dataset.mode
-        root.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-checked', String(b === btn)))
+        root.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)))
         render()
       }),
     )

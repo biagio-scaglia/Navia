@@ -1,0 +1,277 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import FuelTiles from '../../components/FuelTiles.astro'
+import FuelSource from '../../components/FuelSource.astro'
+import Iconify from '../../components/Iconify.astro'
+import {
+  fmtCents,
+  fmtDay,
+  fmtPrice,
+  fmtWhen,
+  FUEL_SOURCE,
+  fuels,
+  getFuelReport,
+  headline,
+  osmLink,
+  WINDOW_DAYS,
+} from '../../data/fuel'
+import { inProvince } from '../../data/provinces'
+
+export async function getStaticPaths() {
+  const report = await getFuelReport()
+  if (!report) return []
+  return report.provinces
+    .filter((r) => r.summary.stations > 0)
+    .map((r) => ({ params: { provincia: r.province.slug }, props: { code: r.province.code } }))
+}
+
+const { code } = Astro.props as { code: string }
+const report = (await getFuelReport())!
+const data = report.provinces.find((r) => r.province.code === code)!
+const { province, summary, cheapest, towns } = data
+const where = inProvince(province)
+const day = fmtDay(report.extracted)
+const base = import.meta.env.BASE_URL
+const home = new URL(base, Astro.site).href
+const hub = new URL(`${base}carburanti/`, Astro.site).href
+const page = new URL(`${base}carburanti/${province.slug}/`, Astro.site).href
+
+const benzina = summary.stats['Benzina|self']
+const gasolio = summary.stats['Gasolio|self']
+const cheapBenzina = cheapest['Benzina|self']?.[0]
+const cheapGasolio = cheapest['Gasolio|self']?.[0]
+const neighbours = report.regions
+  .find((r) => r.name === province.region)!
+  .provinces.filter((r) => r.province.code !== code && r.summary.stations > 0)
+
+const compareWord = (d: number) => (Math.abs(d) < 0.0005 ? 'in linea con' : d < 0 ? 'sotto' : 'sopra')
+
+const faq = [
+  benzina && {
+    q: `Quanto costa la benzina oggi ${where}?`,
+    a: `Secondo i dati MIMIT del ${day}, la benzina self ${where} costa in media ${fmtPrice(benzina.avg)} €/l, ${compareWord(benzina.avg - report.national.stats['Benzina|self']!.avg)} la media italiana di ${fmtPrice(report.national.stats['Benzina|self']!.avg)} €/l. Il prezzo più basso è ${fmtPrice(benzina.min)} €/l.`,
+  },
+  gasolio && {
+    q: `Quanto costa il gasolio oggi ${where}?`,
+    a: `Il gasolio self ${where} costa in media ${fmtPrice(gasolio.avg)} €/l, contro ${fmtPrice(report.national.stats['Gasolio|self']!.avg)} €/l in Italia. Il prezzo più basso è ${fmtPrice(gasolio.min)} €/l.`,
+  },
+  cheapBenzina && {
+    q: `Dov’è il distributore più economico ${where}?`,
+    a: `Per la benzina self è ${cheapBenzina.station.brand} in ${cheapBenzina.station.street}, a ${cheapBenzina.station.town}, con ${fmtPrice(cheapBenzina.price)} €/l.${cheapGasolio ? ` Per il gasolio self è ${cheapGasolio.station.brand} in ${cheapGasolio.station.street}, a ${cheapGasolio.station.town}, con ${fmtPrice(cheapGasolio.price)} €/l.` : ''}`,
+  },
+  {
+    q: 'Da dove vengono questi prezzi?',
+    a: `Dall’Osservaprezzi carburanti del Ministero delle Imprese e del Made in Italy, dove i gestori sono obbligati a comunicare i prezzi. Navia li scarica ogni giorno e qui considera quelli comunicati negli ultimi ${WINDOW_DAYS} giorni.`,
+  },
+].filter(Boolean) as { q: string; a: string }[]
+
+const schema = [
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Navia', item: home },
+      { '@type': 'ListItem', position: 2, name: 'Prezzi carburanti', item: hub },
+      { '@type': 'ListItem', position: 3, name: province.name, item: page },
+    ],
+  },
+  {
+    '@type': 'Dataset',
+    name: `Prezzi dei carburanti ${where}`,
+    description: `Prezzi medi e distributori più economici di benzina, gasolio, GPL e metano ${where}, dai prezzi comunicati al MIMIT negli ultimi ${WINDOW_DAYS} giorni.`,
+    url: page,
+    inLanguage: 'it-IT',
+    dateModified: report.extracted,
+    temporalCoverage: `${report.windowFrom}/${report.extracted}`,
+    spatialCoverage: { '@type': 'Place', name: `${where.replace('in provincia', 'Provincia')}, ${province.region}, Italia` },
+    license: 'https://www.dati.gov.it/iodl/2.0/',
+    isBasedOn: FUEL_SOURCE,
+    creator: { '@type': 'GovernmentOrganization', name: 'Ministero delle Imprese e del Made in Italy' },
+    publisher: { '@id': `${home}#autore` },
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+]
+
+const title = `Prezzi carburanti ${where}: benzina e gasolio oggi`
+const description = benzina && gasolio
+  ? `Oggi ${where} la benzina self costa in media ${fmtPrice(benzina.avg)} €/l e il gasolio self ${fmtPrice(gasolio.avg)} €/l. I distributori più economici e i prezzi per comune, dai dati MIMIT del ${day}.`
+  : `Prezzi di benzina, gasolio, GPL e metano ${where}: medie e distributori più economici, dai dati MIMIT del ${day}.`
+---
+
+<BaseLayout title={title} description={description} path={`/carburanti/${province.slug}/`} schema={schema}>
+  <header class="night profile-head fuel-head">
+    <div class="wrap">
+      <nav aria-label="Percorso" class="crumbs">
+        <a href={base}>Navia</a> <span aria-hidden="true">/</span>{' '}
+        <a href={`${base}carburanti/`}>Carburanti</a> <span aria-hidden="true">/</span>{' '}
+        <span aria-current="page">{province.name}</span>
+      </nav>
+      <h1 class="fuel-title">Prezzi dei carburanti {where}</h1>
+      <p class="lead">
+        Medie e distributori più economici di oggi, da {summary.stations} distributori. Dati ufficiali del MIMIT
+        aggiornati al <time datetime={report.extracted}>{day}</time>.
+      </p>
+      <FuelTiles summary={summary} compare={report.national} />
+    </div>
+  </header>
+
+  <section class="block" aria-labelledby="economici-titolo">
+    <div class="wrap">
+      <h2 id="economici-titolo" class="h2">I distributori più economici</h2>
+      <p class="sub">
+        I dieci prezzi più bassi per carburante, tra quelli comunicati negli ultimi {WINDOW_DAYS} giorni. Controlla
+        sempre il prezzo alla pompa.
+      </p>
+      <div class="cheapest">
+        {
+          headline.map(({ key, label, unit }) =>
+            cheapest[key]?.length ? (
+              <section class="cheapest-card" aria-labelledby={`top-${key.replace('|', '-')}`}>
+                <h3 id={`top-${key.replace('|', '-')}`}>{label}</h3>
+                <ol class="cheapest-list">
+                  {cheapest[key]!.map((e) => (
+                    <li>
+                      <span class="cheapest-price nums">
+                        {fmtPrice(e.price)} <small>{unit}</small>
+                      </span>
+                      <span class="cheapest-where">
+                        <a href={osmLink(e.station)} rel="noopener nofollow" target="_blank">
+                          {e.station.brand}, {e.station.street}
+                        </a>
+                        <span class="cheapest-meta">
+                          <span>{e.station.town}</span>
+                          <time datetime={e.at}>{fmtWhen(e.at)}</time>
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null,
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="block block-tint" aria-labelledby="medie-titolo">
+    <div class="wrap">
+      <h2 id="medie-titolo" class="h2">Self e servito a confronto</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label={`Prezzi medi ${where} e in Italia`}>
+        <table class="fuel-table">
+          <thead>
+            <tr>
+              <th scope="col">Carburante</th>
+              <th scope="col">Media {province.name}</th>
+              <th scope="col">Minimo</th>
+              <th scope="col">Media Italia</th>
+              <th scope="col">Differenza</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              fuels.map(({ key, label, unit }) => {
+                const s = summary.stats[key]
+                const n = report.national.stats[key]
+                return s && n ? (
+                  <tr>
+                    <th scope="row">{label}</th>
+                    <td class="nums">{fmtPrice(s.avg)} {unit}</td>
+                    <td class="nums">{fmtPrice(s.min)} {unit}</td>
+                    <td class="nums">{fmtPrice(n.avg)} {unit}</td>
+                    <td class:list={['nums', s.avg < n.avg ? 'is-cheaper' : 'is-dearer']}>{fmtCents(s.avg - n.avg)} cent</td>
+                  </tr>
+                ) : null
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {
+    towns.length > 0 && (
+      <section class="block" aria-labelledby="comuni-titolo">
+        <div class="wrap">
+          <h2 id="comuni-titolo" class="h2">Prezzi medi per comune</h2>
+          <p class="sub">I comuni con almeno tre distributori, dal più servito.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Prezzi medi per comune">
+            <table class="fuel-table">
+              <thead>
+                <tr>
+                  <th scope="col">Comune</th>
+                  <th scope="col">Distributori</th>
+                  <th scope="col">Benzina self</th>
+                  <th scope="col">Gasolio self</th>
+                  <th scope="col">GPL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {towns.map((t) => (
+                  <tr>
+                    <th scope="row">{t.name}</th>
+                    <td class="nums">{t.summary.stations}</td>
+                    {(['Benzina|self', 'Gasolio|self', 'GPL|any'] as const).map((k) => (
+                      <td class="nums">{t.summary.stats[k] ? `${fmtPrice(t.summary.stats[k]!.avg)} €/l` : '–'}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="block block-tint" aria-labelledby="domande-titolo">
+    <div class="wrap split">
+      <div class="split-head">
+        <h2 id="domande-titolo" class="h2">Domande sui prezzi</h2>
+        <p class="sub">
+          In <a href={base}>Navia</a> questi prezzi compaiono nelle schede dei distributori sulla mappa, anche
+          senza connessione.
+        </p>
+      </div>
+      <div class="faq">
+        {
+          faq.map((item, i) => (
+            <details open={i === 0}>
+              <summary><h3>{item.q}</h3></summary>
+              <p>{item.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="vicine-titolo">
+    <div class="wrap">
+      <h2 id="vicine-titolo" class="h3">Altre province: {province.region}</h2>
+      <ul class="province-links">
+        {
+          neighbours.map((r) => (
+            <li>
+              <a href={`${base}carburanti/${r.province.slug}/`}>
+                <span>{r.province.name}</span>
+                {r.summary.stats['Benzina|self'] && (
+                  <span class="nums">benzina {fmtPrice(r.summary.stats['Benzina|self'].avg)}</span>
+                )}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href={`${base}carburanti/`} class="province-all">
+            <Iconify name="lucide:map" size={18} /> <span>Tutte le province</span>
+          </a>
+        </li>
+      </ul>
+      <FuelSource extracted={report.extracted} />
+    </div>
+  </section>
+</BaseLayout>

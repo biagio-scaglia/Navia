@@ -27,6 +27,21 @@ const abs = (p: string) => new URL(`${base}${p.replace(/^\//, '')}`.replace(/\/{
 const canonical = abs(path)
 const ogImage = abs('og-navia.jpg')
 
+// Chrome ed Edge preparano la pagina interna su cui il puntatore si ferma: navigazione istantanea, zero JavaScript
+const speculation = {
+  prerender: [
+    {
+      where: {
+        and: [
+          { href_matches: `${base}*` },
+          { not: { selector_matches: "[href*='#'], [target='_blank'], [href$='.xml'], [href$='.txt']" } },
+        ],
+      },
+      eagerness: 'moderate',
+    },
+  ],
+}
+
 const graph = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -106,6 +121,7 @@ const graph = {
     <meta name="twitter:image" content={ogImage} />
 
     <link rel="preload" href={overpassLatin} as="font" type="font/woff2" crossorigin />
+    <script type="speculationrules" set:html={JSON.stringify(speculation)} />
     <script type="application/ld+json" set:html={JSON.stringify(graph)} />
     <meta name="generator" content={Astro.generator} />
   </head>

@@ -8,13 +8,12 @@
 
 <div class="globe" data-globe-wrap>
   <canvas data-globe aria-hidden="true"></canvas>
+  <span class="globe-pin" aria-hidden="true" data-globe-pin></span>
+  <p class="globe-label" aria-hidden="true" data-globe-label>
+    <strong>Bari</strong>
+    <span>da qui parte Navia</span>
+  </p>
 </div>
-<!-- Dopo il globo: l'ancora di Bari deve precedere pin ed etichetta nel DOM -->
-<span class="globe-pin" aria-hidden="true"></span>
-<p class="globe-label" aria-hidden="true">
-  <strong>Bari</strong>
-  <span>da qui parte Navia</span>
-</p>
 
 <script>
   type LatLon = [number, number]
@@ -30,10 +29,13 @@
     [59.3293, 18.0686], // Stoccolma
   ]
   const DOTS = 7 // puntini per percorso
+  const ELEVATION = 0.006
   const RAD = Math.PI / 180
 
   const wrap = document.querySelector<HTMLElement>('[data-globe-wrap]')
   const canvas = document.querySelector<HTMLCanvasElement>('[data-globe]')
+  const pin = document.querySelector<HTMLElement>('[data-globe-pin]')
+  const label = document.querySelector<HTMLElement>('[data-globe-label]')
 
   // Punto a frazione f del cerchio massimo tra a e b
   const toVec = ([lat, lon]: LatLon) => [
@@ -54,13 +56,26 @@
     }
   })
 
+  // Stessa proiezione di cobe (raggio 0,8, canvas quadrato): posizione 0–1 sul canvas e se il punto è davanti
+  const project = ([lat, lon]: LatLon, phi: number, theta: number) => {
+    const r = lat * RAD
+    const a = lon * RAD - Math.PI
+    const k = 0.8 + ELEVATION
+    const t = [-Math.cos(r) * Math.cos(a) * k, Math.sin(r) * k, Math.cos(r) * Math.sin(a) * k]
+    const [cp, sp, ct, st] = [Math.cos(phi), Math.sin(phi), Math.cos(theta), Math.sin(theta)]
+    const c = cp * t[0] + sp * t[2]
+    const s = sp * st * t[0] + ct * t[1] - cp * st * t[2]
+    const depth = -sp * ct * t[0] + st * t[1] + cp * ct * t[2]
+    return { x: (c + 1) / 2, y: (1 - s) / 2, front: depth >= 0 }
+  }
+
   const start = async () => {
     if (!wrap || !canvas) return
     const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } }
     if (nav.connection?.saveData) return wrap.classList.add('no-webgl')
 
     const low = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4
-    const small = window.innerWidth < 760
+    const small = matchMedia('(max-width: 759px)').matches
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const dpr = Math.min(window.devicePixelRatio || 1, low ? 1.25 : small ? 1.5 : 2)
     const frameGap = low ? 1000 / 30 : 0
@@ -69,7 +84,14 @@
 
     const targetPhi = Math.PI - (BARI[1] * RAD - Math.PI / 2)
     const targetTheta = BARI[0] * RAD * 0.85
-    let size = canvas.offsetWidth
+    // La misura arriva dal ResizeObserver dopo l'impaginazione: leggere offsetWidth qui la forzerebbe
+    let size = 0
+    size = await new Promise<number>((resolve) => {
+      new ResizeObserver(([entry]) => {
+        size = entry.contentRect.width
+        resolve(size)
+      }).observe(canvas)
+    })
     let dragX = 0
     let dragY = 0
     let velX = 0
@@ -77,6 +99,7 @@
     let visible = true
     let frame = 0
     let last = 0
+    let behind: boolean | null = null
     const t0 = performance.now()
 
     const markersAt = (t: number) => {
@@ -89,12 +112,16 @@
           .map((f) => ({ location: route(f), size: 0.011 + 0.008 * f })),
       )
       return [
-        { location: BARI, size: 0.03, color: [0.9, 0.28, 0.23] as [number, number, number], id: 'bari' },
+        { location: BARI, size: 0.03, color: [0.9, 0.28, 0.23] as [number, number, number] },
         ...CITIES.map((location) => ({ location, size: 0.026 * grow })),
         ...dots,
       ]
     }
 
+    // cobe riscrive a ogni fotogramma un <style> con variabili su :root, anche senza etichette:
+    // costringe a ricalcolare lo stile di tutta la pagina. Lo stacchiamo dal documento e
+    // posizioniamo l'etichetta di Bari da soli.
+    const stylesBefore = new Set(document.head.querySelectorAll('style'))
     let globe: ReturnType<typeof createGlobe>
     try {
       globe = createGlobe(canvas, {
@@ -112,10 +139,23 @@
         markerColor: [0.42, 0.85, 0.95],
         glowColor: [0.06, 0.32, 0.8],
         markers: markersAt(still ? 10 : 0),
-        markerElevation: 0.006,
+        markerElevation: ELEVATION,
       })
     } catch {
       return wrap.classList.add('no-webgl')
+    }
+    document.head.querySelectorAll('style').forEach((s) => stylesBefore.has(s) || s.remove())
+
+    const placeLabel = (phi: number, theta: number) => {
+      if (!pin || !label) return
+      const p = project(BARI, phi, theta)
+      const move = `translate3d(${(p.x * size).toFixed(1)}px, ${(p.y * size).toFixed(1)}px, 0)`
+      pin.style.transform = move
+      label.style.transform = move
+      if (behind !== !p.front) {
+        behind = !p.front
+        wrap.classList.toggle('is-behind', behind)
+      }
     }
 
     const tick = (now: number) => {
@@ -143,12 +183,12 @@
         height: size * dpr,
         markers: markersAt(t),
       })
+      placeLabel(phi + dragX, targetTheta + dragY)
     }
 
     const resume = () => {
       if (visible && !frame) frame = requestAnimationFrame(tick)
     }
-    new ResizeObserver(() => (size = canvas.offsetWidth)).observe(canvas)
     new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting && !document.hidden
       resume()
@@ -183,9 +223,29 @@
     requestAnimationFrame(() => wrap.classList.add('is-ready'))
   }
 
-  // Dopo il caricamento, quando il browser è libero: il titolo resta il primo a comparire
-  const idle = (cb: () => void) =>
-    'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 1200 }) : setTimeout(cb, 200)
-  if (document.readyState === 'complete') idle(start)
-  else addEventListener('load', () => idle(start), { once: true })
+  // Creare il contesto WebGL e compilare gli shader blocca il thread principale per un attimo.
+  // Fino ad allora si vede la sfera a puntini in CSS. Su desktop il globo parte quando il browser
+  // è libero; su telefoni e dispositivi deboli al primo tocco o scorrimento, o dopo 3 s di quiete,
+  // così la pagina risponde subito.
+  const idle = (cb: () => void, timeout: number) =>
+    'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 300)
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  const light = matchMedia('(max-width: 959px)').matches || (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4
+  let begun = false
+  const begin = () => {
+    if (begun) return
+    begun = true
+    idle(start, 1500)
+  }
+  const afterLoad = (cb: () => void) =>
+    document.readyState === 'complete' ? cb() : addEventListener('load', cb, { once: true })
+
+  if (light) {
+    for (const type of ['pointerdown', 'touchstart', 'keydown', 'wheel', 'scroll']) {
+      addEventListener(type, begin, { once: true, passive: true })
+    }
+    afterLoad(() => setTimeout(begin, 3000))
+  } else {
+    afterLoad(begin)
+  }
 </script>

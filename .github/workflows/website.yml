@@ -10,6 +10,12 @@ on:
     paths:
       - 'website/**'
       - '.github/workflows/website.yml'
+  # The fuel price pages are built from the `fuel-data` release, which the
+  # `Fuel data` workflow refreshes at 10:30 and 16:30 UTC: rebuild after it.
+  # Scheduled runs only happen on the default branch.
+  schedule:
+    - cron: '15 11 * * *'
+    - cron: '15 17 * * *'
   workflow_dispatch:
 
 permissions:

@@ -5,6 +5,8 @@ import Icon from '../components/Icon.astro'
 import Iconify from '../components/Iconify.astro'
 import HeroGlobe from '../components/HeroGlobe.astro'
 import RequestDemo from '../components/RequestDemo.astro'
+import FuelTiles from '../components/FuelTiles.astro'
+import { fmtDay, getFuelReport } from '../data/fuel'
 import { docs, faq, features, limitations, refusals, services, site, stack } from '../data/site'
 import torreAMare from '../assets/media/porto-di-torre-a-mare-bari-1.jpg'
 import petruzzelli from '../assets/media/bari-teatro-petruzzelli.jpg'
@@ -12,6 +14,8 @@ import stradaCarmine from '../assets/media/bari-bw-2016-10-19-11-55.jpg'
 import panchina from '../assets/media/panchina-mar-adriatico-puglia.jpg'
 
 const base = import.meta.env.BASE_URL
+const fuel = await getFuelReport()
+const bariFuel = fuel?.provinces.find((r) => r.province.code === 'BA')
 const home = new URL(base, Astro.site).href
 
 const schema = [
@@ -266,6 +270,26 @@ const steps = [
         />
       </div>
     </div>
+    {
+      bariFuel && fuel && (
+        <div class="wrap bari-fuel">
+          <h3 class="h3">Quanto costa il pieno a Bari oggi</h3>
+          <p class="sub">
+            Medie in provincia di Bari dai dati MIMIT del {fmtDay(fuel.extracted)}: gli stessi prezzi che Navia scarica
+            nell’app.
+          </p>
+          <FuelTiles summary={bariFuel.summary} compare={fuel.national} />
+          <p class="bari-fuel-links">
+            <a href={`${base}carburanti/bari/`}>
+              <Iconify name="lucide:fuel" size={18} /> I distributori più economici in provincia di Bari
+            </a>
+            <a href={`${base}carburanti/`}>
+              <Iconify name="lucide:map" size={18} /> Prezzi in tutte le province
+            </a>
+          </p>
+        </div>
+      )
+    }
   </section>
 
   <!-- Domande -->

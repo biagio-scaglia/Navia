@@ -67,7 +67,7 @@ export const rows: Row[] = [
   {
     label: 'Mappe offline',
     cells: {
-      navia: { v: 'partial', note: 'Luoghi e prezzi dei carburanti; mappa offline in arrivo' },
+      navia: { v: 'partial', note: 'Luoghi e prezzi dei carburanti; mappe per macroregione in prova' },
       google: { v: 'yes', note: 'Aree scaricabili' },
       organic: { v: 'yes', note: 'Pensata per l’uso offline' },
       osmand: { v: 'yes', note: 'Mappe e percorsi offline' },

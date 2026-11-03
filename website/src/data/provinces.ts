@@ -1,0 +1,140 @@
+/**
+ * Le 107 province italiane con la sigla usata negli indirizzi del dataset MIMIT
+ * ("VIA ... 70126 - BARI BA"). `of` è la preposizione davanti al nome: "in provincia di Bari",
+ * "in provincia del Sud Sardegna".
+ */
+
+export type Province = { code: string; name: string; region: string; slug: string; of: string }
+
+const list: [code: string, name: string, region: string, of?: string][] = [
+  ['TO', 'Torino', 'Piemonte'],
+  ['VC', 'Vercelli', 'Piemonte'],
+  ['NO', 'Novara', 'Piemonte'],
+  ['CN', 'Cuneo', 'Piemonte'],
+  ['AT', 'Asti', 'Piemonte'],
+  ['AL', 'Alessandria', 'Piemonte'],
+  ['BI', 'Biella', 'Piemonte'],
+  ['VB', 'Verbano-Cusio-Ossola', 'Piemonte', 'del'],
+  ['AO', 'Aosta', 'Valle d’Aosta'],
+  ['VA', 'Varese', 'Lombardia'],
+  ['CO', 'Como', 'Lombardia'],
+  ['SO', 'Sondrio', 'Lombardia'],
+  ['MI', 'Milano', 'Lombardia'],
+  ['BG', 'Bergamo', 'Lombardia'],
+  ['BS', 'Brescia', 'Lombardia'],
+  ['PV', 'Pavia', 'Lombardia'],
+  ['CR', 'Cremona', 'Lombardia'],
+  ['MN', 'Mantova', 'Lombardia'],
+  ['LC', 'Lecco', 'Lombardia'],
+  ['LO', 'Lodi', 'Lombardia'],
+  ['MB', 'Monza e Brianza', 'Lombardia'],
+  ['BZ', 'Bolzano', 'Trentino-Alto Adige'],
+  ['TN', 'Trento', 'Trentino-Alto Adige'],
+  ['VR', 'Verona', 'Veneto'],
+  ['VI', 'Vicenza', 'Veneto'],
+  ['BL', 'Belluno', 'Veneto'],
+  ['TV', 'Treviso', 'Veneto'],
+  ['VE', 'Venezia', 'Veneto'],
+  ['PD', 'Padova', 'Veneto'],
+  ['RO', 'Rovigo', 'Veneto'],
+  ['UD', 'Udine', 'Friuli-Venezia Giulia'],
+  ['GO', 'Gorizia', 'Friuli-Venezia Giulia'],
+  ['TS', 'Trieste', 'Friuli-Venezia Giulia'],
+  ['PN', 'Pordenone', 'Friuli-Venezia Giulia'],
+  ['IM', 'Imperia', 'Liguria'],
+  ['SV', 'Savona', 'Liguria'],
+  ['GE', 'Genova', 'Liguria'],
+  ['SP', 'La Spezia', 'Liguria'],
+  ['PC', 'Piacenza', 'Emilia-Romagna'],
+  ['PR', 'Parma', 'Emilia-Romagna'],
+  ['RE', 'Reggio Emilia', 'Emilia-Romagna'],
+  ['MO', 'Modena', 'Emilia-Romagna'],
+  ['BO', 'Bologna', 'Emilia-Romagna'],
+  ['FE', 'Ferrara', 'Emilia-Romagna'],
+  ['RA', 'Ravenna', 'Emilia-Romagna'],
+  ['FC', 'Forlì-Cesena', 'Emilia-Romagna'],
+  ['RN', 'Rimini', 'Emilia-Romagna'],
+  ['MS', 'Massa-Carrara', 'Toscana'],
+  ['LU', 'Lucca', 'Toscana'],
+  ['PT', 'Pistoia', 'Toscana'],
+  ['FI', 'Firenze', 'Toscana'],
+  ['LI', 'Livorno', 'Toscana'],
+  ['PI', 'Pisa', 'Toscana'],
+  ['AR', 'Arezzo', 'Toscana'],
+  ['SI', 'Siena', 'Toscana'],
+  ['GR', 'Grosseto', 'Toscana'],
+  ['PO', 'Prato', 'Toscana'],
+  ['PG', 'Perugia', 'Umbria'],
+  ['TR', 'Terni', 'Umbria'],
+  ['PU', 'Pesaro e Urbino', 'Marche'],
+  ['AN', 'Ancona', 'Marche'],
+  ['MC', 'Macerata', 'Marche'],
+  ['AP', 'Ascoli Piceno', 'Marche'],
+  ['FM', 'Fermo', 'Marche'],
+  ['VT', 'Viterbo', 'Lazio'],
+  ['RI', 'Rieti', 'Lazio'],
+  ['RM', 'Roma', 'Lazio'],
+  ['LT', 'Latina', 'Lazio'],
+  ['FR', 'Frosinone', 'Lazio'],
+  ['AQ', 'L’Aquila', 'Abruzzo', 'dell’'],
+  ['TE', 'Teramo', 'Abruzzo'],
+  ['PE', 'Pescara', 'Abruzzo'],
+  ['CH', 'Chieti', 'Abruzzo'],
+  ['CB', 'Campobasso', 'Molise'],
+  ['IS', 'Isernia', 'Molise'],
+  ['CE', 'Caserta', 'Campania'],
+  ['BN', 'Benevento', 'Campania'],
+  ['NA', 'Napoli', 'Campania'],
+  ['AV', 'Avellino', 'Campania'],
+  ['SA', 'Salerno', 'Campania'],
+  ['FG', 'Foggia', 'Puglia'],
+  ['BA', 'Bari', 'Puglia'],
+  ['TA', 'Taranto', 'Puglia'],
+  ['BR', 'Brindisi', 'Puglia'],
+  ['LE', 'Lecce', 'Puglia'],
+  ['BT', 'Barletta-Andria-Trani', 'Puglia'],
+  ['PZ', 'Potenza', 'Basilicata'],
+  ['MT', 'Matera', 'Basilicata'],
+  ['CS', 'Cosenza', 'Calabria'],
+  ['CZ', 'Catanzaro', 'Calabria'],
+  ['RC', 'Reggio Calabria', 'Calabria'],
+  ['KR', 'Crotone', 'Calabria'],
+  ['VV', 'Vibo Valentia', 'Calabria'],
+  ['TP', 'Trapani', 'Sicilia'],
+  ['PA', 'Palermo', 'Sicilia'],
+  ['ME', 'Messina', 'Sicilia'],
+  ['AG', 'Agrigento', 'Sicilia'],
+  ['CL', 'Caltanissetta', 'Sicilia'],
+  ['EN', 'Enna', 'Sicilia'],
+  ['CT', 'Catania', 'Sicilia'],
+  ['RG', 'Ragusa', 'Sicilia'],
+  ['SR', 'Siracusa', 'Sicilia'],
+  ['SS', 'Sassari', 'Sardegna'],
+  ['NU', 'Nuoro', 'Sardegna'],
+  ['CA', 'Cagliari', 'Sardegna'],
+  ['OR', 'Oristano', 'Sardegna'],
+  ['SU', 'Sud Sardegna', 'Sardegna', 'del'],
+]
+
+export const slugify = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+export const provinces: Province[] = list.map(([code, name, region, of = 'di']) => ({
+  code,
+  name,
+  region,
+  slug: slugify(name),
+  of,
+}))
+
+export const provinceByCode = new Map(provinces.map((p) => [p.code, p]))
+
+/** "in provincia di Bari", "in provincia dell’Aquila", "in provincia del Sud Sardegna" */
+export const inProvince = (p: Province) =>
+  p.of.endsWith('’') ? `in provincia ${p.of}${p.name.replace(/^L’/, '')}` : `in provincia ${p.of} ${p.name}`

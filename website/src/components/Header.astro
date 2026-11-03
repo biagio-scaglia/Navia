@@ -1,6 +1,6 @@
 ---
 import Iconify from './Iconify.astro'
-import { nav, site } from '../data/site'
+import { nav, navMore, site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
 
@@ -29,8 +29,7 @@ const base = import.meta.env.BASE_URL
       </summary>
       <nav aria-label="Menu mobile" class="menu-panel">
         <ul>
-          {nav.map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
-          <li><a href={`${base}privacy/`}>Informativa sulla privacy</a></li>
+          {[...nav, ...navMore].map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
         </ul>
       </nav>
     </details>
@@ -39,9 +38,20 @@ const base = import.meta.env.BASE_URL
 </header>
 
 <script>
-  // Chiude il menu mobile quando si sceglie una voce
+  // Il menu mobile si chiude scegliendo una voce, con Esc o toccando fuori
   const menu = document.querySelector<HTMLDetailsElement>('.menu')
-  menu?.addEventListener('click', (e) => {
-    if ((e.target as HTMLElement).closest('a')) menu.open = false
-  })
+  if (menu) {
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) menu.open = false
+    })
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) {
+        menu.open = false
+        menu.querySelector('summary')?.focus()
+      }
+    })
+    document.addEventListener('click', (e) => {
+      if (menu.open && !menu.contains(e.target as Node)) menu.open = false
+    })
+  }
 </script>

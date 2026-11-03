@@ -1,0 +1,19 @@
+---
+/** Attribuzione richiesta dalla IODL 2.0, uguale su tutte le pagine dei carburanti. */
+import { FUEL_SOURCE, fmtDay, WINDOW_DAYS } from '../data/fuel'
+
+interface Props {
+  extracted: string
+}
+
+const { extracted } = Astro.props
+---
+
+<p class="fuel-source">
+  Fonte: Ministero delle Imprese e del Made in Italy,
+  <a href="https://carburanti.mise.gov.it/" rel="noopener nofollow" target="_blank">Osservaprezzi carburanti</a>, dati
+  del {fmtDay(extracted)} con licenza <a href="https://www.dati.gov.it/iodl/2.0/" rel="noopener" target="_blank">IODL 2.0</a>.
+  Elaborazione di Navia: prezzi comunicati negli ultimi {WINDOW_DAYS} giorni, esclusi quelli anomali, troppo lontani
+  dalla mediana della provincia (per benzina e gasolio, più dell’8% sotto o del 25% sopra). Lo stesso <a href={FUEL_SOURCE}>file giornaliero</a> è quello che l’app scarica. I prezzi
+  sono quelli comunicati dai gestori: alla pompa vale il prezzo esposto.
+</p>

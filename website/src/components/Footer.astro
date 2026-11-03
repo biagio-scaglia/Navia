@@ -1,6 +1,6 @@
 ---
 import Iconify from './Iconify.astro'
-import { author, mediaCredits, nav, site } from '../data/site'
+import { author, mediaCredits, nav, navMore, site } from '../data/site'
 const base = import.meta.env.BASE_URL
 ---
 
@@ -28,8 +28,7 @@ const base = import.meta.env.BASE_URL
     <nav aria-label="Pagine">
       <h2>Il sito</h2>
       <ul>
-        {nav.map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
-        <li><a href={`${base}privacy/`}>Informativa sulla privacy</a></li>
+        {[...nav, ...navMore].map((item) => <li><a href={`${base}${item.href}`}>{item.label}</a></li>)}
       </ul>
     </nav>
 

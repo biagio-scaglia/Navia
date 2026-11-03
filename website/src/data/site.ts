@@ -31,11 +31,17 @@ export const site = {
 
 export const nav = [
   { href: '#funzioni', label: 'Funzioni' },
+  { href: 'carburanti/', label: 'Carburanti' },
   { href: '#privacy', label: 'Privacy' },
-  { href: '#domande', label: 'Domande' },
   { href: 'confronto/', label: 'Confronto' },
-  { href: '#sviluppatori', label: 'Sviluppatori' },
   { href: 'biagio-scaglia/', label: 'Autore' },
+] as const
+
+/** Voci in più per il menu mobile e il piè di pagina. */
+export const navMore = [
+  { href: '#domande', label: 'Domande frequenti' },
+  { href: '#sviluppatori', label: 'Per chi sviluppa' },
+  { href: 'privacy/', label: 'Informativa sulla privacy' },
 ] as const
 
 /** L'autore: solo fatti pubblici dal profilo GitHub. */
@@ -152,6 +158,7 @@ export const features: {
       'Cinque aspetti: Automatico, Standard, Vivace, Essenziale e Scuro (Navia Notte).',
       'Vista inclinata con edifici 3D presi dalle altezze reali di OSM: dove il dato manca, l’edificio resta piatto.',
       'Cambiando stile restano la visuale, il percorso e i segnaposto.',
+      'Mappe offline per macroregione italiana, ancora in prova: dentro le zone scaricate la mappa non chiede nulla a OpenFreeMap.',
     ],
   },
   {
@@ -206,7 +213,7 @@ export const services = [
 export const limitations = [
   'La guida funziona solo con l’app aperta in primo piano.',
   'Niente traffico in tempo reale, corsie o limiti di velocità.',
-  'Le mappe offline sono nell’app ma in prova: le zone da scaricare arrivano con la prima pubblicazione dei file.',
+  'Le mappe offline delle macroregioni italiane sono pubblicate, ma vanno ancora provate sui telefoni.',
   'Offline oggi ci sono i luoghi che scarichi e i prezzi dei carburanti; i percorsi richiedono la rete.',
   'Gli endpoint pubblici predefiniti sono pensati per un uso leggero.',
 ] as const
@@ -230,7 +237,7 @@ export const faq = [
   },
   {
     q: 'Funziona senza connessione?',
-    a: 'In parte. Puoi scaricare i luoghi di una macroregione italiana e i prezzi dei carburanti, e la sintesi vocale funziona offline. Le mappe offline per macroregione sono già nell’app e arrivano con la prima pubblicazione dei file; il calcolo dei percorsi, per ora, richiede la rete.',
+    a: 'In parte. Puoi scaricare i luoghi di una macroregione italiana e i prezzi dei carburanti, e la sintesi vocale funziona offline. Le mappe offline per macroregione sono nell’app e i file sono pubblicati, ma la funzione è ancora in prova; il calcolo dei percorsi, per ora, richiede la rete.',
   },
   {
     q: 'Funziona solo a Bari?',

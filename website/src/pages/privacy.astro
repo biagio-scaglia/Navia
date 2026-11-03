@@ -35,19 +35,22 @@ const schema = [
   path="/privacy/"
   schema={schema}
 >
-  <article class="policy">
-    <div class="wrap policy-grid">
-      <header class="policy-head">
+  <article>
+    <header class="night profile-head">
+      <div class="wrap">
         <nav aria-label="Percorso" class="crumbs">
           <a href={base}>Navia</a> <span aria-hidden="true">/</span> <span aria-current="page">Privacy</span>
         </nav>
-        <h1 class="h1">{privacyMeta.title}</h1>
-        <p class="sub">
+        <h1 class="fuel-title">{privacyMeta.title}</h1>
+        <p class="lead">
           Aggiornata il <time datetime={privacyMeta.lastUpdatedIso}>{privacyMeta.lastUpdated}</time>.
           Vale per {privacyMeta.appliesTo}.
         </p>
         <p class="notice">{privacyMeta.draftNotice}</p>
-      </header>
+      </div>
+    </header>
+
+    <div class="wrap policy-grid policy">
 
       <nav class="toc" aria-labelledby="indice">
         <h2 id="indice">In questa pagina</h2>

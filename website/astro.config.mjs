@@ -7,8 +7,9 @@ export default defineConfig({
   site: 'https://biagio-scaglia.github.io',
   base: '/Navia',
   trailingSlash: 'always',
-  // Precarica le pagine interne al passaggio del mouse o al tocco
-  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+  // Il CSS sta nell'HTML: niente richiesta che blocca la prima visualizzazione.
+  // Il precaricamento delle pagine è affidato alle Speculation Rules (BaseLayout), senza JavaScript.
+  build: { inlineStylesheets: 'always' },
   vite: {
     plugins: [tailwindcss()],
   },
