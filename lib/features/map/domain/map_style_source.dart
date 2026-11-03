@@ -66,6 +66,8 @@ class MapStyleSource {
     required this.attributions,
     this.buildingsSourceId,
     this.buildingsSourceLayer,
+    this.offlineStyles = const {},
+    this.offlineSourceId,
   });
 
   /// Display name of the provider.
@@ -84,6 +86,13 @@ class MapStyleSource {
   /// unavailable rather than faked.
   final String? buildingsSourceId;
   final String? buildingsSourceLayer;
+
+  /// Bundled copies (asset paths) of the styles that can also draw
+  /// downloaded maps, where [offlineSourceId], the vector source in the
+  /// OpenMapTiles schema, is replaced by the downloaded tiles. Empty when
+  /// the provider's styles cannot be drawn offline.
+  final Map<MapStyleId, String> offlineStyles;
+  final String? offlineSourceId;
 
   bool get supportsBuildings3d =>
       buildingsSourceId != null && buildingsSourceLayer != null;

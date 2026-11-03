@@ -5,7 +5,7 @@ the Navia Android app actually handles data, as implemented in this
 repository. It has not been reviewed by a lawyer, and it does not claim
 certified compliance with the GDPR or any other law.
 
-Last updated: 2026-10-31. Applies to Navia 0.8.0 and later.
+Last updated: 2026-11-03. Applies to Navia 0.8.1 and later.
 
 The app shows the same policy in Italian under *Impostazioni → Privacy*.
 
@@ -49,6 +49,7 @@ Navia stores the following data in the app's private storage
 | Map appearance and 3D buildings setting | Remember your choice | Same |
 | Favorites: the name you chose, coordinates, the time you saved it and, when available, the place's OpenStreetMap category, address and identifier | Show your saved places, also offline | Until you delete the favorite or uninstall the app |
 | Fuel prices: the national list of fuel stations and prices published by the Ministry, when you download it (public data, not data about you) | Show prices in fuel station cards | Until you delete it in *Impostazioni → Luoghi offline* or uninstall the app |
+| Offline maps: the OpenStreetMap map tiles of the regions you chose to download (public map data, not data about you) | Show the map without a connection and without requests to OpenFreeMap | Until you delete the region in *Impostazioni → Mappe offline* or uninstall the app |
 | Offline places: the OpenStreetMap places of the regions you chose to download (public map data, not data about you) | Show places without a connection and without requests to Overpass | Until you delete the region in *Impostazioni → Luoghi offline* or uninstall the app |
 
 This data never leaves the device through Navia. Android cloud backup is
@@ -82,6 +83,7 @@ it contains no user or device identifier.
 | **Wikipedia** (`it.wikipedia.org`) | Only when you tap *Scopri qui intorno* | The coordinates of the map center | List articles about nearby places |
 | **Valhalla on FOSSGIS servers** (`valhalla1.openstreetmap.de`) | Only when you tap *Mostra sulla mappa* in the *15 min* tab | The starting point (your position if available, otherwise the map center) and the travel mode | Compute the areas reachable in 5, 10 and 15 minutes |
 | **Open-Meteo** (`api.open-meteo.com`) | When a place card or a route summary is shown | The coordinates rounded to two decimals (about 1 km) | Show the weather |
+| **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Mappe offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download maps for offline use; inside downloaded regions the map sends no requests to OpenFreeMap |
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Luoghi offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download place data for offline use |
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you confirm the download or update of fuel prices | The request for the national fuel price file | Show fuel prices |
 | **Ministero delle Imprese e del Made in Italy** (`mimit.gov.it`) | Only when you confirm the download or update of fuel prices, if the file on GitHub is unavailable or older than two days | The request for the national files of fuel stations and prices | Show fuel prices |

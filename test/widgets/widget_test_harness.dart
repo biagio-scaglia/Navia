@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navia/app/theme/navia_theme.dart';
 import 'package:navia/features/location/data/geolocator_location_repository.dart';
 import 'package:navia/features/location/domain/location_models.dart';
+import 'package:navia/features/offline_maps/data/offline_maps_store.dart';
 import 'package:navia/features/places/data/offline_places_store.dart';
 import 'package:navia/features/weather/weather.dart';
 import 'package:navia/shared/models/geo_point.dart';
@@ -36,6 +37,8 @@ Future<ProviderContainer> pumpNaviaWidget(
   addTearDown(location.close);
   final placesDirectory = Directory.systemTemp.createTempSync('navia_test_');
   addTearDown(() => placesDirectory.deleteSync(recursive: true));
+  final mapsDirectory = Directory.systemTemp.createTempSync('navia_maps_');
+  addTearDown(() => mapsDirectory.deleteSync(recursive: true));
 
   await tester.pumpWidget(
     ProviderScope(
@@ -53,6 +56,7 @@ Future<ProviderContainer> pumpNaviaWidget(
         // No network in widget tests.
         weatherRepositoryProvider.overrideWithValue(null),
         placesDataDirectoryProvider.overrideWithValue(placesDirectory),
+        mapsDataDirectoryProvider.overrideWithValue(mapsDirectory),
         ...overrides,
       ],
       child: MaterialApp(

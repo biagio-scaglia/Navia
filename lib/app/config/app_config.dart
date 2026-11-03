@@ -94,6 +94,15 @@ abstract final class AppConfig {
     defaultValue: '$sourceCodeUrl/releases/download/places-data',
   );
 
+  /// Where the downloadable maps (PMTiles archives in the OpenMapTiles
+  /// schema) and their `manifest.json` catalog are published: release
+  /// assets of this repository, rebuilt monthly from OpenStreetMap extracts
+  /// by the `Map data` workflow. An empty value disables offline maps.
+  static const mapDataUrl = String.fromEnvironment(
+    'NAVIA_MAP_DATA_URL',
+    defaultValue: '$sourceCodeUrl/releases/download/map-data',
+  );
+
   /// The daily fuel price dataset rebuilt from the Ministry's data by the
   /// `Fuel data` workflow, as a release asset of this repository. It comes
   /// first because the Ministry does not answer every network; an empty
@@ -163,6 +172,16 @@ abstract final class AppConfig {
     },
     buildingsSourceId: 'openmaptiles',
     buildingsSourceLayer: 'building',
+    // Copies of the four styles for downloaded maps, with fonts and icons
+    // (tool/maps/fetch_offline_resources.py); the tiles have the same
+    // schema, built with Planetiler like OpenFreeMap's.
+    offlineStyles: {
+      MapStyleId.standard: 'assets/map_offline/styles/liberty.json',
+      MapStyleId.vivid: 'assets/map_offline/styles/bright.json',
+      MapStyleId.minimal: 'assets/map_styles/navia_essential.json',
+      MapStyleId.dark: 'assets/map_styles/navia_night.json',
+    },
+    offlineSourceId: 'openmaptiles',
     attributions: [
       MapAttribution(
         label: '© OpenStreetMap contributors',

@@ -24,6 +24,7 @@ class NaviaMapView extends StatefulWidget {
     super.key,
     required this.source,
     required this.style,
+    this.offlineStyle,
     required this.buildings3d,
     required this.initialCamera,
     required this.controlsPadding,
@@ -37,6 +38,10 @@ class NaviaMapView extends StatefulWidget {
 
   final MapStyleSource source;
   final MapStyleId style;
+
+  /// A style document (JSON) drawing [style] from downloaded maps; while
+  /// set, it is used instead of the provider's style.
+  final String? offlineStyle;
 
   /// Tilted camera with extruded buildings.
   final bool buildings3d;
@@ -68,7 +73,10 @@ class NaviaMapView extends StatefulWidget {
 class _NaviaMapViewState extends State<NaviaMapView> {
   MapLibreNaviaMapController? _controller;
 
-  String get _styleUrl => widget.source.urlFor(widget.style);
+  String get _styleUrl => _styleOf(widget);
+
+  static String _styleOf(NaviaMapView view) =>
+      view.offlineStyle ?? view.source.urlFor(view.style);
 
   @override
   void initState() {
@@ -80,7 +88,7 @@ class _NaviaMapViewState extends State<NaviaMapView> {
   void didUpdateWidget(NaviaMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
     final controller = _controller;
-    if (oldWidget.source.urlFor(oldWidget.style) != _styleUrl) {
+    if (_styleOf(oldWidget) != _styleUrl) {
       // Sent before MapLibre receives the new style, so the camera query is
       // answered with the position the user was looking at.
       if (controller != null) unawaited(controller.captureCamera());

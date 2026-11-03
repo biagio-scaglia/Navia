@@ -105,11 +105,15 @@ done only when it works, has tests, and is documented.
 
 ### 0.10: Offline maps
 
-- Technical trial on Bari: local PMTiles support in the MapLibre version in
-  use, file size, offline fonts
-- Map regions built monthly in CI with Planetiler (same OpenMapTiles schema
-  as the current styles); Protomaps extracts as a fallback
-- Download with consent, progress and deletion, like offline places
+Implemented, with tests: map regions built monthly in CI with Planetiler
+(same OpenMapTiles schema as the current styles), download with consent,
+progress and deletion like offline places, offline styles for all four
+appearances with bundled fonts and icons. Still to do:
+
+- First run of the `Map data` workflow: build time and file size per region
+- Technical trial on a phone, on Bari: `pmtiles://file://` and `asset://`
+  resources in MapLibre Android 13.5, offline and in airplane mode
+- Navia's 3D buildings in every installed region, not only the first
 - Offline search in downloaded places (SQLite)
 
 ### 0.11: Public transport

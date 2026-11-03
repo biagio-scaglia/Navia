@@ -380,9 +380,7 @@ Italian voice and text instructions.
    Valhalla or GraphHopper with downloaded graph tiles). A composite
    repository can prefer the offline engine and fall back to online, with no
    change to the UI.
-3. **Offline maps.** Add a `MapStyleSource` that points to local MBTiles or
-   PMTiles, plus a region download manager.
-4. **History.** Recent destinations, stored locally like favorites. No cloud
+3. **History. Recent destinations, stored locally like favorites. No cloud
    sync without explicit opt-in.
 
 ## Places
@@ -452,6 +450,38 @@ Italian voice and text instructions.
 
 See [DATA_LICENSES.md](DATA_LICENSES.md) for Overpass usage, the license of
 the published datasets and how to replace the provider.
+
+## Offline maps
+
+- **Archives:** `.github/workflows/map-data.yml` runs Planetiler every
+  month on the same Geofabrik extracts as the places, with the OpenMapTiles
+  profile that OpenFreeMap also uses, up to zoom 14 and with Italian and
+  English names only. Each region becomes `map-<region>.pmtiles` in the
+  `map-data` release; `tool/maps/build_manifest.py` reads size, SHA-256,
+  bounds and zoom range from the PMTiles headers into `manifest.json`.
+- **Download and storage:** `MapDataClient` reuses the verified download of
+  the places (`core/network/verified_download.dart`). `OfflineMapsStore`
+  keeps `<support>/maps/<region>/map-<checksum>.pmtiles`; the checksum in
+  the name makes an update a new path, so MapLibre never reads a replaced
+  file through the index it cached.
+- **Styles:** `MapStyleSource.offlineStyles` points every appearance to a
+  bundled style document (Liberty and Bright copied into
+  `assets/map_offline/styles/`, Essenziale and Notte as they are).
+  `OfflineMapStyle.build` replaces the `openmaptiles` source with one
+  `pmtiles://file://` source per installed region, repeats that source's
+  layers for each extra region next to the original (so drawing order is
+  kept), removes the online raster relief, and points glyphs and sprite to
+  `asset://flutter_assets/assets/map_offline/`. Font names are rewritten
+  to folder names without spaces (`noto-sans-regular`), so no URL encoding
+  is involved. The first region keeps the original ids: the style's
+  `building-3d` layer, Navia's extrusion layer and `poi*` taps keep working.
+- **When it is used:** `OfflineMapCoverage` receives the map center when
+  the camera stops. While it lies in an installed region's bounds,
+  `offlineMapStyleProvider` returns the generated document (JSON) and
+  `NaviaMapView` loads it instead of the online URL, with the usual camera
+  and overlay restore. Outside, the online style comes back. Downloaded
+  maps are preferred even with a connection: they are faster and send
+  nothing to the tile server.
 
 ## Favorites
 

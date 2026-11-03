@@ -14,6 +14,8 @@ import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
 import '../../map/presentation/map_providers.dart';
 import '../../map/presentation/widgets/map_attribution.dart';
+import '../../offline_maps/data/map_data_client.dart';
+import '../../offline_maps/presentation/offline_maps_screen.dart';
 import '../../places/data/place_data_client.dart';
 import '../../places/presentation/offline_places_screen.dart';
 import '../domain/theme_preference.dart';
@@ -283,6 +285,14 @@ class _MapSection extends ConsumerWidget {
             style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
+        if (ref.watch(mapDataClientProvider) != null)
+          ListTile(
+            leading: const NaviaIcon(NaviaIcons.layers),
+            title: const Text(AppStrings.offlineMaps),
+            subtitle: const Text(AppStrings.offlineMapsDetail),
+            trailing: const NaviaIcon(NaviaIcons.chevronRight),
+            onTap: () => OfflineMapsScreen.open(context),
+          ),
         if (ref.watch(placeDataClientProvider) != null)
           ListTile(
             leading: const NaviaIcon(NaviaIcons.cloudOff),
@@ -346,6 +356,11 @@ class _ServicesSection extends StatelessWidget {
           NaviaIcons.restaurant,
           AppStrings.servicePlaces,
           AppStrings.servicePlacesDetail,
+        ),
+        service(
+          NaviaIcons.layers,
+          AppStrings.serviceOfflineMaps,
+          AppStrings.serviceOfflineMapsDetail,
         ),
         service(
           NaviaIcons.cloudOff,

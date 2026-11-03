@@ -15,7 +15,7 @@ ads, no analytics and no Navia backend: the app talks directly to open,
 OpenStreetMap-based services, and only when you use the feature that needs
 them.
 
-> **Status: early development (v0.8).** Navia offers turn-by-turn guidance
+> **Status: early development (v0.8.1).** Navia offers turn-by-turn guidance
 > with Italian voice instructions while the app is open. See
 > [Current limitations](#current-limitations).
 
@@ -54,6 +54,11 @@ them.
   size, with a progress bar and the option to cancel. Downloaded regions
   answer instantly and without a connection; you can update or delete them
   at any time. Sud is 3 MB (126,088 places), all of Italy about 22 MB.
+- **Offline maps:** download the map of an Italian macro-region
+  (*Impostazioni → Mappe offline*), with the same confirmation, progress
+  and deletion as offline places. Inside downloaded regions the map is
+  drawn from the device in all four appearances, with or without a
+  connection, and sends nothing to the tile server.
 - **Category markers:** each category has its own colored marker with its
   icon, and small colored columns rise under the markers when the map is
   tilted.
@@ -204,6 +209,7 @@ ever embedded in the APK:
 | `NAVIA_ISOCHRONE_URL` | `https://valhalla1.openstreetmap.de/isochrone` | The 15 min tab is unavailable |
 | `NAVIA_WEATHER_URL` | `https://api.open-meteo.com/v1/forecast` | Weather is hidden |
 | `NAVIA_FUEL_DATA_URL` | `https://www.mimit.gov.it/images/exportCSV/` | Fuel prices are hidden |
+| `NAVIA_MAP_DATA_URL` | `https://github.com/biagio-scaglia/Navia/releases/download/map-data` | Offline maps are hidden |
 | `NAVIA_PLACES_DATA_URL` | `https://github.com/biagio-scaglia/Navia/releases/download/places-data` | Offline places are hidden |
 
 For example, to use a self-hosted Photon instance:
@@ -249,6 +255,7 @@ lib/
   features/
     location/    device location and permissions
     map/         MapLibre renderer behind a NaviaMapController interface
+    offline_maps/  downloadable PMTiles regions and their offline styles
     navigation/  routing domain, OSRM provider, planning state, sheet UI
     search/      geocoding domain, Photon provider, search UI
     places/      OpenStreetMap places, Overpass and offline sources, discovery,
@@ -259,6 +266,7 @@ lib/
 assets/       logo and icon set
 tool/brand/   generator for the logo and launcher icons
 tool/places/  generator of the offline place datasets (run monthly in CI)
+tool/maps/    offline map catalog and bundled fonts, icons and styles
 docs/         architecture, roadmap, data licenses and brand guide
 PRIVACY.md    privacy policy (draft for legal review)
 ```
@@ -275,8 +283,13 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and the
 - Instructions come from OSRM maneuvers; lane guidance, speed limits and
   traffic are not available.
 - Travel times are estimates without live traffic.
-- Search, routing and the map need an internet connection. Only places can
-  be downloaded for offline use; offline maps and routing are planned.
+- Search and routing need an internet connection. The map and places can
+  be downloaded for offline use; offline search and routing are planned.
+- Offline maps are used while the map is centered inside a downloaded
+  region; elsewhere the online map is used, and without a connection those
+  areas stay empty. With two regions installed, Navia's 3D buildings are
+  added only in the first one in Vivace, Essenziale and Notte (Standard has
+  its own). Labels include Latin and punctuation glyphs only.
 - The default services are public community instances with fair-use limits.
   They are suitable for development and small-scale use, not for a large
   public release.
@@ -323,8 +336,8 @@ Next, in order:
    other audio, and the official Ministry fuel stations in the Carburante
    category.
 2. **0.10 — Offline maps:** map regions built monthly in CI with
-   Planetiler and downloaded on request, plus offline search in downloaded
-   places.
+   Planetiler and downloaded on request (implemented, to be verified on
+   phones), plus offline search in downloaded places.
 3. **0.11 — Public transport:** current open GTFS timetables, starting
    from Bari and Puglia.
 4. **0.12 — Small improvements:** marker clustering, sensor compass,

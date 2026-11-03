@@ -24,6 +24,7 @@ import '../../navigation/presentation/navigation_controller.dart';
 import '../../navigation/presentation/navigation_overlays.dart';
 import '../../navigation/presentation/widgets/guidance_widgets.dart';
 import '../../navigation/presentation/widgets/navigation_sheet.dart';
+import '../../offline_maps/presentation/offline_maps_controller.dart';
 import '../../places/presentation/place_discovery_controller.dart';
 import '../../places/presentation/place_marker_style.dart';
 import '../../places/presentation/place_overlays.dart';
@@ -138,13 +139,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     await map.setPlaceImages(images);
   }
 
-  /// Tells place discovery which area is shown, once the camera is idle.
+  /// Tells place discovery which area is shown, and whether it is in a
+  /// downloaded map, once the camera is idle.
   Future<void> _reportViewport() async {
     final viewport = await _map?.viewport();
     if (!mounted || viewport == null) return;
     ref
         .read(placeDiscoveryProvider.notifier)
         .viewportChanged(viewport.bounds, viewport.zoom);
+    ref
+        .read(offlineMapCoverageProvider.notifier)
+        .centerChanged(viewport.bounds.center);
   }
 
   void _retryMap() {
@@ -474,6 +479,7 @@ class _MapLayer extends ConsumerWidget {
       mapPreferencesProvider.select((p) => p.buildings3d),
     );
     final source = ref.watch(mapStyleSourceProvider);
+    final offlineStyle = ref.watch(offlineMapStyleProvider(style));
     final attempt = ref.watch(
       mapLoadControllerProvider.select((s) => s.attempt),
     );
@@ -483,6 +489,7 @@ class _MapLayer extends ConsumerWidget {
       key: ValueKey(attempt),
       source: source,
       style: style,
+      offlineStyle: offlineStyle,
       buildings3d: buildings3d,
       initialCamera: AppConfig.initialCamera,
       controlsPadding: controlsPadding,

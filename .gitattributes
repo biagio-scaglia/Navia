@@ -3,3 +3,5 @@
 *.png binary
 *.jpg binary
 *.jar binary
+*.pbf binary
+*.pmtiles binary

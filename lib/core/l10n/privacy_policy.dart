@@ -2,7 +2,7 @@
 ///
 /// It mirrors `PRIVACY.md` at the repository root: update both together.
 abstract final class PrivacyPolicy {
-  static const lastUpdated = '31 ottobre 2026';
+  static const lastUpdated = '3 novembre 2026';
 
   static const draftNotice =
       'Bozza in attesa di revisione legale. Descrive il funzionamento reale '
@@ -39,6 +39,9 @@ abstract final class PrivacyPolicy {
       'Preferiti: nome scelto da te, coordinate, data di salvataggio e, se '
           'disponibili, categoria, indirizzo e identificativo OpenStreetMap '
           'del luogo. Restano consultabili anche offline.',
+      'Mappe offline: le mappe OpenStreetMap delle zone che scegli di '
+          'scaricare. Sono dati pubblici, non dati su di te. Si eliminano da '
+          'Impostazioni → Mappe offline.',
       'Luoghi offline: i luoghi OpenStreetMap delle zone che scegli di '
           'scaricare. Sono dati pubblici della mappa, non dati su di te. Si '
           'eliminano da Impostazioni → Luoghi offline.',
@@ -85,6 +88,10 @@ abstract final class PrivacyPolicy {
           'dei prezzi, GitHub riceve la richiesta del file nazionale dei '
           'prezzi; il Ministero riceve la richiesta dei suoi file solo se '
           'quello su GitHub non è disponibile o ha più di due giorni.',
+      'GitHub (mappe offline): solo quando apri “Mappe offline” o confermi '
+          'il download di una zona, riceve la richiesta dell’elenco o del '
+          'file della zona scelta. Dentro le zone scaricate la mappa non '
+          'chiede nulla a OpenFreeMap.',
       'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta.',

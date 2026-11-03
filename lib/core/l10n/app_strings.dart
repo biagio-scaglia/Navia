@@ -239,6 +239,30 @@ abstract final class AppStrings {
       '$size · $count luoghi';
   static const downloadArea = 'Scarica la zona';
 
+  // Offline maps.
+  static const offlineMaps = 'Mappe offline';
+  static const offlineMapsDetail =
+      'Scarica la mappa di una zona per vederla senza connessione.';
+  static const offlineMapsIntro =
+      'Scarica una volta la mappa della tua zona: strade, edifici e nomi si '
+      'vedranno anche senza connessione. Dentro la zona la mappa si carica '
+      'dal dispositivo, più in fretta e senza chiedere nulla a internet. I '
+      'file sono grandi: meglio usare il Wi-Fi. Vengono aggiornati ogni mese '
+      'da OpenStreetMap.';
+  static const offlineMapsLicense =
+      'Dati © OpenStreetMap contributors, con licenza ODbL; schema © '
+      'OpenMapTiles. I file sono pubblicati su GitHub nel repository di '
+      'Navia.';
+  static String downloadMapBody(String size) =>
+      'Verranno scaricati $size da GitHub: meglio usare il Wi-Fi. GitHub '
+      'vedrà il tuo indirizzo IP, come per ogni download. La mappa resta '
+      'solo su questo dispositivo e puoi eliminarla in qualsiasi momento.';
+  static String deleteMapTitle(String name) =>
+      'Eliminare la mappa della zona $name?';
+  static const deleteMapBody =
+      'La mappa di questa zona verrà cancellata dal dispositivo. Con la '
+      'connessione Navia userà di nuovo la mappa online.';
+
   // Place discovery.
   static const clearFilter = 'tocca per rimuovere il filtro';
   static const placesLoading =
@@ -277,7 +301,9 @@ abstract final class AppStrings {
       'Navia non ha un proprio server. Queste richieste partono solo quando '
       'usi la funzione corrispondente:';
   static const serviceMap = 'Mappa: OpenFreeMap';
-  static const serviceMapDetail = 'Riceve la zona di mappa visualizzata.';
+  static const serviceMapDetail =
+      'Riceve la zona di mappa visualizzata, tranne dentro le mappe '
+      'scaricate.';
   static const serviceSearch = 'Ricerca: Photon (komoot)';
   static const serviceSearchDetail =
       'Riceve il testo cercato, una posizione approssimata (circa 1 km) e '
@@ -286,6 +312,10 @@ abstract final class AppStrings {
   static const serviceOfflinePlaces = 'Luoghi offline: GitHub';
   static const serviceOfflinePlacesDetail =
       'Solo quando apri “Luoghi offline” o scarichi una zona: riceve la '
+      'richiesta dell’elenco o del file della zona scelta.';
+  static const serviceOfflineMaps = 'Mappe offline: GitHub';
+  static const serviceOfflineMapsDetail =
+      'Solo quando apri “Mappe offline” o scarichi una zona: riceve la '
       'richiesta dell’elenco o del file della zona scelta.';
   static const serviceFuel = 'Prezzi carburanti: GitHub e MIMIT';
   static const serviceFuelDetail =

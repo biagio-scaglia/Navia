@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/offline_maps/data/offline_maps_store.dart';
 import '../features/places/data/offline_places_store.dart';
 import '../shared/providers/package_info_provider.dart';
 import '../shared/providers/shared_preferences_provider.dart';
@@ -34,6 +35,9 @@ Future<void> bootstrap() async {
         packageInfoProvider.overrideWithValue(packageInfo),
         placesDataDirectoryProvider.overrideWithValue(
           Directory('${support.path}/places'),
+        ),
+        mapsDataDirectoryProvider.overrideWithValue(
+          Directory('${support.path}/maps'),
         ),
       ],
       child: const NaviaApp(),
@@ -62,6 +66,20 @@ void _registerDataLicenses() {
       'Offline place datasets derived from OpenStreetMap, © OpenStreetMap '
       'contributors, available under the Open Database License (ODbL) 1.0.\n'
       'https://github.com/biagio-scaglia/Navia/releases/tag/places-data',
+    );
+    yield const LicenseEntryWithLineBreaks(
+      ['Navia map data'],
+      'Offline maps built with Planetiler from OpenStreetMap, © OpenStreetMap '
+      'contributors, available under the Open Database License (ODbL) 1.0, '
+      'in the OpenMapTiles schema (CC-BY 4.0), with Natural Earth data '
+      '(public domain) and OSMCode water polygons (ODbL).\n'
+      'https://github.com/biagio-scaglia/Navia/releases/tag/map-data',
+    );
+    yield const LicenseEntryWithLineBreaks(
+      ['Noto Sans'],
+      'Map label font Noto Sans, © Google, licensed under the SIL Open Font '
+      'License 1.1.\n'
+      'https://openfontlicense.org',
     );
     yield const LicenseEntryWithLineBreaks(
       ['OpenFreeMap'],

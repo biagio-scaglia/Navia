@@ -1,0 +1,120 @@
+name: Map data
+
+# Builds the offline maps (PMTiles in the OpenMapTiles schema, like the
+# OpenFreeMap styles) from OpenStreetMap extracts with Planetiler and
+# publishes them as assets of the "map-data" release, which the app
+# downloads on request. Runs monthly, when the generator changes, or on
+# demand.
+
+on:
+  schedule:
+    - cron: '0 4 2 * *'
+  push:
+    branches: [main]
+    paths:
+      - 'tool/maps/build_manifest.py'
+      - 'tool/maps/RELEASE_NOTES.md'
+      - '.github/workflows/map-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: map-data
+  cancel-in-progress: false
+
+env:
+  PLANETILER_VERSION: '0.10.2'
+  USER_AGENT: 'Navia map-data (+https://github.com/biagio-scaglia/Navia)'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      # Two at a time, so the public download servers are not hit by every
+      # region at once.
+      max-parallel: 2
+      matrix:
+        region: [nord-ovest, nord-est, centro, sud, isole]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download Planetiler
+        run: |
+          base="https://github.com/onthegomap/planetiler/releases/download/v${PLANETILER_VERSION}"
+          curl --fail --location --retry 3 --silent --show-error \
+            --output planetiler.jar "$base/planetiler.jar"
+          curl --fail --location --retry 3 --silent --show-error \
+            --output planetiler.jar.sha256 "$base/planetiler.jar.sha256"
+          echo "$(cut -d' ' -f1 planetiler.jar.sha256)  planetiler.jar" | sha256sum --check
+
+      # Natural Earth, water polygons and lake centerlines are the same for
+      # every region; they are refreshed once a month.
+      - name: Pick the cache month
+        id: month
+        run: echo "month=$(date +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: data/sources
+          key: planetiler-sources-${{ steps.month.outputs.month }}
+
+      - name: Download the Geofabrik extract
+        run: |
+          mkdir -p data/sources
+          curl --fail --location --retry 3 --silent --show-error \
+            --user-agent "$USER_AGENT" \
+            --output region.osm.pbf \
+            "https://download.geofabrik.de/europe/italy/${{ matrix.region }}-latest.osm.pbf"
+
+      - name: Build the map
+        run: |
+          mkdir -p out
+          java -Xmx12g -jar planetiler.jar \
+            --osm-path=region.osm.pbf \
+            --output="out/map-${{ matrix.region }}.pmtiles" \
+            --download \
+            --languages=it,en \
+            --http-user-agent="$USER_AGENT" \
+            --force
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-${{ matrix.region }}
+          path: out/
+          retention-days: 3
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Build the catalog
+        run: python tool/maps/build_manifest.py out
+
+      - name: Publish the release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view map-data > /dev/null 2>&1; then
+            gh release create map-data \
+              --title 'Navia map data' \
+              --latest=false \
+              --notes-file tool/maps/RELEASE_NOTES.md
+          fi
+          gh release upload map-data out/manifest.json out/*.pmtiles --clobber
