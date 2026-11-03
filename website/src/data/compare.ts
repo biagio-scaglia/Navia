@@ -5,7 +5,7 @@
 
 export const compareMeta = {
   checked: 'novembre 2026',
-  checkedIso: '2026-11-02',
+  checkedIso: '2026-11-03',
 } as const
 
 export const apps = [
@@ -67,7 +67,7 @@ export const rows: Row[] = [
   {
     label: 'Mappe offline',
     cells: {
-      navia: { v: 'partial', note: 'Solo luoghi e prezzi dei carburanti, non la mappa' },
+      navia: { v: 'partial', note: 'Luoghi e prezzi dei carburanti; mappa offline in arrivo' },
       google: { v: 'yes', note: 'Aree scaricabili' },
       organic: { v: 'yes', note: 'Pensata per l’uso offline' },
       osmand: { v: 'yes', note: 'Mappe e percorsi offline' },

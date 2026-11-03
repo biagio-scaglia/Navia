@@ -2,8 +2,8 @@
 
 export const site = {
   name: 'Navia',
-  version: '0.8.0',
-  build: '+7',
+  version: '0.8.1',
+  build: '+8',
   url: 'https://biagio-scaglia.github.io/Navia/',
   title: 'Navia – navigatore open source per Android, senza tracciamento',
   description:
@@ -194,7 +194,7 @@ export const features: {
 
 /** Servizi esterni e dati ricevuti, da PRIVACY.md. */
 export const services = [
-  { name: 'OpenFreeMap', when: 'Mentre guardi la mappa', what: 'La zona e lo zoom visualizzati' },
+  { name: 'OpenFreeMap', when: 'Mentre guardi la mappa, fuori dalle zone scaricate', what: 'La zona e lo zoom visualizzati' },
   { name: 'Photon (komoot)', when: 'Mentre cerchi, o tenendo premuto sulla mappa', what: 'Il testo cercato e la posizione arrotondata a circa 1 km, oppure il punto premuto' },
   { name: 'OSRM (FOSSGIS)', when: 'Quando calcoli un percorso', what: 'Partenza, arrivo e mezzo scelto' },
   { name: 'Overpass API', when: 'Con una categoria attiva fuori dalle zone scaricate', what: 'Categoria e zona visibile, allargata e arrotondata a circa 1 km' },
@@ -206,7 +206,8 @@ export const services = [
 export const limitations = [
   'La guida funziona solo con l’app aperta in primo piano.',
   'Niente traffico in tempo reale, corsie o limiti di velocità.',
-  'Offline oggi ci sono i luoghi che scarichi, non la mappa né i percorsi.',
+  'Le mappe offline sono nell’app ma in prova: le zone da scaricare arrivano con la prima pubblicazione dei file.',
+  'Offline oggi ci sono i luoghi che scarichi e i prezzi dei carburanti; i percorsi richiedono la rete.',
   'Gli endpoint pubblici predefiniti sono pensati per un uso leggero.',
 ] as const
 
@@ -229,7 +230,7 @@ export const faq = [
   },
   {
     q: 'Funziona senza connessione?',
-    a: 'In parte. Puoi scaricare i luoghi di una macroregione italiana e i prezzi dei carburanti, e la sintesi vocale funziona offline. La mappa e il calcolo dei percorsi, per ora, richiedono la rete.',
+    a: 'In parte. Puoi scaricare i luoghi di una macroregione italiana e i prezzi dei carburanti, e la sintesi vocale funziona offline. Le mappe offline per macroregione sono già nell’app e arrivano con la prima pubblicazione dei file; il calcolo dei percorsi, per ora, richiede la rete.',
   },
   {
     q: 'Funziona solo a Bari?',
@@ -241,7 +242,7 @@ export const faq = [
   },
   {
     q: 'Dove scarico Navia?',
-    a: 'Un APK pubblico non c’è ancora: Navia è in sviluppo (versione 0.8). Puoi compilarla dal codice sorgente con Flutter o seguire il repository su GitHub per sapere quando esce la prima release.',
+    a: 'Un APK pubblico non c’è ancora: Navia è in sviluppo (versione 0.8.1). Puoi compilarla dal codice sorgente con Flutter o seguire il repository su GitHub per sapere quando esce la prima release.',
   },
 ] as const
 

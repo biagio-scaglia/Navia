@@ -5,9 +5,9 @@
 
 export const privacyMeta = {
   title: 'Informativa sulla privacy',
-  lastUpdated: '31 ottobre 2026',
-  lastUpdatedIso: '2026-10-31',
-  appliesTo: 'Navia 0.8.0 e successive',
+  lastUpdated: '3 novembre 2026',
+  lastUpdatedIso: '2026-11-03',
+  appliesTo: 'Navia 0.8.1 e successive',
   draftNotice:
     'Bozza in attesa di revisione legale. Descrive il funzionamento reale dell’app, ma non è una certificazione di conformità al GDPR.',
 } as const
@@ -43,6 +43,7 @@ export const privacySections: PrivacySection[] = [
     paragraphs: [
       'Tema, aspetto della mappa ed edifici 3D: per ricordare le tue scelte.',
       'Preferiti: nome scelto da te, coordinate, data di salvataggio e, se disponibili, categoria, indirizzo e identificativo OpenStreetMap del luogo. Restano consultabili anche offline.',
+      'Mappe offline: le mappe OpenStreetMap delle zone che scegli di scaricare. Sono dati pubblici, non dati su di te. Si eliminano da Impostazioni → Mappe offline.',
       'Luoghi offline: i luoghi OpenStreetMap delle zone che scegli di scaricare. Sono dati pubblici della mappa, non dati su di te. Si eliminano da Impostazioni → Luoghi offline.',
       'Questi dati non escono dal dispositivo tramite Navia e sono esclusi dal backup cloud di Android. Si cancellano eliminando i preferiti, svuotando i dati dell’app o disinstallandola.',
       'La posizione non viene salvata: resta in memoria finché l’app è aperta. Anche i risultati di ricerca, i luoghi trovati e i percorsi restano solo in memoria.',
@@ -63,6 +64,7 @@ export const privacySections: PrivacySection[] = [
       'Wikipedia e Wikidata: solo quando apri la scheda di un luogo collegato a Wikipedia, ricevono il titolo della voce o il codice Wikidata e la richiesta della sua immagine.',
       'Wikipedia (schede dei luoghi): quando apri la scheda di un luogo con un nome ma senza collegamento a Wikipedia, riceve la posizione arrotondata a circa 100 m e, se vicino c’è una voce con lo stesso nome, il suo titolo e la richiesta della sua immagine.',
       'GitHub e Ministero delle Imprese e del Made in Italy (prezzi carburanti): solo quando confermi il download o l’aggiornamento dei prezzi, GitHub riceve la richiesta del file nazionale dei prezzi; il Ministero riceve la richiesta dei suoi file solo se quello su GitHub non è disponibile o ha più di due giorni.',
+      'GitHub (mappe offline): solo quando apri “Mappe offline” o confermi il download di una zona, riceve la richiesta dell’elenco o del file della zona scelta. Dentro le zone scaricate la mappa non chiede nulla a OpenFreeMap.',
       'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi il download di una zona, riceve la richiesta dell’elenco o del file della zona scelta.',
       'La zona visualizzata, le ricerche e i punti di un percorso possono rivelare dove sei o dove vai: per questo l’app invia solo il minimo necessario. Ogni fornitore tratta i dati secondo la propria informativa.',
     ],
