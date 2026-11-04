@@ -238,6 +238,13 @@ abstract final class AppStrings {
   static String regionAvailable(String size, String count) =>
       '$size · $count luoghi';
   static const downloadArea = 'Scarica la zona';
+  static String hintMissingMap(String name) =>
+      'Hai scaricato i luoghi della zona $name, ma non la mappa: senza '
+      'connessione non vedrai strade ed edifici.';
+  static String hintMissingPlaces(String name) =>
+      'Hai scaricato la mappa della zona $name, ma non i luoghi: senza '
+      'connessione non potrai cercare ristoranti, farmacie e altro.';
+  static const hintDismiss = 'Non mostrare più';
 
   // Offline maps.
   static const offlineMaps = 'Mappe offline';

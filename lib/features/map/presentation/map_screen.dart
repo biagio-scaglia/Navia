@@ -26,6 +26,7 @@ import '../../navigation/presentation/navigation_controller.dart';
 import '../../navigation/presentation/navigation_overlays.dart';
 import '../../navigation/presentation/widgets/guidance_widgets.dart';
 import '../../navigation/presentation/widgets/navigation_sheet.dart';
+import '../../offline_areas/offline_area_hint.dart';
 import '../../offline_maps/presentation/offline_maps_controller.dart';
 import '../../places/presentation/place_discovery_controller.dart';
 import '../../places/presentation/place_marker_style.dart';
@@ -151,6 +152,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         .viewportChanged(viewport.bounds, viewport.zoom);
     ref
         .read(offlineMapCoverageProvider.notifier)
+        .centerChanged(viewport.bounds.center);
+    ref
+        .read(offlineAreaHintProvider.notifier)
         .centerChanged(viewport.bounds.center);
   }
 
@@ -610,6 +614,23 @@ class _MapOverlays extends ConsumerWidget {
                 ),
               ),
             ),
+            if (ref.watch(offlineAreaHintProvider.select((h) => h != null)))
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  edge + safe.left,
+                  NaviaSpacing.md,
+                  edge + safe.right,
+                  0,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: NaviaSizes.panelMaxWidth,
+                    ),
+                    child: const OfflineAreaHintBanner(),
+                  ),
+                ),
+              ),
             Padding(
               padding: EdgeInsets.fromLTRB(
                 edge + safe.left,
