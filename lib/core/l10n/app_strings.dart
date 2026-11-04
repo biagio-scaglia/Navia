@@ -368,6 +368,24 @@ abstract final class AppStrings {
   static const favoritesEmptyBody =
       'Seleziona un luogo sulla mappa o nella ricerca e tocca la stella per '
       'salvarlo. I preferiti restano solo su questo dispositivo.';
+  static const allFavorites = 'Tutti';
+  static const newFolder = 'Nuova cartella';
+  static const folderName = 'Nome della cartella';
+  static const renameFolder = 'Rinomina cartella';
+  static const deleteFolder = 'Elimina cartella';
+  static String deleteFolderTitle(String name) =>
+      'Eliminare la cartella “$name”?';
+  static const deleteFolderBody =
+      'I preferiti al suo interno non verranno eliminati: resteranno in '
+      '“Tutti”, fuori da ogni cartella.';
+  static const moveToFolder = 'Sposta in cartella';
+  static const noFolder = 'Nessuna cartella';
+  static const moreActions = 'Altre azioni';
+  static const folderEmpty =
+      'Nessun preferito in questa cartella. Apri il menu di un preferito e '
+      'scegli “Sposta in cartella”.';
+  static String movedToFolder(String name, String folder) =>
+      '“$name” spostato in “$folder”.';
 
   // Search results.
   static const searchSubmit = 'Cerca';

@@ -66,7 +66,9 @@ void main() {
       expect(find.text('Casa'), findsOneWidget);
       expect(find.text('41.11710, 16.87190'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Elimina'));
+      await tester.tap(find.byTooltip('Altre azioni'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Elimina'));
       await tester.pumpAndSettle();
       expect(find.text('Casa'), findsNothing);
       expect(container.read(favoritesProvider), isEmpty);
@@ -75,6 +77,44 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Casa'), findsOneWidget);
       expect(container.read(favoritesProvider), hasLength(1));
+    });
+
+    testWidgets('creates a folder and moves a favorite into it', (
+      tester,
+    ) async {
+      final container = await pumpNaviaWidget(tester, const FavoritesScreen());
+      await container
+          .read(favoritesProvider.notifier)
+          .add('Casa', const GeoPoint(latitude: 41.1171, longitude: 16.8719));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Altre azioni'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sposta in cartella'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nuova cartella').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Vacanze');
+      await tester.pump();
+      await tester.tap(find.text('Salva'));
+      await tester.pumpAndSettle();
+
+      final folder = container.read(favoriteFoldersProvider).single;
+      expect(folder.name, 'Vacanze');
+      expect(container.read(favoritesProvider).single.folderId, folder.id);
+      expect(find.text('Vacanze · 1'), findsOneWidget);
+
+      // Deleting the folder keeps the favorite, outside any folder.
+      await tester.tap(find.text('Vacanze · 1'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Elimina cartella'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Elimina').last);
+      await tester.pumpAndSettle();
+
+      expect(container.read(favoriteFoldersProvider), isEmpty);
+      expect(container.read(favoritesProvider).single.folderId, isNull);
+      expect(find.text('Casa'), findsOneWidget);
     });
 
     testWidgets('returns a favorite for directions', (tester) async {

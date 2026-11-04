@@ -82,6 +82,8 @@ them.
   their OpenStreetMap category, address and identifier when available. Open
   them, plan a route to them, pick them as origin or destination (also
   offline, from the search screen), rename or delete them (with undo).
+  Group them in folders; every favorite is a star on the map, gold outside
+  any folder and in its folder's color inside one.
   Duplicates are prevented by OpenStreetMap identifier or within 15 m.
 - **Routing:** builds A-to-B routes by car, bike or on foot as soon as both
   ends are known, with "your location" available as the origin. It shows

@@ -69,6 +69,22 @@ class FavoritesController extends Notifier<List<Favorite>> {
     return true;
   }
 
+  /// Puts a favorite in [folderId], or in no folder when null.
+  Future<void> move(String id, String? folderId) => _update([
+    for (final favorite in state)
+      favorite.id == id
+          ? favorite.copyWith(folderId: () => folderId)
+          : favorite,
+  ]);
+
+  /// Takes every favorite out of a deleted folder; none is deleted.
+  Future<void> emptyFolder(String folderId) => _update([
+    for (final favorite in state)
+      favorite.folderId == folderId
+          ? favorite.copyWith(folderId: () => null)
+          : favorite,
+  ]);
+
   /// Removes a favorite and returns it, so that the removal can be undone.
   Future<Favorite?> remove(String id) async {
     final index = state.indexWhere((favorite) => favorite.id == id);
@@ -102,7 +118,11 @@ class FavoritesController extends Notifier<List<Favorite>> {
     return '$candidate';
   }
 
-  static String? _clean(String name) {
+  static String? _clean(String name) => cleanName(name);
+
+  /// [name] without surrounding and repeated spaces, cut to
+  /// [maxNameLength]; null when blank.
+  static String? cleanName(String name) {
     final trimmed = name.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (trimmed.isEmpty) return null;
     return trimmed.length > maxNameLength
@@ -114,3 +134,59 @@ class FavoritesController extends Notifier<List<Favorite>> {
 final favoritesProvider = NotifierProvider<FavoritesController, List<Favorite>>(
   FavoritesController.new,
 );
+
+/// Folders of favorites, in the order they were created.
+class FavoriteFoldersController extends Notifier<List<FavoriteFolder>> {
+  FavoritesRepository get _repository => ref.read(favoritesRepositoryProvider);
+
+  @override
+  List<FavoriteFolder> build() =>
+      ref.watch(favoritesRepositoryProvider).loadFolders();
+
+  /// Creates a folder with the next free color; null for a blank name.
+  Future<FavoriteFolder?> create(String name) async {
+    final cleaned = FavoritesController.cleanName(name);
+    if (cleaned == null) return null;
+    final used = {for (final folder in state) folder.colorIndex};
+    final color = List.generate(
+      FavoriteFolder.colorCount,
+      (i) => i,
+    ).firstWhere((i) => !used.contains(i), orElse: () => state.length);
+    final folder = FavoriteFolder(
+      id: 'folder-${DateTime.now().microsecondsSinceEpoch}',
+      name: cleaned,
+      colorIndex: color % FavoriteFolder.colorCount,
+    );
+    await _update([...state, folder]);
+    return folder;
+  }
+
+  Future<bool> rename(String id, String name) async {
+    final cleaned = FavoritesController.cleanName(name);
+    if (cleaned == null) return false;
+    await _update([
+      for (final folder in state)
+        folder.id == id ? folder.copyWith(name: cleaned) : folder,
+    ]);
+    return true;
+  }
+
+  /// Deletes a folder; its favorites stay, outside any folder.
+  Future<void> delete(String id) async {
+    await ref.read(favoritesProvider.notifier).emptyFolder(id);
+    await _update([
+      for (final folder in state)
+        if (folder.id != id) folder,
+    ]);
+  }
+
+  Future<void> _update(List<FavoriteFolder> folders) async {
+    state = List.unmodifiable(folders);
+    await _repository.saveFolders(state);
+  }
+}
+
+final favoriteFoldersProvider =
+    NotifierProvider<FavoriteFoldersController, List<FavoriteFolder>>(
+      FavoriteFoldersController.new,
+    );

@@ -35,11 +35,30 @@ extension PoiCategoryMarker on PoiCategory {
   String get markerImageId => 'navia-place-$name';
 }
 
-/// Marker of the places saved in the favorites: a gold star, distinct from
-/// every category color.
+/// Markers of the places saved in the favorites: a star, gold outside any
+/// folder and in the folder's color inside one.
 abstract final class FavoriteMarker {
   static const color = Color(0xFFF2A900);
   static const imageId = 'navia-place-favorite';
+
+  /// Folder colors, distinct from the gold star and readable on light and
+  /// dark maps; a folder's color index picks one.
+  static const folderColors = [
+    Color(0xFFE64980),
+    Color(0xFF12B886),
+    Color(0xFF4C6EF5),
+    Color(0xFFFD7E14),
+    Color(0xFF7950F2),
+    Color(0xFF15AABF),
+  ];
+
+  static Color colorOf(int? folderColor) => folderColor == null
+      ? color
+      : folderColors[folderColor % folderColors.length];
+
+  static String imageOf(int? folderColor) => folderColor == null
+      ? imageId
+      : '$imageId-${folderColor % folderColors.length}';
 }
 
 /// Renders the marker images: a colored disc with a white ring and the
@@ -56,10 +75,15 @@ abstract final class PlaceMarkerImages {
         category.icon,
       );
     }
-    images[FavoriteMarker.imageId] = await _marker(
-      FavoriteMarker.color,
-      NaviaIcons.starFilled,
-    );
+    for (final folderColor in <int?>[
+      null,
+      for (var i = 0; i < FavoriteMarker.folderColors.length; i++) i,
+    ]) {
+      images[FavoriteMarker.imageOf(folderColor)] = await _marker(
+        FavoriteMarker.colorOf(folderColor),
+        NaviaIcons.starFilled,
+      );
+    }
     return images;
   }
 

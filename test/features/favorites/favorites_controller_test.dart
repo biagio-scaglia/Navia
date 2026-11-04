@@ -186,4 +186,57 @@ void main() {
     expect(controller.findExisting(_work, osmRef: ref)?.name, 'Parco');
     expect(controller.findExisting(_work), isNull);
   });
+
+  test('keeps favorites in folders across sessions', () async {
+    final container = await _container();
+    final favorites = container.read(favoritesProvider.notifier);
+    final folders = container.read(favoriteFoldersProvider.notifier);
+    await favorites.add('Casa', _home);
+    final id = container.read(favoritesProvider).single.id;
+
+    final folder = await folders.create('  Vacanze  ');
+    expect(folder?.name, 'Vacanze');
+    expect(await folders.create('   '), isNull);
+    await favorites.move(id, folder!.id);
+
+    final next = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(
+          container.read(sharedPreferencesProvider),
+        ),
+      ],
+    );
+    addTearDown(next.dispose);
+    expect(next.read(favoriteFoldersProvider).single.name, 'Vacanze');
+    expect(next.read(favoritesProvider).single.folderId, folder.id);
+  });
+
+  test('gives new folders distinct colors', () async {
+    final container = await _container();
+    final folders = container.read(favoriteFoldersProvider.notifier);
+    for (final name in ['A', 'B', 'C']) {
+      await folders.create(name);
+    }
+    final colors = container
+        .read(favoriteFoldersProvider)
+        .map((f) => f.colorIndex);
+    expect(colors.toSet(), hasLength(3));
+  });
+
+  test('deleting a folder keeps its favorites', () async {
+    final container = await _container();
+    final favorites = container.read(favoritesProvider.notifier);
+    final folders = container.read(favoriteFoldersProvider.notifier);
+    await favorites.add('Casa', _home);
+    final folder = await folders.create('Vacanze');
+    await favorites.move(
+      container.read(favoritesProvider).single.id,
+      folder!.id,
+    );
+
+    await folders.delete(folder.id);
+
+    expect(container.read(favoriteFoldersProvider), isEmpty);
+    expect(container.read(favoritesProvider).single.folderId, isNull);
+  });
 }

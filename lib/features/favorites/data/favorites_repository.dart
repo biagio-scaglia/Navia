@@ -36,6 +36,27 @@ class FavoritesRepository {
     storageKey,
     jsonEncode([for (final favorite in favorites) favorite.toJson()]),
   );
+
+  static const foldersKey = 'favorites.folders.v1';
+
+  List<FavoriteFolder> loadFolders() {
+    final raw = _preferences.getString(foldersKey);
+    if (raw == null) return const [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return const [];
+      return [for (final entry in decoded) ?FavoriteFolder.tryParse(entry)];
+    } on FormatException catch (error) {
+      debugPrint('[favorites] could not read stored folders: $error');
+      return const [];
+    }
+  }
+
+  Future<void> saveFolders(List<FavoriteFolder> folders) =>
+      _preferences.setString(
+        foldersKey,
+        jsonEncode([for (final folder in folders) folder.toJson()]),
+      );
 }
 
 final favoritesRepositoryProvider = Provider<FavoritesRepository>(

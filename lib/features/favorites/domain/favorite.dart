@@ -14,6 +14,7 @@ class Favorite {
     this.osmRef,
     this.category,
     this.address,
+    this.folderId,
   });
 
   final String id;
@@ -33,7 +34,10 @@ class Favorite {
   final String? category;
   final String? address;
 
-  Favorite copyWith({String? name}) => Favorite(
+  /// The [FavoriteFolder] holding the place; null when it is in none.
+  final String? folderId;
+
+  Favorite copyWith({String? name, String? Function()? folderId}) => Favorite(
     id: id,
     name: name ?? this.name,
     point: point,
@@ -41,6 +45,7 @@ class Favorite {
     osmRef: osmRef,
     category: category,
     address: address,
+    folderId: folderId == null ? this.folderId : folderId(),
   );
 
   Map<String, Object> toJson() => {
@@ -52,6 +57,7 @@ class Favorite {
     'osm': ?osmRef?.key,
     'category': ?category,
     'address': ?address,
+    'folder': ?folderId,
   };
 
   /// Parses a stored favorite, returning null for corrupted entries.
@@ -84,6 +90,7 @@ class Favorite {
       osmRef: OsmRef.tryParse(json['osm']),
       category: text(json['category']),
       address: text(json['address']),
+      folderId: text(json['folder']),
     );
   }
 
@@ -96,9 +103,66 @@ class Favorite {
       other.createdAt == createdAt &&
       other.osmRef == osmRef &&
       other.category == category &&
-      other.address == address;
+      other.address == address &&
+      other.folderId == folderId;
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, point, createdAt, osmRef, category, address);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    point,
+    createdAt,
+    osmRef,
+    category,
+    address,
+    folderId,
+  );
+}
+
+/// A folder of favorites, such as "Ristoranti" or "Vacanze 2026". Its pins
+/// on the map share one of a few colors.
+@immutable
+class FavoriteFolder {
+  const FavoriteFolder({
+    required this.id,
+    required this.name,
+    required this.colorIndex,
+  });
+
+  /// Number of folder colors; the index wraps around beyond it.
+  static const colorCount = 6;
+
+  final String id;
+  final String name;
+
+  /// From 0 to [colorCount] - 1.
+  final int colorIndex;
+
+  FavoriteFolder copyWith({String? name}) =>
+      FavoriteFolder(id: id, name: name ?? this.name, colorIndex: colorIndex);
+
+  Map<String, Object> toJson() => {'id': id, 'name': name, 'color': colorIndex};
+
+  static FavoriteFolder? tryParse(Object? json) {
+    if (json is! Map) return null;
+    final id = json['id'];
+    final name = json['name'];
+    final color = json['color'];
+    if (id is! String || name is! String || name.trim().isEmpty) return null;
+    return FavoriteFolder(
+      id: id,
+      name: name,
+      colorIndex: color is int ? color % colorCount : 0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is FavoriteFolder &&
+      other.id == id &&
+      other.name == name &&
+      other.colorIndex == colorIndex;
+
+  @override
+  int get hashCode => Object.hash(id, name, colorIndex);
 }
