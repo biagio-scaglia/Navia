@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +36,7 @@ import '../../places/presentation/widgets/place_category_bar.dart';
 import '../../reach/reach.dart';
 import '../../search/data/photon_geocoding_repository.dart';
 import '../../search/presentation/search_screen.dart';
+import '../../transit/presentation/transit_controller.dart';
 import '../domain/map_overlays.dart';
 import '../domain/navia_map_controller.dart';
 import 'map_preferences_controller.dart';
@@ -74,6 +76,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
+    // Timetables already downloaded stay current, once a day at most.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        unawaited(ref.read(transitProvider.notifier).refreshIfStale());
+      }
+    });
     // Location updates are only needed while the map is visible.
     _lifecycle = AppLifecycleListener(
       onHide: () => _location.pause(),
@@ -105,6 +113,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     unawaited(_registerMarkerImages(map));
     unawaited(map.showAreas(_areasOf(ref.read(reachProvider).contours)));
     unawaited(map.showPlaces(ref.read(mapPlacesProvider)));
+    unawaited(map.showLines(_transitLines()));
+    unawaited(map.showVehicles(_transitVehicles()));
     unawaited(
       map.setStylePoisVisible(
         ref.read(placeDiscoveryProvider).category == null,
@@ -156,6 +166,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref
         .read(offlineAreaHintProvider.notifier)
         .centerChanged(viewport.bounds.center);
+    ref
+        .read(mapViewportProvider.notifier)
+        .changed(viewport.bounds, viewport.zoom);
   }
 
   void _retryMap() {
@@ -207,6 +220,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (place != null) {
       _navigation.selectPlace(place);
       return;
+    }
+    if (placeKey != null && placeKey.startsWith(transitStopKeyPrefix)) {
+      final index = int.tryParse(
+        placeKey.substring(transitStopKeyPrefix.length),
+      );
+      final stops = ref.read(transitDataProvider).value?.stops ?? const [];
+      final stop = stops.where((s) => s.index == index).firstOrNull;
+      if (stop != null) {
+        _navigation.select(
+          PointWaypoint(
+            stop.point,
+            label: stop.name,
+            category: AppStrings.amtabStop,
+          ),
+        );
+        return;
+      }
     }
     if (placeKey != null && placeKey.startsWith(favoritePlaceKeyPrefix)) {
       final id = placeKey.substring(favoritePlaceKeyPrefix.length);
@@ -297,7 +327,60 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       );
   }
 
+  /// The shown AMTAB line, in its color.
+  List<MapLine> _transitLines() {
+    final route = ref.read(transitLineProvider);
+    if (route == null) return const [];
+    final schedule = ref.read(shownLineScheduleProvider);
+    final routes = ref.read(transitDataProvider).value?.routes ?? const [];
+    if (schedule == null) return const [];
+    final color = TransitMarker.lineColor(
+      routes.where((r) => r.index == route).firstOrNull?.color,
+    );
+    return [
+      for (final shape in schedule.shapes) MapLine(points: shape, color: color),
+    ];
+  }
+
+  List<MapVehicle> _transitVehicles() {
+    final route = ref.read(transitLineProvider);
+    final routes = ref.read(transitDataProvider).value?.routes ?? const [];
+    final color = TransitMarker.lineColor(
+      routes.where((r) => r.index == route).firstOrNull?.color,
+    );
+    return [
+      for (final vehicle in ref.read(transitVehiclesProvider))
+        MapVehicle(
+          point: vehicle.point,
+          bearing: vehicle.bearing,
+          color: color,
+        ),
+    ];
+  }
+
   void _listenToState() {
+    ref.listen(transitLineProvider, (_, route) {
+      unawaited(_map?.showLines(_transitLines()));
+    });
+    ref.listen(transitDataProvider, (_, _) {
+      unawaited(_map?.showLines(_transitLines()));
+    });
+    // The line appears once its shapes are read, framed whole.
+    ref.listen(shownLineScheduleProvider, (_, schedule) {
+      unawaited(_map?.showLines(_transitLines()));
+      final shapes = schedule?.shapes ?? const [];
+      if (shapes.isNotEmpty) _fitRoute([for (final s in shapes) ...s]);
+    });
+    ref.listen(transitVehiclesProvider, (_, _) {
+      unawaited(_map?.showVehicles(_transitVehicles()));
+    });
+    // Closing the card of a stop hides its line.
+    ref.listen(
+      navigationControllerProvider.select((s) => s.selection == null),
+      (_, cleared) {
+        if (cleared) ref.read(transitLineProvider.notifier).hide();
+      },
+    );
     ref.listen(locationControllerProvider, (previous, next) {
       final position = next.position;
       if (position != previous?.position) {
@@ -361,8 +444,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   Widget build(BuildContext context) {
     _listenToState();
-    final safe = MediaQuery.paddingOf(context);
-    final controlsTop = safe.top + _edge + MapTopBar.height + NaviaSpacing.md;
 
     return _BackHandler(
       child: _MapSystemBars(
@@ -372,17 +453,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             children: [
               Positioned.fill(
                 child: _MapLayer(
-                  controlsPadding: EdgeInsets.fromLTRB(
-                    _edge + safe.left,
-                    controlsTop,
-                    _edge + safe.right,
-                    _edge + safe.bottom,
-                  ),
                   onMapReady: _onMapReady,
                   onStyleLoaded: _onStyleLoaded,
                   onTap: _onTap,
                   onLongPress: _onLongPress,
                   onCameraIdle: () => unawaited(_reportViewport()),
+                  onBearingChanged: ref
+                      .read(mapBearingProvider.notifier)
+                      .update,
                 ),
               ),
               Positioned.fill(child: _MapStatusLayer(onRetry: _retryMap)),
@@ -393,6 +471,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   onLocationPressed: _onLocationPressed,
                   onOpenFavorites: _openFavorites,
                   onShowRoute: () => _fitRoute(ref.read(routeGeometryProvider)),
+                  onResetNorth: () => unawaited(_map?.resetBearing()),
                   mapCenter: _mapCenter,
                   onFocusArticle: _focusArticle,
                 ),
@@ -475,20 +554,20 @@ class _MapSystemBars extends ConsumerWidget {
 /// The map itself. Rebuilds only when the style or location puck changes.
 class _MapLayer extends ConsumerWidget {
   const _MapLayer({
-    required this.controlsPadding,
     required this.onMapReady,
     required this.onStyleLoaded,
     required this.onTap,
     required this.onLongPress,
     required this.onCameraIdle,
+    required this.onBearingChanged,
   });
 
-  final EdgeInsets controlsPadding;
   final ValueChanged<NaviaMapController> onMapReady;
   final VoidCallback onStyleLoaded;
   final void Function(Offset screenPoint, GeoPoint point) onTap;
   final ValueChanged<GeoPoint> onLongPress;
   final VoidCallback onCameraIdle;
+  final ValueChanged<double> onBearingChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -513,7 +592,6 @@ class _MapLayer extends ConsumerWidget {
       offlineStyle: offlineStyle,
       buildings3d: buildings3d,
       initialCamera: AppConfig.initialCamera,
-      controlsPadding: controlsPadding,
       onMapReady: onMapReady,
       onStyleLoadStarted: ref
           .read(mapLoadControllerProvider.notifier)
@@ -522,6 +600,7 @@ class _MapLayer extends ConsumerWidget {
       onTap: onTap,
       onLongPress: onLongPress,
       onCameraIdle: onCameraIdle,
+      onBearingChanged: onBearingChanged,
     );
   }
 }
@@ -550,6 +629,7 @@ class _MapOverlays extends ConsumerWidget {
     required this.onLocationPressed,
     required this.onOpenFavorites,
     required this.onShowRoute,
+    required this.onResetNorth,
     required this.mapCenter,
     required this.onFocusArticle,
   });
@@ -561,6 +641,7 @@ class _MapOverlays extends ConsumerWidget {
   final VoidCallback onLocationPressed;
   final VoidCallback onOpenFavorites;
   final VoidCallback onShowRoute;
+  final VoidCallback onResetNorth;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -643,7 +724,7 @@ class _MapOverlays extends ConsumerWidget {
                 children: [
                   MapAttributionChip(source: source),
                   const Spacer(),
-                  const _MapViewControls(),
+                  _MapViewControls(onResetNorth: onResetNorth),
                 ],
               ),
             ),
@@ -695,7 +776,9 @@ class _MapOverlays extends ConsumerWidget {
 
 /// Map appearance and 3D toggle, grouped in one compact floating pill.
 class _MapViewControls extends ConsumerWidget {
-  const _MapViewControls();
+  const _MapViewControls({required this.onResetNorth});
+
+  final VoidCallback onResetNorth;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -706,6 +789,9 @@ class _MapViewControls extends ConsumerWidget {
     final supports3d = ref.watch(
       mapStyleSourceProvider.select((s) => s.supportsBuildings3d),
     );
+    // Shown only while the map is turned away from north.
+    final bearing = ref.watch(mapBearingProvider);
+    final rotated = MapBearing.offNorth(bearing) >= 1;
 
     return FloatingSurface(
       borderRadius: const BorderRadius.all(
@@ -716,6 +802,23 @@ class _MapViewControls extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (rotated) ...[
+              SizedBox.square(
+                dimension: NaviaSizes.mapControl,
+                child: IconButton(
+                  tooltip: AppStrings.resetNorth,
+                  onPressed: onResetNorth,
+                  icon: Transform.rotate(
+                    angle: -bearing * math.pi / 180,
+                    child: NaviaIcon(NaviaIcons.compass, color: scheme.error),
+                  ),
+                ),
+              ),
+              const Divider(
+                indent: NaviaSpacing.md,
+                endIndent: NaviaSpacing.md,
+              ),
+            ],
             SizedBox.square(
               dimension: NaviaSizes.mapControl,
               child: IconButton(

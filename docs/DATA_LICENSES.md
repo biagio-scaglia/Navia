@@ -100,12 +100,27 @@ own files, joined on the device, only when it is unavailable or older than
 two days. The data is kept separate from the ODbL place datasets; the place
 card credits the source and license.
 
+## AMTAB bus timetables
+
+AMTAB publishes the GTFS timetables of the Bari buses at
+`amtabservizio.it/gtfs/google_transit.zip`, renewed about every month (in
+November 2026: 68 lines, 1,115 stops, valid from 23 October to 30
+November). The earlier feed on the City of Bari's open data portal was
+under CC BY 4.0; the current file states no license, which is still to
+be asked of AMTAB. Until it is known, Navia does **not** republish the
+timetables: the phone downloads the file straight from AMTAB, after the
+user's consent, and processes it on the device. Navia only reads it, like
+a browser opening a public file, and credits AMTAB as the source in the
+stop card and the settings.
+
+Should AMTAB confirm an open license, the processed timetables could be
+published like the fuel prices, so that the phone downloads a smaller
+file.
+
 ## Italian open data checked but not used
 
 - **Ministry of Culture (dati.cultura.gov.it):** the domain did not resolve
   in October 2026.
-- **AMTAB GTFS (opendata.comune.bari.it, CC BY 4.0):** the feed is valid only
-  until 31 December 2023.
 - **Patron saints (Wikidata):** many saints have several feast days, so a
   local holiday cannot be computed reliably.
 

@@ -19,6 +19,8 @@ import '../../offline_maps/data/map_data_client.dart';
 import '../../places/data/fuel_prices_store.dart';
 import '../../places/data/place_data_client.dart';
 import '../../places/presentation/fuel_prices_screen.dart';
+import '../../transit/data/transit_store.dart';
+import '../../transit/presentation/transit_screen.dart';
 import '../domain/theme_preference.dart';
 import 'privacy_screen.dart';
 import 'theme_preference_controller.dart';
@@ -295,6 +297,14 @@ class _MapSection extends ConsumerWidget {
             trailing: const NaviaIcon(NaviaIcons.chevronRight),
             onTap: () => OfflineAreasScreen.open(context),
           ),
+        if (ref.watch(transitStoreProvider) != null)
+          ListTile(
+            leading: const NaviaIcon(NaviaIcons.bus),
+            title: const Text(AppStrings.amtabTimetables),
+            subtitle: const Text(AppStrings.amtabTimetablesDetail),
+            trailing: const NaviaIcon(NaviaIcons.chevronRight),
+            onTap: () => TransitScreen.open(context),
+          ),
         if (ref.watch(fuelPricesStoreProvider) != null)
           ListTile(
             leading: const NaviaIcon(NaviaIcons.fuel),
@@ -363,6 +373,11 @@ class _ServicesSection extends StatelessWidget {
           NaviaIcons.cloudOff,
           AppStrings.serviceOfflineAreas,
           AppStrings.serviceOfflineAreasDetail,
+        ),
+        service(
+          NaviaIcons.bus,
+          AppStrings.serviceAmtab,
+          AppStrings.serviceAmtabDetail,
         ),
         service(
           NaviaIcons.flag,

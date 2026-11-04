@@ -45,6 +45,9 @@ abstract final class PrivacyPolicy {
       'Luoghi offline: i luoghi OpenStreetMap delle zone che scegli di '
           'scaricare. Sono dati pubblici della mappa, non dati su di te. Si '
           'eliminano da Impostazioni → Zone offline.',
+      'Orari dei bus AMTAB: fermate, linee e orari programmati scaricati '
+          'da AMTAB. Sono dati pubblici, non dati su di te. Si eliminano da '
+          'Impostazioni → Orari bus AMTAB.',
       'Questi dati non escono dal dispositivo tramite Navia e sono esclusi '
           'dal backup cloud di Android. Si cancellano eliminando i preferiti, '
           'svuotando i dati dell’app o disinstallandola.',
@@ -95,6 +98,11 @@ abstract final class PrivacyPolicy {
       'GitHub (luoghi offline): solo quando apri “Zone offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta.',
+      'AMTAB (orari dei bus): solo quando confermi il download degli orari '
+          'e poi, se li hai scaricati, al massimo una volta al giorno '
+          'all’apertura dell’app, riceve la richiesta del file degli orari. '
+          'Non riceve la fermata che guardi: gli orari si consultano sul '
+          'dispositivo.',
       'La zona visualizzata, le ricerche e i punti di un percorso possono '
           'rivelare dove sei o dove vai: per questo l’app invia solo il '
           'minimo necessario. Ogni fornitore tratta i dati secondo la propria '

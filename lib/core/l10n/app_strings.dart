@@ -175,6 +175,50 @@ abstract final class AppStrings {
       'come per ogni download. I dati restano sul dispositivo: tocca '
       '“Aggiorna” per i prezzi del giorno.';
 
+  // AMTAB buses.
+  static const amtabStop = 'Fermata bus AMTAB';
+  static const amtabTimetables = 'Orari bus AMTAB';
+  static const amtabTimetablesDetail =
+      'Fermate, linee e prossime partenze dei bus di Bari, anche senza '
+      'connessione.';
+  static const amtabNotDownloaded =
+      'Circa 3,5 MB, scaricati direttamente dal sito di AMTAB.';
+  static String amtabInstalled(String until, String size) =>
+      'Orari validi fino al $until · $size';
+  static const amtabProcessing = 'Preparazione degli orari…';
+  static const amtabDownloadTitle = 'Scaricare gli orari dei bus AMTAB?';
+  static const amtabDownloadBody =
+      'Verranno scaricati circa 3,5 MB dal sito di AMTAB '
+      '(amtabservizio.it), che vedrà il tuo indirizzo IP, come per ogni '
+      'download. Gli orari restano sul dispositivo e Navia li aggiorna da '
+      'sola, al massimo una volta al giorno all’apertura dell’app, perché '
+      'AMTAB li rinnova ogni mese. Puoi eliminarli quando vuoi.';
+  static const amtabSource =
+      'Orari programmati © AMTAB S.p.A., dal suo feed GTFS. Non sono in tempo '
+      'reale.';
+  static const amtabMissing =
+      'Scarica gli orari AMTAB per vedere qui i prossimi bus, anche offline.';
+  static const amtabDownloadShort = 'Scarica orari';
+  static const nextBuses = 'PROSSIMI BUS';
+  static const noBusSoon = 'Nessun bus nei prossimi 30 minuti.';
+  static String nextBusLater(String line, String time) =>
+      'Il prossimo: linea $line alle $time.';
+  static const noBusService = 'Nessuna corsa in programma.';
+  static String inMinutes(int minutes) =>
+      minutes <= 0 ? 'ora' : 'tra $minutes min';
+  static const busLines = 'Linee: tocca per vederle sulla mappa';
+  static String showLine(String line) => 'Mostra la linea $line';
+  static String lineShown(String line) =>
+      'Linea $line sulla mappa: i bus sono dove li mette l’orario.';
+  static const hideLine = 'Nascondi linea';
+  static const allTimetables = 'Tutti gli orari su amtab.it';
+  static String amtabExpired(String date) =>
+      'Orari scaduti il $date: aggiornali dalle impostazioni.';
+  static const serviceAmtab = 'Orari bus: AMTAB';
+  static const serviceAmtabDetail =
+      'Solo quando scarichi gli orari e poi, se li hai scaricati, una volta al '
+      'giorno all’apertura dell’app: riceve la richiesta del file degli orari.';
+
   // Wikipedia.
   static const fromWikipedia = 'DA WIKIPEDIA';
   static const readOnWikipedia = 'Leggi su Wikipedia';
@@ -346,6 +390,7 @@ abstract final class AppStrings {
   static const buildings3dUnavailable =
       'Il fornitore della mappa non offre l’altezza degli edifici.';
   static const enable3d = 'Attiva vista 3D';
+  static const resetNorth = 'Orienta a nord';
   static const disable3d = 'Disattiva vista 3D';
 
   // Selection.

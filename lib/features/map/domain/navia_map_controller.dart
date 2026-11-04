@@ -18,6 +18,9 @@ abstract interface class NaviaMapController {
   /// (degrees clockwise from north) when known.
   Future<void> follow(GeoPoint target, {required double zoom, double? bearing});
 
+  /// Turns the map back to north up, keeping target, zoom and tilt.
+  Future<void> resetBearing();
+
   /// Moves the camera so that all [points] are visible inside [padding].
   Future<void> fitBounds(List<GeoPoint> points, {EdgeInsets padding});
 
@@ -45,6 +48,12 @@ abstract interface class NaviaMapController {
   /// Replaces the translucent areas, e.g. reachable areas; empty removes
   /// them.
   Future<void> showAreas(List<MapArea> areas);
+
+  /// Replaces the lines drawn under the places, such as a bus route.
+  Future<void> showLines(List<MapLine> lines);
+
+  /// Replaces the vehicles drawn on the map.
+  Future<void> showVehicles(List<MapVehicle> vehicles);
 
   /// Replaces the discovered places drawn by Navia.
   Future<void> showPlaces(List<MapPlace> places);

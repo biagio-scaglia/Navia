@@ -60,18 +60,85 @@ abstract final class MapOverlayGeoJson {
   static Map<String, dynamic> placeColumns(List<MapPlace> places) =>
       _collection([
         for (final place in places)
+          if (place.column)
+            {
+              'type': 'Feature',
+              'properties': {
+                'color': _hex(place.color),
+                'selected': place.selected,
+              },
+              'geometry': {
+                'type': 'Polygon',
+                'coordinates': [_square(place.point, _columnHalfSide)],
+              },
+            },
+      ]);
+
+  static Map<String, dynamic> lines(List<MapLine> lines) => _collection([
+    for (final line in lines)
+      if (line.points.length >= 2)
+        {
+          'type': 'Feature',
+          'properties': {'color': _hex(line.color)},
+          'geometry': {
+            'type': 'LineString',
+            'coordinates': [for (final p in line.points) p.toLngLat()],
+          },
+        },
+  ]);
+
+  /// Vehicles as points, for the flat markers seen from afar.
+  static Map<String, dynamic> vehiclePoints(List<MapVehicle> vehicles) =>
+      _collection([
+        for (final vehicle in vehicles)
           {
             'type': 'Feature',
-            'properties': {
-              'color': _hex(place.color),
-              'selected': place.selected,
-            },
+            'properties': {'color': _hex(vehicle.color)},
             'geometry': {
-              'type': 'Polygon',
-              'coordinates': [_square(place.point, _columnHalfSide)],
+              'type': 'Point',
+              'coordinates': vehicle.point.toLngLat(),
             },
           },
       ]);
+
+  /// Vehicles as bus-sized footprints, extruded into small 3D models: a
+  /// body with a short nose, so the direction shows.
+  static Map<String, dynamic> vehicleBodies(List<MapVehicle> vehicles) =>
+      _collection([
+        for (final vehicle in vehicles)
+          {
+            'type': 'Feature',
+            'properties': {'color': _hex(vehicle.color)},
+            'geometry': {
+              'type': 'Polygon',
+              'coordinates': [_vehicleOutline(vehicle)],
+            },
+          },
+      ]);
+
+  /// A 12 m by 2.6 m bus, its front slightly tapered.
+  static List<List<double>> _vehicleOutline(MapVehicle vehicle) {
+    const halfLength = 6.0, halfWidth = 1.3, nose = 0.5;
+    final angle = vehicle.bearing * math.pi / 180;
+    final (sin, cos) = (math.sin(angle), math.cos(angle));
+    final lat = vehicle.point.latitude, lng = vehicle.point.longitude;
+    const mLat = 1 / 111320;
+    final mLng = 1 / (111320 * math.cos(lat * math.pi / 180));
+    // Forward along the bearing, right across it, in meters.
+    List<double> at(double forward, double right) => [
+      lng + (forward * sin + right * cos) * mLng,
+      lat + (forward * cos - right * sin) * mLat,
+    ];
+    final outline = [
+      at(-halfLength, -halfWidth),
+      at(halfLength - nose, -halfWidth),
+      at(halfLength, -halfWidth + nose),
+      at(halfLength, halfWidth - nose),
+      at(halfLength - nose, halfWidth),
+      at(-halfLength, halfWidth),
+    ];
+    return [...outline, outline.first];
+  }
 
   /// Half side of a column, in meters.
   static const _columnHalfSide = 4.0;

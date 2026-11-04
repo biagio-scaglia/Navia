@@ -88,6 +88,20 @@ done only when it works, has tests, and is documented.
 - Fontanelle, Bagni and Spiagge categories
 - Daily fuel prices from the Ministry open data, downloaded on request
 
+### Unreleased: feedback from the first testers
+
+- Favorites on the map as stars, and folders of favorites with their own
+  star color
+- One *Zone offline* screen for maps and places, with the choice of what
+  to download, and a banner on the map when a zone has only one of the two
+- Fuel prices in their own settings entry
+- AMTAB buses: timetables downloaded from AMTAB and refreshed daily, stops
+  on the map, next departures in the stop card (also offline), lines drawn
+  in their color with their buses as small 3D models at the scheduled
+  position
+- Navia's own compass among the map controls, shown only when the map is
+  turned, instead of the native one hidden under the overlays
+
 ## Next
 
 ### 0.9: Background guidance and fuel stations
@@ -118,9 +132,13 @@ appearances with bundled fonts and icons. Still to do:
 
 ### 0.11: Public transport
 
-- Current open GTFS timetables, starting from Bari and Puglia (the AMTAB
-  feed expired in 2023), prepared in CI
-- Stops with lines and next scheduled departures, also offline
+- AMTAB done (see above); still open: AMTAB's license, to publish a
+  smaller processed file, and real-time positions from AMTAB's GTFS-RT
+  (`avl.amtab.it`, not verified yet)
+- Strike notices from the Ministry's register (RSS), with a local
+  notification
+- Trains: FAL, Ferrotramviaria and Trenitalia from the National Access
+  Point (NeTEx), with the same stop card and 3D trains along the tracks
 
 ### 0.12: Small improvements
 

@@ -32,6 +32,9 @@ class MapLibreNaviaMapController implements NaviaMapController {
   static const _areasLayer = 'navia-areas';
   static const _placeColumnsSource = 'navia-place-columns';
   static const _placeColumnsLayer = 'navia-place-columns';
+  static const _linesSource = 'navia-lines';
+  static const _vehiclePointsSource = 'navia-vehicle-points';
+  static const _vehicleBodiesSource = 'navia-vehicle-bodies';
 
   /// Font of the place labels; every OpenFreeMap style serves it.
   static const _labelFont = 'Noto Sans Regular';
@@ -53,6 +56,8 @@ class MapLibreNaviaMapController implements NaviaMapController {
   List<MapMarker> _markers = const [];
   List<MapPlace> _places = const [];
   List<MapArea> _areas = const [];
+  List<MapLine> _lines = const [];
+  List<MapVehicle> _vehicles = const [];
   Map<String, Uint8List> _placeImages = const {};
 
   /// Marker images already added to the current style.
@@ -123,6 +128,33 @@ class MapLibreNaviaMapController implements NaviaMapController {
         fillColor: _hex(style.route),
         fillOpacity: 0.16,
         fillOutlineColor: _hex(style.routeCasing),
+      ),
+      enableInteraction: false,
+    );
+    // Bus routes, under the places and the route being planned.
+    await _controller.addGeoJsonSource(
+      _linesSource,
+      MapOverlayGeoJson.lines(_lines),
+    );
+    await _controller.addLineLayer(
+      _linesSource,
+      'navia-lines-casing',
+      LineLayerProperties(
+        lineColor: _hex(style.markerStroke),
+        lineWidth: _zoomWidth(base: 5, max: 11),
+        lineJoin: 'round',
+        lineCap: 'round',
+      ),
+      enableInteraction: false,
+    );
+    await _controller.addLineLayer(
+      _linesSource,
+      'navia-lines',
+      LineLayerProperties(
+        lineColor: ['get', 'color'],
+        lineWidth: _zoomWidth(base: 3, max: 7),
+        lineJoin: 'round',
+        lineCap: 'round',
       ),
       enableInteraction: false,
     );
@@ -267,6 +299,40 @@ class MapLibreNaviaMapController implements NaviaMapController {
       enableInteraction: false,
     );
 
+    // Vehicles: a dot from afar, a small 3D bus from close by.
+    await _controller.addGeoJsonSource(
+      _vehicleBodiesSource,
+      MapOverlayGeoJson.vehicleBodies(_vehicles),
+    );
+    await _controller.addFillExtrusionLayer(
+      _vehicleBodiesSource,
+      'navia-vehicle-bodies',
+      const FillExtrusionLayerProperties(
+        fillExtrusionColor: ['get', 'color'],
+        fillExtrusionHeight: 3.2,
+        fillExtrusionBase: 0.3,
+        fillExtrusionOpacity: 0.95,
+      ),
+      minzoom: 15,
+      enableInteraction: false,
+    );
+    await _controller.addGeoJsonSource(
+      _vehiclePointsSource,
+      MapOverlayGeoJson.vehiclePoints(_vehicles),
+    );
+    await _controller.addCircleLayer(
+      _vehiclePointsSource,
+      'navia-vehicle-points',
+      CircleLayerProperties(
+        circleRadius: 6,
+        circleColor: ['get', 'color'],
+        circleStrokeWidth: 2.5,
+        circleStrokeColor: _hex(style.markerStroke),
+      ),
+      maxzoom: 15,
+      enableInteraction: false,
+    );
+
     final layerIds = (await _controller.getLayerIds()).whereType<String>();
     _styleHasBuildings3d = layerIds.contains(_styleBuildingsLayer);
     // OpenMapTiles-based styles name POI label layers "poi_*".
@@ -384,6 +450,30 @@ class MapLibreNaviaMapController implements NaviaMapController {
   }
 
   @override
+  Future<void> showLines(List<MapLine> lines) async {
+    _lines = lines;
+    if (!_overlaysReady) return;
+    await _controller.setGeoJsonSource(
+      _linesSource,
+      MapOverlayGeoJson.lines(lines),
+    );
+  }
+
+  @override
+  Future<void> showVehicles(List<MapVehicle> vehicles) async {
+    _vehicles = vehicles;
+    if (!_overlaysReady) return;
+    await _controller.setGeoJsonSource(
+      _vehicleBodiesSource,
+      MapOverlayGeoJson.vehicleBodies(vehicles),
+    );
+    await _controller.setGeoJsonSource(
+      _vehiclePointsSource,
+      MapOverlayGeoJson.vehiclePoints(vehicles),
+    );
+  }
+
+  @override
   Future<void> setPlaceImages(Map<String, Uint8List> images) async {
     _placeImages = images;
     if (_overlaysReady) await _addMissingImages();
@@ -431,6 +521,12 @@ class MapLibreNaviaMapController implements NaviaMapController {
     );
     return bounds == null ? null : (bounds: bounds, zoom: camera.zoom);
   }
+
+  @override
+  Future<void> resetBearing() => _controller.animateCamera(
+    CameraUpdate.bearingTo(0),
+    duration: _cameraDuration,
+  );
 
   @override
   Future<void> moveTo(

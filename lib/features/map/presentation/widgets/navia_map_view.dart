@@ -27,13 +27,13 @@ class NaviaMapView extends StatefulWidget {
     this.offlineStyle,
     required this.buildings3d,
     required this.initialCamera,
-    required this.controlsPadding,
     required this.onMapReady,
     required this.onStyleLoadStarted,
     required this.onStyleLoaded,
     required this.onTap,
     required this.onLongPress,
     required this.onCameraIdle,
+    required this.onBearingChanged,
   });
 
   final MapStyleSource source;
@@ -48,10 +48,6 @@ class NaviaMapView extends StatefulWidget {
 
   final MapCamera initialCamera;
 
-  /// Insets for the native attribution button and, below it, the compass
-  /// (both top/left), so they do not collide with Flutter overlays.
-  final EdgeInsets controlsPadding;
-
   final ValueChanged<NaviaMapController> onMapReady;
   final VoidCallback onStyleLoadStarted;
 
@@ -65,6 +61,9 @@ class NaviaMapView extends StatefulWidget {
 
   /// The camera stopped moving, after a gesture or an animation.
   final VoidCallback onCameraIdle;
+
+  /// The camera bearing while it moves, in degrees clockwise from north.
+  final ValueChanged<double> onBearingChanged;
 
   @override
   State<NaviaMapView> createState() => _NaviaMapViewState();
@@ -174,7 +173,6 @@ class _NaviaMapViewState extends State<NaviaMapView> {
   @override
   Widget build(BuildContext context) {
     final camera = widget.initialCamera;
-    final padding = widget.controlsPadding;
 
     return MapLibreMap(
       styleString: _styleUrl,
@@ -193,15 +191,16 @@ class _NaviaMapViewState extends State<NaviaMapView> {
       onMapClick: _onTap,
       onMapLongClick: _onLongPress,
       onCameraIdle: widget.onCameraIdle,
+      trackCameraPosition: true,
+      onCameraMove: (camera) => widget.onBearingChanged(camera.bearing),
       // The location component must exist before the first position is
       // pushed through [NaviaMapController.showUserLocation]; it draws
       // nothing until then. MapLibre never reads the device location itself.
       locationSource: const ManualLocationSource(),
       myLocationEnabled: true,
-      // The compass appears only when the map is rotated; tapping it turns
-      // north back up.
-      compassViewPosition: CompassViewPosition.topLeft,
-      compassViewMargins: Point(padding.left, padding.top + 48),
+      // Navia draws its own compass among the map controls: a native one
+      // at fixed margins ends up under the Flutter overlays.
+      compassEnabled: false,
       // The native button sits under the bottom panel: the same notices are
       // shown by the always-visible attribution chip, which links to them.
       attributionButtonPosition: AttributionButtonPosition.bottomLeft,

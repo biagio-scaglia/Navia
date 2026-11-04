@@ -61,6 +61,20 @@ abstract final class FavoriteMarker {
       : '$imageId-${folderColor % folderColors.length}';
 }
 
+/// AMTAB stops and lines on the map.
+abstract final class TransitMarker {
+  static const color = Color(0xFF1864AB);
+  static const imageId = 'navia-place-bus-stop';
+
+  /// The line's own color, or [color] when it is missing or too light to
+  /// read on the map (AMTAB's line 01 is white).
+  static Color lineColor(int? rgb) {
+    if (rgb == null) return color;
+    final line = Color(0xFF000000 | rgb);
+    return line.computeLuminance() > 0.7 ? color : line;
+  }
+}
+
 /// Renders the marker images: a colored disc with a white ring and the
 /// category icon in white. Drawn once and registered with each map style.
 abstract final class PlaceMarkerImages {
@@ -75,6 +89,10 @@ abstract final class PlaceMarkerImages {
         category.icon,
       );
     }
+    images[TransitMarker.imageId] = await _marker(
+      TransitMarker.color,
+      NaviaIcons.bus,
+    );
     for (final folderColor in <int?>[
       null,
       for (var i = 0; i < FavoriteMarker.folderColors.length; i++) i,

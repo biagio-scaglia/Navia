@@ -5,7 +5,7 @@ the Navia Android app actually handles data, as implemented in this
 repository. It has not been reviewed by a lawyer, and it does not claim
 certified compliance with the GDPR or any other law.
 
-Last updated: 2026-11-03. Applies to Navia 0.8.1 and later.
+Last updated: 2026-11-04. Applies to Navia 0.8.1 and later.
 
 The app shows the same policy in Italian under *Impostazioni → Privacy*.
 
@@ -48,6 +48,7 @@ Navia stores the following data in the app's private storage
 | Theme (system, light, dark) | Remember your choice | Until you change it or uninstall the app |
 | Map appearance and 3D buildings setting | Remember your choice | Same |
 | Favorites: the name you chose, coordinates, the time you saved it and, when available, the place's OpenStreetMap category, address and identifier | Show your saved places, also offline | Until you delete the favorite or uninstall the app |
+| AMTAB bus timetables: stops, lines and scheduled times downloaded from AMTAB (public data, not data about you) | Show the next buses at a stop and the scheduled position of a line's buses, also offline | Until you delete them in *Impostazioni → Orari bus AMTAB* or uninstall the app |
 | Fuel prices: the national list of fuel stations and prices published by the Ministry, when you download it (public data, not data about you) | Show prices in fuel station cards | Until you delete it in *Impostazioni → Prezzi carburanti* or uninstall the app |
 | Offline maps: the OpenStreetMap map tiles of the regions you chose to download (public map data, not data about you) | Show the map without a connection and without requests to OpenFreeMap | Until you delete the region in *Impostazioni → Zone offline* or uninstall the app |
 | Offline places: the OpenStreetMap places of the regions you chose to download (public map data, not data about you) | Show places without a connection and without requests to Overpass | Until you delete the region in *Impostazioni → Zone offline* or uninstall the app |
@@ -87,6 +88,7 @@ it contains no user or device identifier.
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you open *Zone offline*, and when you confirm the download of a region | A request for the list of regions, or for the file of the region you chose | Download place data for offline use |
 | **GitHub** (`github.com`, release assets of the Navia repository) | Only when you confirm the download or update of fuel prices | The request for the national fuel price file | Show fuel prices |
 | **Ministero delle Imprese e del Made in Italy** (`mimit.gov.it`) | Only when you confirm the download or update of fuel prices, if the file on GitHub is unavailable or older than two days | The request for the national files of fuel stations and prices | Show fuel prices |
+| **AMTAB** (`amtabservizio.it`) | Only when you confirm the download of the bus timetables, then, once they are downloaded, at most once a day when the app opens | The request for the timetable file (GTFS); not the stop you look at, since timetables are read on the device | Show the next buses and keep the timetables current |
 | **Overpass API** (`overpass-api.de`) | When you select a place category, such as "Farmacie", and move the map while it is selected, outside the regions you downloaded | The category and the area you are viewing, enlarged and rounded outwards to a grid of about 1 km | List real places of that category |
 | **OSRM on FOSSGIS servers** (`routing.openstreetmap.de`) | When a route is calculated | Origin and destination coordinates, and the travel mode. If the origin is "La tua posizione", this is your current device location | Calculate the route |
 
@@ -104,6 +106,8 @@ control:
   <https://www.fossgis.de/datenschutzerklaerung/>
 - GitHub: <https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement>
 - MIMIT: <https://www.mimit.gov.it/it/privacy>
+- AMTAB: <https://www.amtab.it>
+  (`[TO BE VERIFIED: AMTAB's privacy notice]`)
 - Open-Meteo: <https://open-meteo.com/en/terms>
 - Wikimedia Foundation: <https://foundation.wikimedia.org/wiki/Policy:Privacy_policy>
 - Overpass API main instance: <https://overpass-api.de>

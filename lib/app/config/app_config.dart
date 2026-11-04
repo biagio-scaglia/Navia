@@ -120,6 +120,17 @@ abstract final class AppConfig {
     defaultValue: 'https://www.mimit.gov.it/images/exportCSV/',
   );
 
+  /// AMTAB's own GTFS timetables of the Bari buses, downloaded by the
+  /// phone straight from AMTAB on request: Navia does not republish them.
+  /// An empty value hides bus departures.
+  static const amtabGtfsUrl = String.fromEnvironment(
+    'NAVIA_AMTAB_GTFS_URL',
+    defaultValue: 'https://www.amtabservizio.it/gtfs/google_transit.zip',
+  );
+
+  /// AMTAB's website, for timetables beyond the next departures.
+  static const amtabWebsite = 'https://www.amtab.it';
+
   /// Open-Meteo forecast endpoint (free, no key, CC BY 4.0 data). An empty
   /// value hides the weather.
   static const weatherUrl = String.fromEnvironment(

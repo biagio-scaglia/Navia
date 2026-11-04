@@ -64,8 +64,10 @@ Riverpod 3 provides both dependency injection and state:
 | `navigationControllerProvider` | Notifier | Selection (with address lookup), origin, destination, mode, route state |
 | `mapPreferencesProvider` | Notifier | Map appearance and 3D view, persisted |
 | `favoritesProvider` | Notifier | Saved places, persisted |
+| `favoriteFoldersProvider` | Notifier | Folders of favorites, persisted |
+| `offlineAreaHintProvider` | Notifier | Zone at the map center with only its map or only its places |
 | `mapLoadControllerProvider` | Notifier | Style loading, timeout, retry |
-| `mapMarkersProvider` and `routeGeometryProvider` | derived | What the map must draw |
+| `mapMarkersProvider`, `routeGeometryProvider` and `mapPlacesProvider` | derived | What the map must draw (`mapPlacesProvider`: discovered places and favorites) |
 | `*RepositoryProvider` | Provider | Concrete service adapters, overridable in tests |
 
 State classes are immutable. Asynchronous operations use a generation
@@ -435,8 +437,8 @@ Italian voice and text instructions.
   the selected tags; a test keeps it equal to `PoiCategory`.
 - **Download:** `PlaceDataClient` streams the file with progress, aborts on
   cancellation or a 30-second stall, and rejects a wrong size or checksum.
-  Nothing is requested before the user opens the screen, and nothing is
-  downloaded without confirmation.
+  Nothing is requested before the user opens *Zone offline*, and nothing
+  is downloaded without confirmation.
 - **Storage:** `OfflinePlacesStore` splits the data into 0.1 degree cell
   files under the app support directory (private, removed with the app,
   excluded from backup), writing in batches to bound memory, in a
@@ -483,6 +485,60 @@ the published datasets and how to replace the provider.
   maps are preferred even with a connection: they are faster and send
   nothing to the tile server.
 
+## Offline zones
+
+A zone is one macro-region with two independent downloads, the map and the
+places, listed under the same id in the two catalogs (`tool/maps` and
+`tool/places` share the region list). Users confused the two, so the UI
+treats them as one thing:
+
+- **Screen:** `OfflineAreasScreen` loads both catalogs when it opens and
+  shows one `OfflineRegionCard` per zone, with a status line per part. The
+  download and delete dialogs list the parts that apply, all checked, so
+  either part can be left out. The two controllers
+  (`offlineMapsProvider`, `offlinePlacesProvider`) are unchanged; the
+  screen only combines them. A part whose data client is not configured is
+  not shown.
+- **Banner:** `OfflineAreaHintController` gets the map center when the
+  camera stops, like `OfflineMapCoverage`, and compares it with the bounds
+  of the installed regions only, without any network request. A zone with
+  places but no map, or the opposite, shows `OfflineAreaHintBanner` under
+  the category bar. Dismissing it stores `<part>:<region>` in
+  `offline_hint.dismissed`, so it does not come back for that zone.
+- **Fuel prices** cover all of Italy, not a zone, and have their own
+  screen (`FuelPricesScreen`, *Impostazioni → Prezzi carburanti*).
+
+## AMTAB buses
+
+- **Source:** AMTAB's GTFS feed, downloaded by the phone from AMTAB (see
+  [DATA_LICENSES.md](DATA_LICENSES.md) for why it is not republished).
+  `TransitController` asks for consent before the first download, then
+  refreshes the feed once a day when the map opens (`refreshIfStale`); a
+  failed refresh keeps the old timetables quietly.
+- **Import:** `ZipReader` reads the archive with `dart:io` (stored and
+  deflated entries, size checks), and `GtfsImport` runs on an isolate
+  (about 2.5 s on a PC for AMTAB's feed). It writes `stops.json`,
+  `routes.json`, `services.json`, one `stops/<i>.json` of departures per
+  stop and one `routes/<i>.json` per line with its shapes and trips, about
+  8.5 MB in all, into a staging directory swapped in only on success.
+  Each stop of a trip gets its distance along the shape, searched forward
+  from the previous stop so that loops keep their direction.
+- **Departures:** `TransitSchedule.departures` reads one stop's file and
+  keeps the services that run on the day (`ServiceDays`: weekly calendar
+  plus exceptions), including yesterday's trips past midnight, which GTFS
+  writes as times over 24:00.
+- **Map:** stops are `MapPlace`s keyed `stop:<i>`, drawn from zoom 15 in
+  the visible area (`mapViewportProvider`) without 3D columns. A stop is
+  matched to a selection within 40 m (`TransitData.stopNear`), so map
+  labels and OpenStreetMap stops open the same card. A shown line is a
+  `MapLine` in its color (a light color falls back to a readable blue).
+- **Buses:** `TransitVehicles` recomputes every 3 seconds the trips of the
+  shown line that are running, interpolating time between stops into a
+  distance along the shape. Each bus is a `MapVehicle`: a 12 × 2.6 m
+  footprint with a tapered front, extruded to 3.2 m (`fill-extrusion`) from
+  zoom 15, and a dot below. MapLibre Native cannot load glTF models, so the
+  extrusion is the 3D model. Positions are scheduled, not real time.
+
 ## Favorites
 
 `FavoritesRepository` stores a versioned JSON list (`favorites.v1`) in
@@ -496,7 +552,21 @@ them. Corrupted entries are skipped instead of crashing.
 - rejects a place already saved with the same OpenStreetMap reference, or
   within 15 m of an existing favorite (haversine distance on `GeoPoint`);
 - assigns IDs that stay unique even with coarse clocks;
-- supports undoing a delete.
+- supports undoing a delete;
+- moves a favorite into a folder or out of it (`folder` field, optional
+  like the others).
+
+`FavoriteFoldersController` keeps the folders in a separate key
+(`favorites.folders.v1`), each with a name and one of six color indexes,
+the first unused one for a new folder. Deleting a folder keeps its
+favorites, outside any folder.
+
+On the map, `mapPlacesProvider` adds every favorite as a `MapPlace` with a
+star marker: gold outside any folder, in the folder's color inside one
+(`FavoriteMarker`, images rendered with the category markers). Its key is
+`favorite:<id>`, which the map screen resolves on tap. A favorite that is
+also a discovered place of the active category is drawn once, as a star
+under the place's own key, so a tap still opens the full place card.
 
 ## Testing
 
@@ -505,8 +575,10 @@ them. Corrupted entries are skipped instead of crashing.
   (theme, location, search debounce and stale responses, navigation
   transitions).
 - **Widget tests:** the settings and privacy screens, the navigation sheet,
-  the place card with sharing and copying, the layers sheet and the
-  favorites screen, with fake repositories and mocked platform channels.
+  the place card with sharing and copying, the layers sheet, the
+  favorites screen with folders and the Zone offline screen (choosing
+  which parts to download), with fake repositories and mocked platform
+  channels.
 - **Places:** Overpass query building and parsing, missing metadata,
   categories, bounds, link validation, opening hours and time zone rules,
   cache expiry and eviction, viewport thresholds, deduplication and stale

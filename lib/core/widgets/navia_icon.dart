@@ -22,6 +22,7 @@ enum NaviaIcons {
   chevronUp('chevron_up'),
   clock,
   close,
+  compass,
   cloudOff('cloud_off'),
   code,
   copy,

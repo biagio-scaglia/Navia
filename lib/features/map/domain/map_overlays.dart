@@ -75,6 +75,7 @@ class MapPlace {
     required this.color,
     this.name,
     this.selected = false,
+    this.column = true,
   });
 
   final String key;
@@ -90,6 +91,10 @@ class MapPlace {
   final String? name;
   final bool selected;
 
+  /// Whether a colored column rises under the marker in the 3D view; bus
+  /// stops are too many for that.
+  final bool column;
+
   @override
   bool operator ==(Object other) =>
       other is MapPlace &&
@@ -98,10 +103,37 @@ class MapPlace {
       other.imageId == imageId &&
       other.color == color &&
       other.name == name &&
-      other.selected == selected;
+      other.selected == selected &&
+      other.column == column;
 
   @override
-  int get hashCode => Object.hash(key, point, imageId, color, name, selected);
+  int get hashCode =>
+      Object.hash(key, point, imageId, color, name, selected, column);
+}
+
+/// A line drawn under the places, such as a bus route.
+@immutable
+class MapLine {
+  const MapLine({required this.points, required this.color});
+
+  final List<GeoPoint> points;
+  final Color color;
+}
+
+/// A vehicle drawn as a small extruded box, oriented along its way.
+@immutable
+class MapVehicle {
+  const MapVehicle({
+    required this.point,
+    required this.bearing,
+    required this.color,
+  });
+
+  final GeoPoint point;
+
+  /// Degrees clockwise from north.
+  final double bearing;
+  final Color color;
 }
 
 /// A named point of interest rendered by the map style.

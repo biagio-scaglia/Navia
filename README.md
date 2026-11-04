@@ -49,16 +49,25 @@ them.
   Attrazioni, Parchi, Hotel, Trasporti, Parcheggi, Carburante, Bancomat,
   Fontanelle, Bagni, Spiagge).
   Places appear on the map with their names; tap one to open its card.
-- **Offline places:** download the places of an Italian macro-region
-  (*Impostazioni → Zone offline*), after a confirmation that shows the
-  size, with a progress bar and the option to cancel. Downloaded regions
-  answer instantly and without a connection; you can update or delete them
-  at any time. Sud is 3 MB (126,088 places), all of Italy about 22 MB.
-- **Offline maps:** download the map of an Italian macro-region
-  (*Impostazioni → Zone offline*), with the same confirmation, progress
-  and deletion as offline places. Inside downloaded regions the map is
-  drawn from the device in all four appearances, with or without a
-  connection, and sends nothing to the tile server.
+- **Offline zones:** one screen (*Impostazioni → Zone offline*) lists the
+  Italian macro-regions, each with its two parts: the **map** and the
+  **places**. A confirmation shows the size of each part and lets you
+  download both or only one, with a progress bar and the option to cancel;
+  you can update or delete either part at any time. Downloaded places
+  answer instantly and without a connection (Sud is 3 MB, 126,088 places;
+  all of Italy about 22 MB). Inside downloaded maps the map is drawn from
+  the device in all four appearances, with or without a connection, and
+  sends nothing to the tile server. When the map shows a zone with only
+  one of the two parts, a banner says what is missing and links to the
+  download; it can be dismissed for good.
+- **AMTAB buses (Bari):** download AMTAB's own timetables once
+  (*Impostazioni → Orari bus AMTAB*, about 3.5 MB straight from AMTAB, or
+  from the card of a bus stop); they are refreshed once a day when the
+  app opens. Stops appear on the map from zoom 15; a stop's card lists the
+  buses of the next 30 minutes with their line colors, also offline, and
+  links to AMTAB's site for the rest. Tapping a line draws its route with
+  its buses as small 3D models, where the timetable puts them (not real
+  time).
 - **Category markers:** each category has its own colored marker with its
   icon, and small colored columns rise under the markers when the map is
   tilted.
@@ -258,11 +267,15 @@ lib/
     location/    device location and permissions
     map/         MapLibre renderer behind a NaviaMapController interface
     offline_maps/  downloadable PMTiles regions and their offline styles
+    offline_areas/ the Zone offline screen (maps and places together) and
+                   the banner for a zone with only one of the two
     navigation/  routing domain, OSRM provider, planning state, sheet UI
     search/      geocoding domain, Photon provider, search UI
     places/      OpenStreetMap places, Overpass and offline sources, discovery,
-                 place card
-    favorites/   saved places, stored locally
+                 place card, fuel prices
+    favorites/   saved places and their folders, stored locally
+    transit/     AMTAB GTFS timetables: download, import on the device, next
+                 departures, lines and scheduled bus positions
     settings/    preferences and settings screen
   shared/     geographic model and app-wide providers
 assets/       logo and icon set
