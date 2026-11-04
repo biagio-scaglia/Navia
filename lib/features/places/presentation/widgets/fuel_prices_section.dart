@@ -118,7 +118,7 @@ class FuelPricesSection extends StatelessWidget {
   }
 }
 
-/// Download state of the daily fuel prices, in the offline places screen.
+/// Download state of the daily fuel prices, in their own screen.
 class FuelDataCard extends ConsumerWidget {
   const FuelDataCard({super.key});
 

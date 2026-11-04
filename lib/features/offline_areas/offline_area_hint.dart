@@ -10,10 +10,9 @@ import '../../shared/models/geo_point.dart';
 import '../../shared/providers/shared_preferences_provider.dart';
 import '../offline_maps/data/map_data_client.dart';
 import '../offline_maps/presentation/offline_maps_controller.dart';
-import '../offline_maps/presentation/offline_maps_screen.dart';
 import '../places/data/place_data_client.dart';
 import '../places/presentation/offline_places_controller.dart';
-import '../places/presentation/offline_places_screen.dart';
+import 'offline_areas_screen.dart';
 
 /// Which half of a downloaded zone is missing.
 enum OfflineAreaGap { map, places }
@@ -157,10 +156,7 @@ class OfflineAreaHintBanner extends ConsumerWidget {
               const SizedBox(width: NaviaSpacing.md),
               Expanded(child: Text(text, style: theme.textTheme.bodySmall)),
               TextButton(
-                onPressed: () => switch (hint.gap) {
-                  OfflineAreaGap.map => OfflineMapsScreen.open(context),
-                  OfflineAreaGap.places => OfflinePlacesScreen.open(context),
-                },
+                onPressed: () => OfflineAreasScreen.open(context),
                 child: const Text(AppStrings.download),
               ),
               IconButton(

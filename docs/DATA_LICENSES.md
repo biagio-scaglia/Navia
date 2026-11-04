@@ -28,12 +28,12 @@ Obligations relevant to Navia:
   The offline place datasets published in the `places-data` release are
   such a derivative database: they are offered under the ODbL 1.0, with the
   attribution and license notice in the release description, in the app's
-  license list and on the *Luoghi offline* screen. The generator
+  license list and on the *Zone offline* screen. The generator
   (`tool/places/`) is public, so anyone can rebuild them from the source
   extracts. The offline maps in the `map-data` release (vector tiles built
   by `.github/workflows/map-data.yml` with Planetiler) are a derivative
   database too, offered the same way under the ODbL 1.0, with the notice in
-  the release description, the license list and the *Mappe offline*
+  the release description, the license list and the *Zone offline*
   screen. Their tiles follow the OpenMapTiles schema (CC-BY 4.0, credited
   as "© OpenMapTiles" in the map chip) and include Natural Earth (public
   domain) and OSMCode water polygons (ODbL). Favorites hold a few fields of

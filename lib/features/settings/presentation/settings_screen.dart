@@ -14,10 +14,11 @@ import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
 import '../../map/presentation/map_providers.dart';
 import '../../map/presentation/widgets/map_attribution.dart';
+import '../../offline_areas/offline_areas_screen.dart';
 import '../../offline_maps/data/map_data_client.dart';
-import '../../offline_maps/presentation/offline_maps_screen.dart';
+import '../../places/data/fuel_prices_store.dart';
 import '../../places/data/place_data_client.dart';
-import '../../places/presentation/offline_places_screen.dart';
+import '../../places/presentation/fuel_prices_screen.dart';
 import '../domain/theme_preference.dart';
 import 'privacy_screen.dart';
 import 'theme_preference_controller.dart';
@@ -285,21 +286,22 @@ class _MapSection extends ConsumerWidget {
             style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
-        if (ref.watch(mapDataClientProvider) != null)
-          ListTile(
-            leading: const NaviaIcon(NaviaIcons.layers),
-            title: const Text(AppStrings.offlineMaps),
-            subtitle: const Text(AppStrings.offlineMapsDetail),
-            trailing: const NaviaIcon(NaviaIcons.chevronRight),
-            onTap: () => OfflineMapsScreen.open(context),
-          ),
-        if (ref.watch(placeDataClientProvider) != null)
+        if (ref.watch(mapDataClientProvider) != null ||
+            ref.watch(placeDataClientProvider) != null)
           ListTile(
             leading: const NaviaIcon(NaviaIcons.cloudOff),
-            title: const Text(AppStrings.offlinePlaces),
-            subtitle: const Text(AppStrings.offlinePlacesDetail),
+            title: const Text(AppStrings.offlineAreas),
+            subtitle: const Text(AppStrings.offlineAreasDetail),
             trailing: const NaviaIcon(NaviaIcons.chevronRight),
-            onTap: () => OfflinePlacesScreen.open(context),
+            onTap: () => OfflineAreasScreen.open(context),
+          ),
+        if (ref.watch(fuelPricesStoreProvider) != null)
+          ListTile(
+            leading: const NaviaIcon(NaviaIcons.fuel),
+            title: const Text(AppStrings.fuelPricesScreen),
+            subtitle: const Text(AppStrings.fuelPricesDetail),
+            trailing: const NaviaIcon(NaviaIcons.chevronRight),
+            onTap: () => FuelPricesScreen.open(context),
           ),
         const Divider(indent: NaviaSpacing.lg, endIndent: NaviaSpacing.lg),
         MapAttributionList(source: source),
@@ -358,14 +360,9 @@ class _ServicesSection extends StatelessWidget {
           AppStrings.servicePlacesDetail,
         ),
         service(
-          NaviaIcons.layers,
-          AppStrings.serviceOfflineMaps,
-          AppStrings.serviceOfflineMapsDetail,
-        ),
-        service(
           NaviaIcons.cloudOff,
-          AppStrings.serviceOfflinePlaces,
-          AppStrings.serviceOfflinePlacesDetail,
+          AppStrings.serviceOfflineAreas,
+          AppStrings.serviceOfflineAreasDetail,
         ),
         service(
           NaviaIcons.flag,

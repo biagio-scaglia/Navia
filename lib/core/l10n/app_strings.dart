@@ -158,6 +158,7 @@ abstract final class AppStrings {
       'Prezzi comunicati dal gestore al Ministero, aggiornati al $date.';
   static const fuelSource = 'Fonte: MIMIT – Osservaprezzi carburanti, IODL 2.0';
   static const fuelPricesTitle = 'Prezzi carburanti · Italia';
+  static const fuelPricesScreen = 'Prezzi carburanti';
   static const fuelProcessing = 'Elaborazione dei prezzi…';
   static const fuelPricesDetail =
       'Prezzi dei distributori pubblicati ogni giorno dal Ministero.';
@@ -205,38 +206,48 @@ abstract final class AppStrings {
   static const copyCoordinates = 'Copia coordinate';
   static const coordinatesCopied = 'Coordinate copiate.';
 
-  // Offline places.
-  static const offlinePlaces = 'Luoghi offline';
-  static const offlinePlacesDetail =
-      'Scarica i luoghi di una zona per usarli senza connessione.';
-  static const offlinePlacesIntro =
-      'Scarica una volta i luoghi della tua zona: ristoranti, farmacie, '
-      'parcheggi e le altre categorie funzioneranno subito e senza '
-      'connessione. I dati restano solo su questo dispositivo e puoi '
-      'eliminarli quando vuoi. Vengono aggiornati ogni mese da '
-      'OpenStreetMap.';
-  static const offlinePlacesLicense =
-      'Dati © OpenStreetMap contributors, con licenza ODbL. I file sono '
-      'pubblicati su GitHub nel repository di Navia.';
+  // Offline zones: the map and the places of a region.
+  static const offlineAreas = 'Zone offline';
+  static const offlineAreasDetail =
+      'Scarica la mappa e i luoghi di una zona per usarli senza connessione.';
+  static const offlineAreasIntro =
+      'Ogni zona ha due parti, da scaricare insieme o separatamente. La '
+      'mappa mostra strade, edifici e nomi anche senza connessione: i file '
+      'sono grandi, meglio usare il Wi-Fi. I luoghi servono a trovare '
+      'ristoranti, farmacie, parcheggi e le altre categorie anche offline. I '
+      'dati restano solo su questo dispositivo e vengono aggiornati ogni mese '
+      'da OpenStreetMap.';
+  static const offlineAreasLicense =
+      'Dati © OpenStreetMap contributors, con licenza ODbL; schema della '
+      'mappa © OpenMapTiles. I file sono pubblicati su GitHub nel repository '
+      'di Navia.';
   static const offlineCatalogUnavailable =
       'Impossibile leggere l’elenco delle zone.';
   static const download = 'Scarica';
   static const updateRegion = 'Aggiorna';
-  static const installingRegion = 'Installazione in corso…';
   static String downloadingRegion(int percent) => 'Download: $percent%';
-  static String downloadRegionTitle(String name) => 'Scaricare la zona $name?';
-  static String downloadRegionBody(String size, String count) =>
-      'Verranno scaricati $size da GitHub ($count luoghi). GitHub vedrà il '
-      'tuo indirizzo IP, come per ogni download. I dati restano solo su '
-      'questo dispositivo e puoi eliminarli in qualsiasi momento.';
-  static String deleteRegionTitle(String name) => 'Eliminare la zona $name?';
-  static const deleteRegionBody =
-      'I luoghi di questa zona verranno cancellati dal dispositivo. Potrai '
-      'scaricarli di nuovo quando vuoi.';
-  static String regionInstalled(String date, String size) =>
-      'Scaricata il $date · $size sul dispositivo';
-  static String regionAvailable(String size, String count) =>
+  static const partMap = 'Mappa';
+  static const partPlaces = 'Luoghi';
+  static String partInstalled(String part, String date, String size) =>
+      '$part: sul dispositivo dal $date · $size';
+  static String partDownloading(String part, int percent) =>
+      '$part: download $percent%';
+  static String partInstalling(String part) => '$part: installazione…';
+  static String partAvailable(String part, String detail) => '$part: $detail';
+  static const partUpdate = 'aggiornamento disponibile';
+  static String placesSize(String size, String count) =>
       '$size · $count luoghi';
+  static String downloadRegionTitle(String name) => 'Scaricare la zona $name?';
+  static const downloadZoneBody =
+      'Scegli cosa scaricare da GitHub. GitHub vedrà il tuo indirizzo IP, '
+      'come per ogni download. I dati restano solo su questo dispositivo e '
+      'puoi eliminarli in qualsiasi momento.';
+  static String deleteZoneTitle(String name) =>
+      'Eliminare i dati della zona $name?';
+  static const deleteZoneBody =
+      'Scegli cosa cancellare dal dispositivo: potrai scaricarlo di nuovo '
+      'quando vuoi. Senza la mappa, con la connessione Navia userà quella '
+      'online.';
   static const downloadArea = 'Scarica la zona';
   static String hintMissingMap(String name) =>
       'Hai scaricato i luoghi della zona $name, ma non la mappa: senza '
@@ -245,30 +256,6 @@ abstract final class AppStrings {
       'Hai scaricato la mappa della zona $name, ma non i luoghi: senza '
       'connessione non potrai cercare ristoranti, farmacie e altro.';
   static const hintDismiss = 'Non mostrare più';
-
-  // Offline maps.
-  static const offlineMaps = 'Mappe offline';
-  static const offlineMapsDetail =
-      'Scarica la mappa di una zona per vederla senza connessione.';
-  static const offlineMapsIntro =
-      'Scarica una volta la mappa della tua zona: strade, edifici e nomi si '
-      'vedranno anche senza connessione. Dentro la zona la mappa si carica '
-      'dal dispositivo, più in fretta e senza chiedere nulla a internet. I '
-      'file sono grandi: meglio usare il Wi-Fi. Vengono aggiornati ogni mese '
-      'da OpenStreetMap.';
-  static const offlineMapsLicense =
-      'Dati © OpenStreetMap contributors, con licenza ODbL; schema © '
-      'OpenMapTiles. I file sono pubblicati su GitHub nel repository di '
-      'Navia.';
-  static String downloadMapBody(String size) =>
-      'Verranno scaricati $size da GitHub: meglio usare il Wi-Fi. GitHub '
-      'vedrà il tuo indirizzo IP, come per ogni download. La mappa resta '
-      'solo su questo dispositivo e puoi eliminarla in qualsiasi momento.';
-  static String deleteMapTitle(String name) =>
-      'Eliminare la mappa della zona $name?';
-  static const deleteMapBody =
-      'La mappa di questa zona verrà cancellata dal dispositivo. Con la '
-      'connessione Navia userà di nuovo la mappa online.';
 
   // Place discovery.
   static const clearFilter = 'tocca per rimuovere il filtro';
@@ -316,14 +303,10 @@ abstract final class AppStrings {
       'Riceve il testo cercato, una posizione approssimata (circa 1 km) e '
       'i punti che tieni premuti sulla mappa, per trovarne l’indirizzo.';
   static const serviceRouting = 'Percorsi: OSRM (FOSSGIS)';
-  static const serviceOfflinePlaces = 'Luoghi offline: GitHub';
-  static const serviceOfflinePlacesDetail =
-      'Solo quando apri “Luoghi offline” o scarichi una zona: riceve la '
-      'richiesta dell’elenco o del file della zona scelta.';
-  static const serviceOfflineMaps = 'Mappe offline: GitHub';
-  static const serviceOfflineMapsDetail =
-      'Solo quando apri “Mappe offline” o scarichi una zona: riceve la '
-      'richiesta dell’elenco o del file della zona scelta.';
+  static const serviceOfflineAreas = 'Zone offline: GitHub';
+  static const serviceOfflineAreasDetail =
+      'Solo quando apri “Zone offline” o scarichi una zona: riceve la '
+      'richiesta degli elenchi o dei file della zona scelta.';
   static const serviceFuel = 'Prezzi carburanti: GitHub e MIMIT';
   static const serviceFuelDetail =
       'Solo quando scarichi o aggiorni i prezzi: ricevono la richiesta del '

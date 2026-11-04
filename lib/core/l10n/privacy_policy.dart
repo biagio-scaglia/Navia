@@ -41,10 +41,10 @@ abstract final class PrivacyPolicy {
           'del luogo. Restano consultabili anche offline.',
       'Mappe offline: le mappe OpenStreetMap delle zone che scegli di '
           'scaricare. Sono dati pubblici, non dati su di te. Si eliminano da '
-          'Impostazioni → Mappe offline.',
+          'Impostazioni → Zone offline.',
       'Luoghi offline: i luoghi OpenStreetMap delle zone che scegli di '
           'scaricare. Sono dati pubblici della mappa, non dati su di te. Si '
-          'eliminano da Impostazioni → Luoghi offline.',
+          'eliminano da Impostazioni → Zone offline.',
       'Questi dati non escono dal dispositivo tramite Navia e sono esclusi '
           'dal backup cloud di Android. Si cancellano eliminando i preferiti, '
           'svuotando i dati dell’app o disinstallandola.',
@@ -88,11 +88,11 @@ abstract final class PrivacyPolicy {
           'dei prezzi, GitHub riceve la richiesta del file nazionale dei '
           'prezzi; il Ministero riceve la richiesta dei suoi file solo se '
           'quello su GitHub non è disponibile o ha più di due giorni.',
-      'GitHub (mappe offline): solo quando apri “Mappe offline” o confermi '
+      'GitHub (mappe offline): solo quando apri “Zone offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta. Dentro le zone scaricate la mappa non '
           'chiede nulla a OpenFreeMap.',
-      'GitHub (luoghi offline): solo quando apri “Luoghi offline” o confermi '
+      'GitHub (luoghi offline): solo quando apri “Zone offline” o confermi '
           'il download di una zona, riceve la richiesta dell’elenco o del '
           'file della zona scelta.',
       'La zona visualizzata, le ricerche e i punti di un percorso possono '

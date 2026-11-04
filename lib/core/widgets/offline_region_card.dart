@@ -12,39 +12,40 @@ class OfflineRegionCard extends StatelessWidget {
     required this.name,
     required this.detail,
     required this.status,
-    required this.installed,
+    required this.complete,
     required this.downloading,
     required this.progress,
-    required this.canDownload,
-    required this.updateAvailable,
     required this.onDownload,
     required this.onCancel,
-    required this.onDelete,
+    this.downloadLabel,
+    this.onDelete,
     this.failure,
   });
 
   final String name;
   final String detail;
 
-  /// One line about the size, the download or the installed data.
+  /// Lines about the size, the download or the installed data.
   final String status;
 
   /// Error of the last download, if it failed.
   final String? failure;
 
-  final bool installed;
+  /// Everything offered for the region is on the device.
+  final bool complete;
   final bool downloading;
 
   /// From 0 to 1, or null while the data is being installed.
   final double? progress;
 
-  /// Whether the region is in the current catalog.
-  final bool canDownload;
-  final bool updateAvailable;
+  /// Label of the download button; null when there is nothing to download.
+  final String? downloadLabel;
 
   final VoidCallback onDownload;
   final VoidCallback onCancel;
-  final VoidCallback onDelete;
+
+  /// Null when nothing can be deleted.
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +54,7 @@ class OfflineRegionCard extends StatelessWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
     final failure = this.failure;
+    final downloadLabel = this.downloadLabel;
 
     return Card(
       child: Padding(
@@ -63,9 +65,7 @@ class OfflineRegionCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                NaviaIconBadge(
-                  installed ? NaviaIcons.check : NaviaIcons.layers,
-                ),
+                NaviaIconBadge(complete ? NaviaIcons.check : NaviaIcons.layers),
                 const SizedBox(width: NaviaSpacing.md),
                 Expanded(
                   child: Column(
@@ -108,22 +108,16 @@ class OfflineRegionCard extends StatelessWidget {
                     onPressed: onCancel,
                     child: const Text(AppStrings.cancel),
                   ),
-                if (!downloading && installed)
+                if (!downloading && onDelete != null)
                   OutlinedButton.icon(
                     onPressed: onDelete,
                     icon: const NaviaIcon(NaviaIcons.trash, size: 20),
                     label: const Text(AppStrings.delete),
                   ),
-                if (!downloading &&
-                    canDownload &&
-                    (!installed || updateAvailable))
+                if (!downloading && downloadLabel != null)
                   FilledButton(
                     onPressed: onDownload,
-                    child: Text(
-                      updateAvailable
-                          ? AppStrings.updateRegion
-                          : AppStrings.download,
-                    ),
+                    child: Text(downloadLabel),
                   ),
               ],
             ),
@@ -132,31 +126,4 @@ class OfflineRegionCard extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Asks to confirm a download or a deletion; true when confirmed.
-Future<bool> confirmOfflineAction(
-  BuildContext context, {
-  required String title,
-  required String body,
-  required String action,
-}) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(body),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text(AppStrings.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(action),
-        ),
-      ],
-    ),
-  );
-  return confirmed ?? false;
 }

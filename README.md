@@ -50,12 +50,12 @@ them.
   Fontanelle, Bagni, Spiagge).
   Places appear on the map with their names; tap one to open its card.
 - **Offline places:** download the places of an Italian macro-region
-  (*Impostazioni → Luoghi offline*), after a confirmation that shows the
+  (*Impostazioni → Zone offline*), after a confirmation that shows the
   size, with a progress bar and the option to cancel. Downloaded regions
   answer instantly and without a connection; you can update or delete them
   at any time. Sud is 3 MB (126,088 places), all of Italy about 22 MB.
 - **Offline maps:** download the map of an Italian macro-region
-  (*Impostazioni → Mappe offline*), with the same confirmation, progress
+  (*Impostazioni → Zone offline*), with the same confirmation, progress
   and deletion as offline places. Inside downloaded regions the map is
   drawn from the device in all four appearances, with or without a
   connection, and sends nothing to the tile server.
@@ -63,7 +63,7 @@ them.
   icon, and small colored columns rise under the markers when the map is
   tilted.
 - **Fuel prices:** download the daily prices of all Italian fuel stations
-  (about 7.5 MB, *Impostazioni → Luoghi offline*) directly from the
+  (about 7.5 MB, *Impostazioni → Prezzi carburanti*) directly from the
   Ministry's open data (MIMIT, IODL 2.0), joined on the device; fuel station
   cards then show self service and served prices for each fuel, with the
   report date.

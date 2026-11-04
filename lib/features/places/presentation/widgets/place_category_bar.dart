@@ -6,9 +6,9 @@ import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/errors/failure_messages.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/navia_icon.dart';
+import '../../../offline_areas/offline_areas_screen.dart';
 import '../../data/place_data_client.dart';
 import '../../domain/poi_category.dart';
-import '../offline_places_screen.dart';
 import '../place_discovery_controller.dart';
 import '../places_providers.dart';
 
@@ -236,7 +236,7 @@ class _DiscoveryStatus extends ConsumerWidget {
                 ),
               if (offerDownload)
                 TextButton(
-                  onPressed: () => OfflinePlacesScreen.open(context),
+                  onPressed: () => OfflineAreasScreen.open(context),
                   child: const Text(AppStrings.downloadArea),
                 ),
             ],
