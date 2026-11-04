@@ -68,6 +68,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   NaviaMapController? _map;
   late final AppLifecycleListener _lifecycle;
 
+  /// Whether Navia is in the background.
+  bool _hidden = false;
+
   LocationController get _location =>
       ref.read(locationControllerProvider.notifier);
 
@@ -85,8 +88,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     });
     // Location updates are only needed while the map is visible.
     _lifecycle = AppLifecycleListener(
-      onHide: () => _location.pause(),
-      onShow: () => _location.resume(),
+      onHide: () {
+        _hidden = true;
+        // During guidance the foreground service keeps location alive.
+        if (!ref.read(guidanceProvider).active) _location.pause();
+      },
+      onShow: () {
+        _hidden = false;
+        _location.resume();
+      },
     );
   }
 
@@ -360,6 +370,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   void _listenToState() {
+    // Guidance ended from the notification while Navia is hidden: location
+    // stops as for any other hidden moment.
+    ref.listen(guidanceProvider.select((g) => g.active), (_, active) {
+      if (!active && _hidden) _location.pause();
+    });
     ref.listen(transitLineProvider, (_, route) {
       unawaited(_map?.showLines(_transitLines()));
     });

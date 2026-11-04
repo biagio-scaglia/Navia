@@ -316,8 +316,26 @@ When the origin is "La tua posizione", it is resolved through
   the `navia/screen` channel, and recalculates from the current position at
   most every 15 seconds. A failed recalculation stops guidance and the panel
   shows the error.
-- **Foreground only:** location updates pause when the app is hidden, and
-  Navia declares no background location or foreground service.
+- **Background (0.9):** `BackgroundGuidance` drives the Kotlin package
+  `io.github.biagioscaglia.navia.guidance` over the `navia/guidance`
+  channel:
+  - `GuidanceService`, a foreground service of type `location`, started by
+    `start()` only while location is granted and the app is visible. It
+    holds no logic: positions keep flowing to Dart through `geolocator`,
+    which Android allows with the "while in use" permission while such a
+    service runs, so `ACCESS_BACKGROUND_LOCATION` is never declared.
+  - `GuidanceNotification`: silent, ongoing, with the next maneuver
+    (`GuidanceController.noticeFor`, updated only when its text changes),
+    the remaining distance and a *Termina* action that reaches Dart as
+    `stopRequested`.
+  - `AudioDucker`: transient focus with ducking around each instruction
+    (`AudioDucking` in Dart), on the navigation audio stream.
+  - `GuidanceChannel` also asks for `POST_NOTIFICATIONS`; `startGuidance`
+    explains why the first time, and guidance starts whatever the answer.
+
+  The map screen keeps location updates running when Navia is hidden
+  during guidance, and pauses them when guidance ends while hidden.
+  Swiping the app away ends the service (`onTaskRemoved`).
 - **UI:** `GuidanceBanner` replaces the search bar and category filters,
   `GuidancePanel` replaces the planning panel, and the map follows the user
   at zoom 17 with the GPS heading; recalculated routes do not reframe the
@@ -375,9 +393,8 @@ Italian voice and text instructions.
 1. **Turn-by-turn guidance.** Extend `NavRoute` with legs, steps and
    maneuvers (OSRM `steps=true` or Valhalla maneuvers), add a guidance state
    machine fed by `LocationController` updates, and add
-   map-matching, off-route detection and rerouting. This needs foreground
-   service handling on Android and a clear in-app explanation before any
-   continuous location use.
+   map-matching, off-route detection and rerouting. Done in 0.7, and in the
+   background with a foreground service in 0.9.
 2. **Offline routing.** Add an on-device `RoutingRepository` (for example
    Valhalla or GraphHopper with downloaded graph tiles). A composite
    repository can prefer the offline engine and fall back to online, with no

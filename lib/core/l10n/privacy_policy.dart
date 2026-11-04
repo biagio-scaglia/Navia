@@ -111,14 +111,26 @@ abstract final class PrivacyPolicy {
     PrivacySection('Posizione del dispositivo', [
       'Il permesso di posizione viene chiesto solo quando tocchi il '
           'pulsante della posizione o chiedi un percorso da “La tua '
-          'posizione”. Navia non chiede mai la posizione in background.',
+          'posizione”. Navia non chiede mai il permesso di posizione in '
+          'background.',
       'Puoi negare il permesso: mappa, ricerca, dettagli dei luoghi e '
           'percorsi tra luoghi scelti da te continuano a funzionare.',
       'Puoi revocarlo in qualsiasi momento dalle impostazioni di Android.',
     ]),
     PrivacySection('Navigazione guidata', [
-      'Durante la guida la posizione viene letta di continuo, solo con l’app '
-          'aperta, per seguirti lungo il percorso. Le istruzioni vocali sono '
+      'Durante la guida la posizione viene letta di continuo per seguirti '
+          'lungo il percorso, anche a schermo bloccato o mentre usi un’altra '
+          'app. Per questo, quando avvii la guida, Navia avvia un servizio '
+          'Android in primo piano con una notifica fissa che mostra la '
+          'prossima manovra e il tasto “Termina”. Il servizio si ferma a fine '
+          'guida, con “Termina” o chiudendo Navia dalle app recenti, e usa il '
+          'permesso di posizione “mentre usi l’app”: Navia non chiede il '
+          'permesso in background.',
+      'Da Android 13 la notifica richiede il permesso delle notifiche, che '
+          'Navia chiede spiegandolo la prima volta che avvii la guida; se lo '
+          'neghi la guida funziona lo stesso. Mentre parla, la voce chiede ad '
+          'Android di abbassare per un momento la musica.',
+      'Le istruzioni vocali sono '
           'prodotte sul dispositivo dalla sintesi vocale di Android e non '
           'vengono inviate a nessuno. Se esci dal percorso, il percorso viene '
           'ricalcolato dalla tua posizione al massimo ogni 15 secondi.',

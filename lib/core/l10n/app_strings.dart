@@ -110,7 +110,8 @@ abstract final class AppStrings {
   static const muteVoice = 'Disattiva la voce';
   static const unmuteVoice = 'Attiva la voce';
   static const guidanceForegroundNote =
-      'La guida funziona con l’app aperta: lo schermo resta acceso.';
+      'La guida continua anche a schermo bloccato, con la prossima manovra '
+      'in una notifica. Con l’app aperta lo schermo resta acceso.';
   static String remaining(String distance) => '$distance rimanenti';
   static String routeSteps(int count) => 'Istruzioni ($count)';
 
@@ -174,6 +175,23 @@ abstract final class AppStrings {
       'Ministero (mimit.gov.it). Chi li fornisce vedrà il tuo indirizzo IP, '
       'come per ogni download. I dati restano sul dispositivo: tocca '
       '“Aggiorna” per i prezzi del giorno.';
+
+  // Background guidance.
+  static const guidanceNoticeTitle = 'Navigazione con Navia';
+  static const guidanceNoticeRerouting = 'Ricalcolo del percorso…';
+  static String guidanceNoticeStep(String distance, String instruction) =>
+      'Tra $distance: $instruction';
+  static String guidanceNoticeRemaining(String distance) =>
+      'Mancano $distance · tocca per aprire Navia';
+  static const guidanceNotificationsTitle = 'Guida a schermo bloccato';
+  static const guidanceNotificationsBody =
+      'Durante la navigazione Navia continua a guidarti anche a schermo '
+      'bloccato o mentre usi un’altra app, e mostra la prossima manovra in '
+      'una notifica con il tasto “Termina”. Per vederla, Android chiede di '
+      'consentire le notifiche. Navia non chiede la posizione in background: '
+      'la usa solo mentre la guida è attiva.';
+  static const notNow = 'Non ora';
+  static const allow = 'Consenti';
 
   // AMTAB buses.
   static const amtabStop = 'Fermata bus AMTAB';

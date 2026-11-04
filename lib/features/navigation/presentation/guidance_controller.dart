@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/app_strings.dart';
+import '../../../core/platform/background_guidance.dart';
 import '../../../core/platform/screen_awake.dart';
 import '../../../core/platform/voice_guide.dart';
+import '../../../core/utils/formatters.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
 import '../domain/guidance_tracker.dart';
@@ -52,14 +55,20 @@ class GuidanceState {
 /// Turn-by-turn guidance along the calculated route, from the device
 /// location, with spoken instructions.
 ///
-/// It runs only while the app is in the foreground: location updates stop
-/// when the app is hidden, and Navia never asks for background location.
+/// It goes on with the screen locked or another app open through
+/// [BackgroundGuidance]: a foreground service of type "location" with an
+/// ongoing notification of the next maneuver. The service keeps the
+/// "while in use" location alive, so Navia still never asks for
+/// background location.
 class GuidanceController extends Notifier<GuidanceState> {
   /// Minimum time between automatic recalculations.
   static const rerouteInterval = Duration(seconds: 15);
 
   GuidanceTracker? _tracker;
   DateTime? _lastReroute;
+  GuidanceNotice? _notice;
+
+  BackgroundGuidance get _background => ref.read(backgroundGuidanceProvider);
 
   VoiceGuide get _voice => ref.read(voiceGuideProvider);
   NavigationController get _navigation =>
@@ -67,6 +76,14 @@ class GuidanceController extends Notifier<GuidanceState> {
 
   @override
   GuidanceState build() {
+    // "Termina" in the notification ends guidance like the button in the
+    // app.
+    final stops = ref
+        .watch(backgroundGuidanceProvider)
+        .stopRequests
+        .listen((_) => unawaited(stop()));
+    ref.onDispose(stops.cancel);
+    listenSelf((_, next) => _syncNotice(next));
     ref
       ..listen(locationControllerProvider.select((s) => s.position), (
         _,
@@ -96,6 +113,8 @@ class GuidanceController extends Notifier<GuidanceState> {
     if (route == null || route.steps.isEmpty) return;
     state = state.copyWith(active: true, rerouting: false);
     unawaited(ScreenAwake.set(enabled: true));
+    _notice = noticeFor(state);
+    unawaited(_background.start(_notice!));
 
     if (navigation.origin is! CurrentLocationWaypoint) {
       state = state.copyWith(rerouting: true);
@@ -112,9 +131,14 @@ class GuidanceController extends Notifier<GuidanceState> {
 
   Future<void> stop() async {
     _tracker = null;
+    final wasActive = state.active;
+    // Read before any await: the provider may be disposed meanwhile.
+    final (background, voice) = (_background, _voice);
     state = GuidanceState(muted: state.muted);
+    _notice = null;
+    if (wasActive) await background.stop();
     await ScreenAwake.set(enabled: false);
-    await _voice.stop();
+    await voice.stop();
   }
 
   void toggleMuted() {
@@ -170,6 +194,33 @@ class GuidanceController extends Notifier<GuidanceState> {
     if (ref.read(navigationControllerProvider).route == null) {
       await stop();
     }
+  }
+
+  /// What the notification says for [state].
+  @visibleForTesting
+  static GuidanceNotice noticeFor(GuidanceState state) {
+    final step = state.nextStep;
+    return GuidanceNotice(
+      title: state.rerouting
+          ? AppStrings.guidanceNoticeRerouting
+          : step == null
+          ? AppStrings.guidanceNoticeTitle
+          : AppStrings.guidanceNoticeStep(
+              formatDistance(state.distanceToManeuver),
+              RouteInstructions.text(step),
+            ),
+      text: AppStrings.guidanceNoticeRemaining(
+        formatDistance(state.remainingMeters),
+      ),
+    );
+  }
+
+  void _syncNotice(GuidanceState next) {
+    if (!next.active || _notice == null) return;
+    final notice = noticeFor(next);
+    if (notice == _notice) return;
+    _notice = notice;
+    unawaited(_background.update(notice));
   }
 
   void _say(String? text) {

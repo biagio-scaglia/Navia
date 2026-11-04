@@ -63,3 +63,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // NotificationCompat and permission helpers for the guidance service.
+    implementation("androidx.core:core-ktx:1.13.1")
+}

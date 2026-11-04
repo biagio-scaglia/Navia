@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import '../../../app/config/app_config.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/network/json_http_client.dart';
+import '../../../shared/models/geo_bounds.dart';
 import '../domain/fuel.dart';
 import '../domain/poi.dart';
 import 'offline_places_store.dart';
@@ -441,6 +442,53 @@ abstract final class FuelPriceMatcher {
     return [
       for (final place in places) place.withFuel(_nearest(place, nearby)),
     ];
+  }
+
+  /// All registry stations in [bounds]: the OpenStreetMap stations of
+  /// [places] get their prices, and stations missing from OpenStreetMap are
+  /// added from the registry with its brand and address. OpenStreetMap
+  /// stations without a registry match stay, without prices.
+  static List<Poi> withRegistry(
+    List<Poi> places,
+    List<FuelStation> stations,
+    GeoBounds bounds,
+  ) {
+    final annotated = annotate(places, stations);
+    final matched = {
+      for (final place in annotated)
+        if (place.fuel case final station?) station.id,
+    };
+    return [
+      ...annotated,
+      for (final station in stations)
+        if (!matched.contains(station.id) &&
+            bounds.containsPoint(station.point))
+          Poi(
+            ref: OsmRef(OsmElementType.mimit, station.id),
+            point: station.point,
+            name: _registryName(station),
+            category: registryCategory,
+            address: [
+              station.address,
+              station.town,
+            ].where((part) => part.isNotEmpty).join(', '),
+            fuel: station,
+          ),
+    ];
+  }
+
+  /// The label of fuel stations, as for OpenStreetMap ones.
+  static const registryCategory = 'Distributore di carburante';
+
+  /// The brand reads better than the registry's name, which is often a
+  /// code; unbranded stations ("Pompe Bianche") keep their name.
+  static String? _registryName(FuelStation station) {
+    final brand = station.brand.trim();
+    if (brand.isNotEmpty && brand.toLowerCase() != 'pompe bianche') {
+      return brand;
+    }
+    final name = station.name.trim();
+    return name.isEmpty ? null : name;
   }
 
   static FuelStation? _nearest(Poi place, List<FuelStation> stations) {

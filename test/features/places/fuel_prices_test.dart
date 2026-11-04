@@ -227,4 +227,55 @@ void main() {
       isNull,
     );
   });
+
+  test('adds registry stations missing from OpenStreetMap', () {
+    final matched = FuelStation.tryParse(_entry)!;
+    final missing = FuelStation.tryParse([
+      77,
+      41.15,
+      16.85,
+      'Pompe Bianche',
+      'Distributore Rossi',
+      'Via Napoli 3',
+      'BARI',
+      [
+        ['Gasolio', 1.8, true, '2026-10-28T09:00'],
+      ],
+    ])!;
+    final outside = FuelStation.tryParse([
+      88,
+      45.46,
+      9.19,
+      'Q8',
+      'Milano',
+      '',
+      'MILANO',
+      [
+        ['Benzina', 1.9, true, '2026-10-28T09:00'],
+      ],
+    ])!;
+    final bounds = GeoBounds.tryCreate(
+      south: 41.1,
+      west: 16.8,
+      north: 41.2,
+      east: 16.9,
+    )!;
+    final places = FuelPriceMatcher.withRegistry(
+      [_poi(1, const GeoPoint(latitude: 41.12003, longitude: 16.87004))],
+      [matched, missing, outside],
+      bounds,
+    );
+
+    expect(places, hasLength(2));
+    // The OpenStreetMap station keeps its identity and gets the prices.
+    expect(places.first.ref, const OsmRef(OsmElementType.node, 1));
+    expect(places.first.fuel?.id, 59183);
+    // The registry fills the gap, with no OpenStreetMap page to link.
+    final added = places.last;
+    expect(added.ref, const OsmRef(OsmElementType.mimit, 77));
+    expect(added.ref.url, isNull);
+    expect(added.name, 'Distributore Rossi');
+    expect(added.address, 'Via Napoli 3, BARI');
+    expect(added.fuel?.prices.single.price, 1.8);
+  });
 }

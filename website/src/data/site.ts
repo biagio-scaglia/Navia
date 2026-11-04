@@ -2,8 +2,8 @@
 
 export const site = {
   name: 'Navia',
-  version: '0.8.1',
-  build: '+8',
+  version: '0.9.0',
+  build: '+9',
   url: 'https://biagio-scaglia.github.io/Navia/',
   title: 'Navia – navigatore open source per Android, senza tracciamento',
   description:
@@ -131,7 +131,7 @@ export const refusals = [
   { icon: 'shield', title: 'Nessun account', body: 'Non ti registri. I preferiti restano sul telefono.' },
   { icon: 'close', title: 'Nessuna pubblicità', body: 'Nell’app non c’è nessun SDK pubblicitario.' },
   { icon: 'cloud_off', title: 'Nessuna statistica', body: 'Niente analytics, niente crash reporter, niente profilazione.' },
-  { icon: 'locate', title: 'Posizione solo se la chiedi', body: 'Con l’app aperta e dopo un tuo tocco. Mai in background.' },
+  { icon: 'locate', title: 'Posizione solo se la chiedi', body: 'Dopo un tuo tocco, e a schermo bloccato solo durante la guida, con una notifica visibile. Mai il permesso in background.' },
   { icon: 'globe', title: 'Nessun server Navia', body: 'L’app parla solo con servizi aperti, e solo quando una funzione li usa.' },
   { icon: 'star', title: 'Dati sul dispositivo', body: 'Preferiti e impostazioni sono esclusi dal backup cloud di Android.' },
 ] as const
@@ -169,6 +169,8 @@ export const features: {
       'Scegli partenza e arrivo e il percorso compare subito, con distanza, durata e ora di arrivo.',
     points: [
       'Navigazione svolta per svolta con istruzioni vocali in italiano, generate sul telefono dalla sintesi vocale di Android.',
+      'La guida continua a schermo bloccato o in un’altra app, con la prossima manovra in una notifica; la musica si abbassa mentre parla la voce.',
+      'Bus AMTAB a Bari: fermate sulla mappa, prossimi passaggi anche offline e le linee con i bus in 3D dove li mette l’orario.',
       'Ricalcolo automatico quando esci dal percorso e la visuale che ti segue.',
       'Senza permesso di posizione scegli la partenza dalla ricerca, dalla mappa o dai preferiti.',
     ],
@@ -193,7 +195,7 @@ export const features: {
       'Ristoranti, farmacie, spiagge, fontanelle, bancomat e altre categorie, con schede costruite dai tag di OpenStreetMap.',
     points: [
       'Scarica i luoghi di una macroregione italiana: il Sud pesa 3 MB, tutta Italia circa 22 MB.',
-      'Prezzi dei carburanti di tutti i distributori italiani dai dati aperti del MIMIT, self e servito.',
+      'Prezzi dei carburanti di tutti i distributori italiani dai dati aperti del MIMIT, self e servito: con i prezzi scaricati la categoria Carburante mostra ogni impianto dell’anagrafe del Ministero.',
       'Area 15 minuti: dove arrivi in 5, 10 e 15 minuti a piedi, in bici o in auto. Meteo da Open-Meteo.',
     ],
   },
@@ -208,10 +210,11 @@ export const services = [
   { name: 'Wikipedia', when: 'Quando tocchi Scopri qui intorno o apri una scheda', what: 'Il centro della mappa o il titolo della voce' },
   { name: 'Valhalla (FOSSGIS)', when: 'Quando mostri l’area 15 minuti', what: 'Punto di partenza e mezzo' },
   { name: 'Open-Meteo', when: 'Nelle schede dei luoghi e nel riepilogo del percorso', what: 'La posizione arrotondata a circa 1 km' },
+  { name: 'AMTAB', when: 'Quando scarichi gli orari dei bus, poi al massimo una volta al giorno', what: 'La richiesta del file degli orari, mai la fermata che guardi' },
 ] as const
 
 export const limitations = [
-  'La guida funziona solo con l’app aperta in primo piano.',
+  'La guida a schermo bloccato è nuova nella 0.9 e va ancora provata su più telefoni, soprattutto quelli con un risparmio energetico aggressivo.',
   'Niente traffico in tempo reale, corsie o limiti di velocità.',
   'Le mappe offline delle macroregioni italiane sono pubblicate, ma vanno ancora provate sui telefoni.',
   'Offline oggi ci sono i luoghi che scarichi e i prezzi dei carburanti; i percorsi richiedono la rete.',
@@ -249,7 +252,7 @@ export const faq = [
   },
   {
     q: 'Dove scarico Navia?',
-    a: 'Un APK pubblico non c’è ancora: Navia è in sviluppo (versione 0.8.1). Puoi compilarla dal codice sorgente con Flutter o seguire il repository su GitHub per sapere quando esce la prima release.',
+    a: 'Un APK pubblico non c’è ancora: Navia è in sviluppo (versione 0.9.0). Puoi compilarla dal codice sorgente con Flutter o seguire il repository su GitHub per sapere quando esce la prima release.',
   },
 ] as const
 
@@ -260,6 +263,7 @@ export const stack = [
   { area: 'Ricerca', value: 'Photon di komoot', icon: 'si:komoot' },
   { area: 'Percorsi', value: 'OSRM sui server FOSSGIS', icon: 'lucide:route' },
   { area: 'Luoghi', value: 'Overpass API e regioni offline', icon: 'si:openstreetmap' },
+  { area: 'Guida in background', value: 'Kotlin: servizio in primo piano, notifica e audio', icon: 'si:kotlin' },
   { area: 'Piattaforma', value: 'Android 7.0 o successivo', icon: 'si:android' },
   { area: 'Licenza', value: 'MIT, dati mappa ODbL', icon: 'lucide:scale' },
 ] as const

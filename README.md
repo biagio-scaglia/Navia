@@ -15,7 +15,7 @@ ads, no analytics and no Navia backend: the app talks directly to open,
 OpenStreetMap-based services, and only when you use the feature that needs
 them.
 
-> **Status: early development (v0.8.1).** Navia offers turn-by-turn guidance
+> **Status: early development (v0.9.0).** Navia offers turn-by-turn guidance
 > with Italian voice instructions while the app is open. See
 > [Current limitations](#current-limitations).
 
@@ -71,11 +71,19 @@ them.
 - **Category markers:** each category has its own colored marker with its
   icon, and small colored columns rise under the markers when the map is
   tilted.
+- **Background guidance (0.9):** guidance continues with the screen locked
+  or in another app, with the next maneuver in an ongoing notification and
+  a *Termina* button; music and podcasts are lowered while the voice
+  speaks. It runs on a small Kotlin package
+  (`android/app/src/main/kotlin/.../guidance/`): a foreground service of
+  type location, its notification and the audio focus.
 - **Fuel prices:** download the daily prices of all Italian fuel stations
   (about 7.5 MB, *Impostazioni → Prezzi carburanti*) directly from the
   Ministry's open data (MIMIT, IODL 2.0), joined on the device; fuel station
   cards then show self service and served prices for each fuel, with the
   report date.
+  With the prices downloaded, the *Carburante* category lists every station
+  of the Ministry's registry, also those missing from OpenStreetMap.
 - **Wikipedia:** places linked to Wikipedia or Wikidata show the summary of
   the Italian article (English as fallback) with its image and a link.
 - **Place cards:** name, category, address, opening hours (with an "Aperto
@@ -147,11 +155,15 @@ Navia has no server of its own. These third-party services receive requests:
 
 Every request carries a `User-Agent` that identifies Navia and its version, as
 the providers require. Navia does not store your location history, does not
-request background location, and excludes its data from Android cloud
-backup. The full description is in the [privacy policy](PRIVACY.md).
+request background location (guidance with the screen locked runs on a
+foreground service that keeps the "while in use" location), and excludes
+its data from Android cloud backup. The full description is in the [privacy policy](PRIVACY.md).
 
 Android permissions: `INTERNET`, `ACCESS_COARSE_LOCATION` and
-`ACCESS_FINE_LOCATION` (asked only when you use your position), and
+`ACCESS_FINE_LOCATION` (asked only when you use your position),
+`FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_LOCATION` (the guidance
+service, only while guidance runs), `POST_NOTIFICATIONS` (its notification,
+asked with an explanation the first time guidance starts), and
 `ACCESS_NETWORK_STATE`, which MapLibre needs to detect connectivity. The
 `ACCESS_WIFI_STATE` permission requested by MapLibre is removed.
 
@@ -291,10 +303,12 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and the
 
 ## Current limitations
 
-- Guidance runs only while the app is open and in the foreground: Navia
-  keeps the screen on but never uses background location. Voice
-  instructions need an Italian text-to-speech voice installed on the
-  device.
+- Guidance continues with the screen locked or another app open, through a
+  foreground service with a notification; swiping Navia away from the
+  recent apps ends it. Voice instructions need an Italian text-to-speech
+  voice installed on the device.
+- Background guidance is new in 0.9 and still needs testing on several
+  phones, especially those with aggressive battery savers.
 - Instructions come from OSRM maneuvers; lane guidance, speed limits and
   traffic are not available.
 - Travel times are estimates without live traffic.
@@ -340,24 +354,21 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and the
 ## Roadmap
 
 Done: map with Navia's own styles and 3D, search, routing with turn-by-turn
-voice guidance, OpenStreetMap places with offline regions, Wikipedia and
-weather in place cards, Scopri and 15 min tabs, fuel prices, favorites and
-an in-app privacy policy.
+voice guidance that continues with the screen locked, OpenStreetMap places
+with offline zones, Wikipedia and weather in place cards, Scopri and 15 min
+tabs, fuel prices with the Ministry's stations, AMTAB buses, favorites in
+folders and an in-app privacy policy.
 
 Next, in order:
 
-1. **0.9 — Background guidance and fuel stations:** a Kotlin foreground
-   service so guidance continues with the screen locked, voice that lowers
-   other audio, and the official Ministry fuel stations in the Carburante
-   category.
-2. **0.10 — Offline maps:** map regions built monthly in CI with
+1. **0.10 — Offline maps:** map regions built monthly in CI with
    Planetiler and downloaded on request (implemented, to be verified on
    phones), plus offline search in downloaded places.
-3. **0.11 — Public transport:** current open GTFS timetables, starting
-   from Bari and Puglia.
-4. **0.12 — Small improvements:** marker clustering, sensor compass,
+2. **0.11 — Public transport:** AMTAB is in; next strike notices and the
+   FAL, Ferrotramviaria and Trenitalia trains.
+3. **0.12 — Small improvements:** marker clustering, sensor compass,
    widget and shortcuts, saved routes.
-5. **1.0 — Offline routing and first release:** a trial of Valhalla or
+4. **1.0 — Offline routing and first release:** a trial of Valhalla or
    GraphHopper on the device, testing on several phones, first public
    release.
 

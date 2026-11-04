@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/navia_surfaces.dart';
 import '../../../../app/theme/navia_tokens.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/platform/background_guidance.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/navia_icon.dart';
+import '../../../../shared/providers/shared_preferences_provider.dart';
 import '../../domain/navigation_models.dart';
 import '../guidance_controller.dart';
 import '../navigation_controller.dart';
@@ -223,4 +225,36 @@ class RouteStepList extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Starts guidance. The first time, it explains why the notification is
+/// needed before Android asks for it; guidance starts whatever the answer.
+Future<void> startGuidance(BuildContext context, WidgetRef ref) async {
+  const asked = 'guidance.notifications_asked';
+  final preferences = ref.read(sharedPreferencesProvider);
+  final background = ref.read(backgroundGuidanceProvider);
+  if (!(preferences.getBool(asked) ?? false) &&
+      !await background.notificationsAllowed() &&
+      context.mounted) {
+    final allow = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppStrings.guidanceNotificationsTitle),
+        content: const Text(AppStrings.guidanceNotificationsBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(AppStrings.notNow),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(AppStrings.allow),
+          ),
+        ],
+      ),
+    );
+    await preferences.setBool(asked, true);
+    if (allow ?? false) await background.requestNotifications();
+  }
+  await ref.read(guidanceProvider.notifier).start();
 }

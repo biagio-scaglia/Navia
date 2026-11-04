@@ -5,10 +5,16 @@ import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import io.github.biagioscaglia.navia.guidance.GuidanceChannel
 
 class MainActivity : FlutterActivity() {
+    private var guidance: GuidanceChannel? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // Turn-by-turn guidance in the background: foreground service,
+        // ongoing notification and audio ducking.
+        guidance = GuidanceChannel(this, flutterEngine.dartExecutor.binaryMessenger)
         // Opens the system share sheet: the user picks the receiving app.
         // No third-party sharing SDK is needed for plain text.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "navia/share")
@@ -46,5 +52,20 @@ class MainActivity : FlutterActivity() {
                 }
                 result.success(null)
             }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        guidance?.dispose()
+        guidance = null
+        super.cleanUpFlutterEngine(flutterEngine)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        if (guidance?.onRequestPermissionsResult(requestCode, grantResults) == true) return
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }

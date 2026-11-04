@@ -1066,8 +1066,7 @@ class _RouteSummary extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: () =>
-                  unawaited(ref.read(guidanceProvider.notifier).start()),
+              onPressed: () => unawaited(startGuidance(context, ref)),
               icon: const Icon(Icons.navigation_rounded, size: 20),
               label: const Text(AppStrings.startGuidance),
             ),

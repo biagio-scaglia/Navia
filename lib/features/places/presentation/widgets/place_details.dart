@@ -78,13 +78,14 @@ class PlaceDetailsList extends StatelessWidget {
             actionLabel: AppStrings.openWebsite,
             onTap: () => openExternalLink(context, website.toString()),
           ),
-        _DetailRow(
-          icon: NaviaIcons.copyright,
-          label: AppStrings.placeDataSource,
-          value: AppStrings.viewOnOpenStreetMap,
-          actionLabel: AppStrings.viewOnOpenStreetMap,
-          onTap: () => openExternalLink(context, place.ref.url.toString()),
-        ),
+        if (place.ref.url case final url?)
+          _DetailRow(
+            icon: NaviaIcons.copyright,
+            label: AppStrings.placeDataSource,
+            value: AppStrings.viewOnOpenStreetMap,
+            actionLabel: AppStrings.viewOnOpenStreetMap,
+            onTap: () => openExternalLink(context, url.toString()),
+          ),
       ],
     );
   }

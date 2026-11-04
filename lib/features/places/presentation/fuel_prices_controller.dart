@@ -114,6 +114,7 @@ class FuelPricedPlacesRepository implements PlacesRepository {
   Future<List<Poi>> fetch(PoiCategory category, GeoBounds bounds) async {
     final places = await inner.fetch(category, bounds);
     if (category != PoiCategory.fuel) return places;
-    return FuelPriceMatcher.annotate(places, await stations());
+    // With the prices downloaded, the registry is the list of stations.
+    return FuelPriceMatcher.withRegistry(places, await stations(), bounds);
   }
 }

@@ -88,8 +88,16 @@ done only when it works, has tests, and is documented.
 - Fontanelle, Bagni and Spiagge categories
 - Daily fuel prices from the Ministry open data, downloaded on request
 
-### Unreleased: feedback from the first testers
+### 0.9: Background guidance, AMTAB buses and testers' feedback
 
+- `io.github.biagioscaglia.navia.guidance` Kotlin package: a foreground
+  service of type location with an ongoing notification of the next
+  maneuver and a *Termina* button, so guidance continues with the screen
+  locked or in another app, without the background location permission
+- Voice instructions on the navigation audio stream, lowering other audio
+  while they speak (audio focus with ducking)
+- Fuel category from the Ministry registry when prices are downloaded:
+  every official station, also those missing from OpenStreetMap
 - Favorites on the map as stars, and folders of favorites with their own
   star color
 - One *Zone offline* screen for maps and places, with the choice of what
@@ -101,21 +109,10 @@ done only when it works, has tests, and is documented.
   position
 - Navia's own compass among the map controls, shown only when the map is
   turned, instead of the native one hidden under the overlays
+- Still to do: verify background guidance and the fuel price download on
+  several real phones
 
 ## Next
-
-### 0.9: Background guidance and fuel stations
-
-- `navia_guidance` Kotlin package: a foreground service with a notification
-  showing the next maneuver and a stop button, so guidance continues with
-  the screen locked or in another app; background location only during
-  guidance, explained before it is requested
-- Voice instructions that lower other audio (audio focus)
-- Fuel category from the Ministry registry when prices are downloaded:
-  all official stations with brand, address and prices, instead of the
-  OpenStreetMap match
-- Verify the fuel price download on real phones, from the published
-  dataset and from the Ministry
 
 ### 0.10: Offline maps
 

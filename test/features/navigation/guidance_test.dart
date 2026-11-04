@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:navia/core/platform/background_guidance.dart';
 import 'package:navia/core/platform/voice_guide.dart';
 import 'package:navia/features/location/data/geolocator_location_repository.dart';
 import 'package:navia/features/location/domain/location_models.dart';
@@ -59,6 +62,36 @@ class _Voice implements VoiceGuide {
 
   @override
   Future<void> stop() async {}
+}
+
+class _Background implements BackgroundGuidance {
+  final notices = <GuidanceNotice>[];
+  var running = false;
+  // Closed by each test.
+  // ignore: close_sinks
+  final stops = StreamController<void>.broadcast();
+
+  @override
+  Future<bool> start(GuidanceNotice notice) async {
+    running = true;
+    notices.add(notice);
+    return true;
+  }
+
+  @override
+  Future<void> update(GuidanceNotice notice) async => notices.add(notice);
+
+  @override
+  Future<void> stop() async => running = false;
+
+  @override
+  Future<bool> notificationsAllowed() async => true;
+
+  @override
+  Future<bool> requestNotifications() async => true;
+
+  @override
+  Stream<void> get stopRequests => stops.stream;
 }
 
 class _Router implements RoutingRepository {
@@ -132,12 +165,15 @@ void main() {
 
   test('the controller speaks the departure and follows positions', () async {
     final voice = _Voice();
+    final background = _Background();
+    addTearDown(background.stops.close);
     final location = FakeLocationRepository(
       position: UserPosition(point: _start, timestamp: DateTime.utc(2026)),
     );
     final container = ProviderContainer(
       overrides: [
         voiceGuideProvider.overrideWithValue(voice),
+        backgroundGuidanceProvider.overrideWithValue(background),
         locationRepositoryProvider.overrideWithValue(location),
         routingRepositoryProvider.overrideWithValue(_Router()),
       ],
@@ -154,6 +190,10 @@ void main() {
     await guidance.start();
     expect(container.read(guidanceProvider).active, isTrue);
     expect(voice.spoken.first, 'Parti su Via Sparano');
+    // The service runs, with the next maneuver in its notification.
+    expect(background.running, isTrue);
+    expect(background.notices.last.title, startsWith('Tra '));
+    expect(background.notices.last.title, contains('Corso Cavour'));
 
     location.updates.add(
       UserPosition(point: _north(460), timestamp: DateTime.utc(2026)),
@@ -175,5 +215,61 @@ void main() {
     // Muted: nothing more is spoken; arrival ends the guidance.
     expect(voice.spoken.last, 'Svolta a destra in Corso Cavour');
     expect(container.read(guidanceProvider).active, isFalse);
+    expect(background.running, isFalse);
+  });
+
+  test('"Termina" in the notification ends guidance', () async {
+    final background = _Background();
+    addTearDown(background.stops.close);
+    final location = FakeLocationRepository(
+      position: UserPosition(point: _start, timestamp: DateTime.utc(2026)),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        voiceGuideProvider.overrideWithValue(_Voice()),
+        backgroundGuidanceProvider.overrideWithValue(background),
+        locationRepositoryProvider.overrideWithValue(location),
+        routingRepositoryProvider.overrideWithValue(_Router()),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(location.close);
+    final navigation = container.read(navigationControllerProvider.notifier)
+      ..setOrigin(const CurrentLocationWaypoint())
+      ..setDestination(const PointWaypoint(_end));
+    await navigation.calculate();
+    await container.read(guidanceProvider.notifier).start();
+    final updates = background.notices.length;
+
+    // Positions that change nothing visible do not update the notification.
+    location.updates.add(
+      UserPosition(point: _north(0), timestamp: DateTime.utc(2026)),
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(background.notices.length, lessThanOrEqualTo(updates + 1));
+
+    background.stops.add(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(container.read(guidanceProvider).active, isFalse);
+    expect(background.running, isFalse);
+  });
+
+  test('the notice reads like the banner', () {
+    final notice = GuidanceController.noticeFor(
+      GuidanceState(
+        active: true,
+        nextStep: _route.steps[1],
+        distanceToManeuver: 200,
+        remainingMeters: 1500,
+      ),
+    );
+    expect(notice.title, 'Tra 200 m: Svolta a destra in Corso Cavour');
+    expect(notice.text, startsWith('Mancano 1,5 km'));
+    expect(
+      GuidanceController.noticeFor(
+        const GuidanceState(active: true, rerouting: true),
+      ).title,
+      'Ricalcolo del percorso…',
+    );
   });
 }

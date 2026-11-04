@@ -3,7 +3,15 @@ import 'package:flutter/foundation.dart';
 import '../../../shared/models/geo_point.dart';
 import 'fuel.dart';
 
-enum OsmElementType { node, way, relation }
+enum OsmElementType {
+  node,
+  way,
+  relation,
+
+  /// Not an OpenStreetMap object: a fuel station known only from the
+  /// Ministry's registry (MIMIT), identified by its registry id.
+  mimit,
+}
 
 /// Stable identifier of an OpenStreetMap object.
 @immutable
@@ -16,8 +24,11 @@ class OsmRef {
   /// Compact form used in map features and storage, e.g. "node/123".
   String get key => '${type.name}/$id';
 
-  /// The object's page on openstreetmap.org.
-  Uri get url => Uri.parse('https://www.openstreetmap.org/$key');
+  bool get isOpenStreetMap => type != OsmElementType.mimit;
+
+  /// The object's page on openstreetmap.org; null for registry stations.
+  Uri? get url =>
+      isOpenStreetMap ? Uri.parse('https://www.openstreetmap.org/$key') : null;
 
   static OsmRef? tryParse(Object? key) {
     if (key is! String) return null;

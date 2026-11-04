@@ -5,7 +5,7 @@ the Navia Android app actually handles data, as implemented in this
 repository. It has not been reviewed by a lawyer, and it does not claim
 certified compliance with the GDPR or any other law.
 
-Last updated: 2026-11-04. Applies to Navia 0.8.1 and later.
+Last updated: 2026-11-04. Applies to Navia 0.9.0 and later.
 
 The app shows the same policy in Italian under *Impostazioni → Privacy*.
 
@@ -29,8 +29,10 @@ searches or your saved places.
 - No account, no registration, no login.
 - No advertising SDKs, no analytics SDKs, no crash reporting SDKs.
 - No advertising ID or other device identifiers are read or sent.
-- No background location: the location is read only while the app is open,
-  after you ask for it.
+- No background location permission: the location is read while the app
+  is open, after you ask for it, and during turn-by-turn guidance also with
+  the screen locked, through a foreground service with a visible
+  notification.
 - Your saved places and settings stay on your device.
 - To work, the app sends requests to third-party OpenStreetMap services.
   Those requests contain the data listed in section 4, including
@@ -126,7 +128,7 @@ README), in which case those services receive the same data instead.
   "La tua posizione". It never requests background location.
 - While the app is open and you have activated location, the position is
   updated to show the blue dot. Updates stop when the app goes to the
-  background.
+  background, except during turn-by-turn guidance (section 6).
 - The location is used on the device to show the dot and center the map. It
   leaves the device only in the cases listed in section 4 (route origin,
   rounded search position).
@@ -137,8 +139,18 @@ README), in which case those services receive the same data instead.
 
 ## 6. Turn-by-turn guidance
 
-During guidance the device location is read continuously, only while the
-app is open and in the foreground, to follow you along the route. The voice
+During guidance the device location is read continuously to follow you
+along the route, also with the screen locked or another app open. For this
+Navia starts an Android foreground service of type "location" when you
+start guidance, with an ongoing notification showing the next maneuver and
+a *Termina* button; the service stops when guidance ends, when you tap
+*Termina* or when you swipe Navia away. It keeps the "while in use"
+location permission working: Navia does not request the background
+location permission. On Android 13 and later the notification needs the
+notifications permission, which Navia asks for, with an explanation, the
+first time you start guidance; if you refuse, guidance still works. While
+an instruction is spoken, Navia asks Android to lower other audio for a
+moment. The voice
 instructions are produced on the device by Android's text-to-speech
 engine; Navia sends them nowhere. When you leave the route, the route is
 recalculated from your current position through the routing service listed
