@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../core/widgets/navia_icon.dart';
 import '../domain/poi_category.dart';
 import 'widgets/place_category_bar.dart';
 
@@ -34,6 +35,13 @@ extension PoiCategoryMarker on PoiCategory {
   String get markerImageId => 'navia-place-$name';
 }
 
+/// Marker of the places saved in the favorites: a gold star, distinct from
+/// every category color.
+abstract final class FavoriteMarker {
+  static const color = Color(0xFFF2A900);
+  static const imageId = 'navia-place-favorite';
+}
+
 /// Renders the marker images: a colored disc with a white ring and the
 /// category icon in white. Drawn once and registered with each map style.
 abstract final class PlaceMarkerImages {
@@ -43,12 +51,19 @@ abstract final class PlaceMarkerImages {
   static Future<Map<String, Uint8List>> render() async {
     final images = <String, Uint8List>{};
     for (final category in PoiCategory.values) {
-      images[category.markerImageId] = await _marker(category);
+      images[category.markerImageId] = await _marker(
+        category.markerColor,
+        category.icon,
+      );
     }
+    images[FavoriteMarker.imageId] = await _marker(
+      FavoriteMarker.color,
+      NaviaIcons.starFilled,
+    );
     return images;
   }
 
-  static Future<Uint8List> _marker(PoiCategory category) async {
+  static Future<Uint8List> _marker(Color color, NaviaIcons glyph) async {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     const center = Offset(size / 2, size / 2);
@@ -63,12 +78,9 @@ abstract final class PlaceMarkerImages {
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
       )
       ..drawCircle(center, radius, Paint()..color = Colors.white)
-      ..drawCircle(center, radius - 6, Paint()..color = category.markerColor);
+      ..drawCircle(center, radius - 6, Paint()..color = color);
 
-    final icon = await vg.loadPicture(
-      SvgAssetLoader(category.icon.asset),
-      null,
-    );
+    final icon = await vg.loadPicture(SvgAssetLoader(glyph.asset), null);
     const iconSize = size * 0.46;
     final scale = iconSize / icon.size.longestSide;
     canvas

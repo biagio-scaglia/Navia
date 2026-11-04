@@ -13,6 +13,8 @@ import '../../../core/widgets/map_control_button.dart';
 import '../../../core/widgets/navia_icon.dart';
 import '../../../shared/models/geo_point.dart';
 import '../../discover/discover.dart';
+import '../../favorites/domain/favorite.dart';
+import '../../favorites/presentation/favorites_controller.dart';
 import '../../favorites/presentation/favorites_screen.dart';
 import '../../location/domain/location_models.dart';
 import '../../location/presentation/location_controller.dart';
@@ -202,6 +204,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _navigation.selectPlace(place);
       return;
     }
+    if (placeKey != null && placeKey.startsWith(favoritePlaceKeyPrefix)) {
+      final id = placeKey.substring(favoritePlaceKeyPrefix.length);
+      final favorite = ref
+          .read(favoritesProvider)
+          .where((f) => f.id == id)
+          .firstOrNull;
+      if (favorite != null) {
+        _selectFavorite(favorite);
+        return;
+      }
+    }
     final poi = await _map?.poiAt(screenPoint);
     if (!mounted) return;
     if (poi == null) {
@@ -213,10 +226,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  Future<void> _openFavorites() async {
-    final pick = await FavoritesScreen.open(context);
-    if (!mounted || pick == null) return;
-    final favorite = pick.favorite;
+  void _selectFavorite(Favorite favorite) {
     _navigation.select(
       PointWaypoint(
         favorite.point,
@@ -225,6 +235,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         category: favorite.category,
       ),
     );
+  }
+
+  Future<void> _openFavorites() async {
+    final pick = await FavoritesScreen.open(context);
+    if (!mounted || pick == null) return;
+    final favorite = pick.favorite;
+    _selectFavorite(favorite);
     if (pick.directions) {
       // The route framing moves the camera once the route arrives.
       await _navigation.useSelectionAsDestination();
