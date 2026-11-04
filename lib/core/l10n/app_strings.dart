@@ -211,6 +211,11 @@ abstract final class AppStrings {
   static String lineShown(String line) =>
       'Linea $line sulla mappa: i bus sono dove li mette l’orario.';
   static const hideLine = 'Nascondi linea';
+  static String busesRunning(int count) => switch (count) {
+    0 => 'Nessun bus in servizio ora',
+    1 => '1 bus in servizio',
+    _ => '$count bus in servizio',
+  };
   static const allTimetables = 'Tutti gli orari su amtab.it';
   static String amtabExpired(String date) =>
       'Orari scaduti il $date: aggiornali dalle impostazioni.';

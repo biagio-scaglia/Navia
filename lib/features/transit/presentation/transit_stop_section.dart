@@ -150,7 +150,7 @@ class _TransitStopSectionState extends ConsumerState<TransitStopSection> {
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(
               children: [
-                _LineBadge(name: departure.route, rgb: departure.color),
+                TransitLineBadge(name: departure.route, rgb: departure.color),
                 const SizedBox(width: NaviaSpacing.sm),
                 Expanded(
                   child: Text(
@@ -180,7 +180,7 @@ class _TransitStopSectionState extends ConsumerState<TransitStopSection> {
             runSpacing: NaviaSpacing.xs,
             children: [
               for (final line in lines)
-                _LineBadge(
+                TransitLineBadge(
                   name: line.name,
                   rgb: line.color,
                   selected: line.index == shownLine,
@@ -258,8 +258,9 @@ class _Box extends StatelessWidget {
 }
 
 /// A line number on its color, as on the bus stop poles.
-class _LineBadge extends StatelessWidget {
-  const _LineBadge({
+class TransitLineBadge extends StatelessWidget {
+  const TransitLineBadge({
+    super.key,
     required this.name,
     required this.rgb,
     this.selected = false,

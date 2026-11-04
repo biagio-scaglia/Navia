@@ -532,6 +532,9 @@ treats them as one thing:
   matched to a selection within 40 m (`TransitData.stopNear`), so map
   labels and OpenStreetMap stops open the same card. A shown line is a
   `MapLine` in its color (a light color falls back to a readable blue).
+  The line does not depend on the selection: taps on the map, the line or
+  another stop leave it shown, and only the close button of
+  `TransitLineBanner` (or of the stop card) hides it.
 - **Buses:** `TransitVehicles` recomputes every 3 seconds the trips of the
   shown line that are running, interpolating time between stops into a
   distance along the shape. Each bus is a `MapVehicle`: a 12 × 2.6 m

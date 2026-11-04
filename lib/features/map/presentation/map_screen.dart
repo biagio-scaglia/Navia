@@ -37,6 +37,7 @@ import '../../reach/reach.dart';
 import '../../search/data/photon_geocoding_repository.dart';
 import '../../search/presentation/search_screen.dart';
 import '../../transit/presentation/transit_controller.dart';
+import '../../transit/presentation/transit_line_banner.dart';
 import '../domain/map_overlays.dart';
 import '../domain/navia_map_controller.dart';
 import 'map_preferences_controller.dart';
@@ -374,13 +375,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listen(transitVehiclesProvider, (_, _) {
       unawaited(_map?.showVehicles(_transitVehicles()));
     });
-    // Closing the card of a stop hides its line.
-    ref.listen(
-      navigationControllerProvider.select((s) => s.selection == null),
-      (_, cleared) {
-        if (cleared) ref.read(transitLineProvider.notifier).hide();
-      },
-    );
     ref.listen(locationControllerProvider, (previous, next) {
       final position = next.position;
       if (position != previous?.position) {
@@ -695,6 +689,25 @@ class _MapOverlays extends ConsumerWidget {
                 ),
               ),
             ),
+            // A shown line stays, with its own close button, while the user
+            // taps around the map.
+            if (ref.watch(transitLineProvider) != null)
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  edge + safe.left,
+                  NaviaSpacing.md,
+                  edge + safe.right,
+                  0,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: NaviaSizes.panelMaxWidth,
+                    ),
+                    child: const TransitLineBanner(),
+                  ),
+                ),
+              ),
             if (ref.watch(offlineAreaHintProvider.select((h) => h != null)))
               Padding(
                 padding: EdgeInsets.fromLTRB(
